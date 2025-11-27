@@ -181,10 +181,16 @@ LDFLAGS="-static -Wl,--allow-multiple-definition"
    ```
 
 4. **验证静态链接**（必须在上传前完成）：
-   使用 `llvm-nm -u` 检查 .bc 文件中的未定义符号：
+   使用构建好的 Docker 镜像中的 `llvm-nm` 检查 .bc 文件中的未定义符号（svftools/svf 镜像自带 llvm-nm）：
    ```bash
-   llvm-nm -u <项目>/bc/*.bc
+   # 使用构建好的镜像验证（推荐，因为镜像中已有 llvm-nm）
+   docker run --rm -v $(pwd)/<项目>/bc:/bc:ro <项目>-bc-test llvm-nm -u /bc/*.bc
+   
+   # 或者使用基础镜像验证
+   docker run --rm -v $(pwd)/<项目>/bc:/bc:ro svftools/svf:latest llvm-nm -u /bc/*.bc
    ```
+   
+   **注意**：此验证步骤应在从容器复制 .bc 文件后执行，**不要**将验证代码放入 Dockerfile 中。
    
    **验证标准**：
    - 输出应该只包含标准 libc/系统库函数（如 `malloc`, `printf`, `pthread_*`, `open`, `read`, `write` 等）

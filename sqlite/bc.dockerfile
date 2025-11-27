@@ -19,14 +19,15 @@ RUN wget https://github.com/sqlite/sqlite/archive/refs/tags/version-3.51.0.tar.g
 
 WORKDIR /home/SVF-tools/sqlite-version-3.51.0
 
-# Install build dependencies (file for extract-bc, tcl for SQLite build)
+# Install build dependencies (file for extract-bc)
 RUN apt-get update && \
-    apt-get install -y file tcl-dev && \
+    apt-get install -y file && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Configure with static linking and WLLVM
 # Disable TCL extension and shared libraries to avoid conflicts with static linking
+# Note: --allow-multiple-definition is required for static linking with glibc
 RUN CC=wllvm \
     CFLAGS="-g -O0" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
