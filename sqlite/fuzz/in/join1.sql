@@ -1,0 +1,6 @@
+CREATE TABLE a(x);
+CREATE TABLE b(y);
+INSERT INTO a VALUES(1),(2),(3);
+INSERT INTO b VALUES(2),(3),(4);
+SELECT * FROM a INNER JOIN b ON a.x = b.y;
+SELECT * FROM a LEFT JOIN b ON a.x = b.y;
