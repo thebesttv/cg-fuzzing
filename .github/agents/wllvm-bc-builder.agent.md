@@ -25,14 +25,14 @@ description: 基于 svftools/svf:latest Docker 镜像，使用 WLLVM 编译开�
 - 镜像中的 home 目录是 `/home/SVF-tools`
 
 ### WLLVM 安装
-使用 pip 安装 WLLVM：
+使用 pipx 安装 WLLVM：
 ```dockerfile
 RUN apt-get update && \
-    apt-get install -y python3-pip && \
+    apt-get install -y pipx && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install wllvm --break-system-packages --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
+RUN pipx install wllvm
 
 ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
@@ -57,21 +57,6 @@ ENV LLVM_COMPILER=clang
 git lfs track "项目名/bc/*.bc"
 ```
 
-## SSL 证书处理
-
-在某些构建环境中可能遇到 SSL 证书问题，需要添加以下配置：
-
-```dockerfile
-# wget 下载
-RUN wget --no-check-certificate <URL>
-
-# git 操作
-RUN git config --global http.sslVerify false
-
-# pip 安装
-RUN pip3 install ... --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
-```
-
 ## 典型的 Dockerfile 结构
 
 ```dockerfile
@@ -79,18 +64,18 @@ FROM svftools/svf:latest
 
 # 1. 安装 WLLVM
 RUN apt-get update && \
-    apt-get install -y python3-pip && \
+    apt-get install -y pipx && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install wllvm --break-system-packages --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
+RUN pipx install wllvm
 
 ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # 2. 下载源代码
 WORKDIR /home/SVF-tools
-RUN wget --no-check-certificate <源码下载URL> && \
+RUN wget <源码下载URL> && \
     tar -xzf <压缩包> && \
     rm <压缩包>
 
@@ -146,8 +131,7 @@ RUN cd build && make -j$(nproc)
 ### 需要 bootstrap 的项目（如 coreutils）
 如果项目需要从 git 源码构建（没有预生成的 configure 脚本）：
 ```dockerfile
-RUN git config --global http.sslVerify false && \
-    git init && \
+RUN git init && \
     git config user.email "build@example.com" && \
     git config user.name "Build" && \
     git add -A && git commit -m "init"
