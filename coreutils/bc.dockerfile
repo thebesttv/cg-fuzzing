@@ -1,21 +1,19 @@
 FROM svftools/svf:latest
 
-# Install wllvm using pip
-# Note: --trusted-host flags are used to work around potential SSL certificate issues in build environments
+# Install wllvm using pipx
 RUN apt-get update && \
-    apt-get install -y python3-pip && \
+    apt-get install -y pipx && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install wllvm --break-system-packages --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
+RUN pipx install wllvm
 
 ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract coreutils v9.9
-# Note: --no-check-certificate is used to work around SSL certificate issues in some build environments
 WORKDIR /home/SVF-tools
-RUN wget --no-check-certificate https://github.com/coreutils/coreutils/archive/refs/tags/v9.9.tar.gz && \
+RUN wget https://github.com/coreutils/coreutils/archive/refs/tags/v9.9.tar.gz && \
     tar -xzf v9.9.tar.gz && \
     rm v9.9.tar.gz
 
@@ -28,9 +26,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Initialize git for bootstrap and fetch gnulib
-# Note: http.sslVerify false is used to work around SSL certificate issues in some build environments
-RUN git config --global http.sslVerify false && \
-    git init && \
+RUN git init && \
     git config user.email "build@example.com" && \
     git config user.name "Build" && \
     git add -A && git commit -m "init"
