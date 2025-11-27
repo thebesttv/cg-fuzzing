@@ -180,7 +180,33 @@ LDFLAGS="-static -Wl,--allow-multiple-definition"
    docker rm "$container_id"
    ```
 
-4. 设置 Git LFS 并提交：
+4. **验证静态链接**（必须在上传前完成）：
+   使用构建好的 Docker 镜像中的 `llvm-nm` 检查 .bc 文件中的未定义符号（svftools/svf 镜像自带 llvm-nm）：
+   ```bash
+   # 使用构建好的镜像验证（推荐，因为镜像中已有 llvm-nm）
+   docker run --rm -v $(pwd)/<项目>/bc:/bc:ro <项目>-bc-test sh -c 'llvm-nm -u /bc/*.bc'
+   
+   # 或者使用基础镜像验证
+   docker run --rm -v $(pwd)/<项目>/bc:/bc:ro svftools/svf:latest sh -c 'llvm-nm -u /bc/*.bc'
+   ```
+   
+   **注意**：
+   - 此验证步骤应在从容器复制 .bc 文件后执行，**不要**将验证代码放入 Dockerfile 中
+   - 需要使用 `sh -c` 来执行命令，以便 shell 能够展开 `*.bc` 通配符
+   
+   **验证标准**：
+   - 输出应该只包含标准 libc/系统库函数（如 `malloc`, `printf`, `pthread_*`, `open`, `read`, `write` 等）
+   - 不应该有对第三方应用库的未定义引用（除非是预期的，如 zlib 的 `compress`, `inflate` 等）
+   - 如果看到大量非标准库符号，说明静态链接可能不正确
+   
+   **预期的常见未定义符号**：
+   - 标准 C 库：`malloc`, `free`, `printf`, `fprintf`, `fopen`, `fclose`, `strlen`, `strcmp` 等
+   - 数学库：`sin`, `cos`, `sqrt`, `log`, `exp` 等
+   - 线程库：`pthread_create`, `pthread_mutex_*` 等
+   - 系统调用包装：`open`, `close`, `read`, `write`, `mmap`, `stat` 等
+   - 压缩库（如果使用）：`compress`, `uncompress`, `inflate`, `deflate` 等
+
+5. 设置 Git LFS 并提交：
    ```bash
    git lfs install
    git lfs track "<项目>/bc/*.bc"
