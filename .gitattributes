@@ -1,1 +1,2 @@
 coreutils/bc/*.bc filter=lfs diff=lfs merge=lfs -text
+jq/bc/*.bc filter=lfs diff=lfs merge=lfs -text
