@@ -12,6 +12,10 @@ on:
 env:
   DOCKER_HUB_USERNAME: thebesttv
 
+# Limit permissions for security
+permissions:
+  contents: read
+
 jobs:
   find-dockerfiles:
     runs-on: ubuntu-latest
