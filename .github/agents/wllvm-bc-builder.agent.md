@@ -180,7 +180,25 @@ LDFLAGS="-static -Wl,--allow-multiple-definition"
    docker rm "$container_id"
    ```
 
-4. 设置 Git LFS 并提交：
+4. **验证静态链接**（必须在上传前完成）：
+   使用 `llvm-nm -u` 检查 .bc 文件中的未定义符号：
+   ```bash
+   llvm-nm -u <项目>/bc/*.bc
+   ```
+   
+   **验证标准**：
+   - 输出应该只包含标准 libc/系统库函数（如 `malloc`, `printf`, `pthread_*`, `open`, `read`, `write` 等）
+   - 不应该有对第三方应用库的未定义引用（除非是预期的，如 zlib 的 `compress`, `inflate` 等）
+   - 如果看到大量非标准库符号，说明静态链接可能不正确
+   
+   **预期的常见未定义符号**：
+   - 标准 C 库：`malloc`, `free`, `printf`, `fprintf`, `fopen`, `fclose`, `strlen`, `strcmp` 等
+   - 数学库：`sin`, `cos`, `sqrt`, `log`, `exp` 等
+   - 线程库：`pthread_create`, `pthread_mutex_*` 等
+   - 系统调用包装：`open`, `close`, `read`, `write`, `mmap`, `stat` 等
+   - 压缩库（如果使用）：`compress`, `uncompress`, `inflate`, `deflate` 等
+
+5. 设置 Git LFS 并提交：
    ```bash
    git lfs install
    git lfs track "<项目>/bc/*.bc"
