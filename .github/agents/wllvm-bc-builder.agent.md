@@ -228,3 +228,211 @@ LDFLAGS="-static -Wl,--allow-multiple-definition"
 1. `<项目>/bc.dockerfile` - 可重复构建的 Dockerfile
 2. `<项目>/bc/*.bc` - 使用 Git LFS 管理的 bitcode 文件
 3. 更新的 `.gitattributes` 文件（如果需要）
+4. `<项目>/fuzz.dockerfile` - AFL++ fuzzing 的 Dockerfile
+5. `<项目>/fuzz/` - Fuzzing 相关文件
+
+---
+
+# AFL++ Fuzzing 设置
+
+对于每个项目，除了生成 bitcode 文件外，还需要创建 fuzzing 环境。
+
+## 核心要求
+
+### 一致性
+- **bc.dockerfile 和 fuzz.dockerfile 必须使用相同的源码版本**
+- **必须 fuzzing 同一个 binary**（例如 jq CLI，而不是不同的 harness）
+- 可以为不同目的多次编译（wllvm 用于分析，afl-clang-lto 用于 fuzzing）
+
+### 优先使用 CLI Binary
+- 优先 fuzzing 项目的 CLI 工具，而非自定义 harness
+- 只有在 CLI 无法有效 fuzzing 时才考虑 harness
+
+### AFL++ 配置
+- 基础镜像：`aflplusplus/aflplusplus:latest`
+- 使用 `afl-clang-lto` 进行编译（防止 hash 碰撞）
+- 启用 CMPLOG 以获得更好的覆盖
+- 尽量静态链接
+
+## Fuzzing Dockerfile 结构
+
+```dockerfile
+FROM aflplusplus/aflplusplus:latest
+
+# 安装构建依赖
+RUN apt-get update && \
+    apt-get install -y wget <其他依赖> && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# 创建输出目录
+RUN mkdir -p /out
+
+# 下载源代码（与 bc.dockerfile 相同版本）
+WORKDIR /src
+RUN wget <源码URL> && \
+    tar -xzf <压缩包> && \
+    rm <压缩包>
+
+WORKDIR /src/<项目目录>
+
+# 使用 afl-clang-lto 编译主 binary
+RUN CC=afl-clang-lto \
+    CXX=afl-clang-lto++ \
+    CFLAGS="-O2" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
+    ./configure <配置选项>
+
+RUN make -j$(nproc)
+RUN cp <binary> /out/<binary>
+
+# 构建 CMPLOG 版本
+WORKDIR /src
+RUN rm -rf <项目目录> && \
+    wget <源码URL> && \
+    tar -xzf <压缩包> && \
+    rm <压缩包>
+
+WORKDIR /src/<项目目录>
+
+RUN CC=afl-clang-lto \
+    CXX=afl-clang-lto++ \
+    CFLAGS="-O2" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
+    AFL_LLVM_CMPLOG=1 \
+    ./configure <配置选项>
+
+RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
+RUN cp <binary> /out/<binary>.cmplog
+
+# 复制 fuzzing 资源
+COPY <项目>/fuzz/dict /out/dict
+COPY <项目>/fuzz/in /out/in
+COPY <项目>/fuzz/fuzz.sh /out/fuzz.sh
+RUN chmod +x /out/fuzz.sh
+
+WORKDIR /out
+
+# 验证
+RUN ls -la /out/<binary> /out/<binary>.cmplog && \
+    file /out/<binary>
+
+CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing'"]
+```
+
+## Fuzzing 资源文件
+
+### 目录结构
+```
+<项目>/fuzz/
+├── dict           # AFL++ 字典文件
+├── in/            # 初始输入语料库
+├── fuzz.sh        # 启动 fuzzing 的脚本
+└── readme.md      # 资源来源说明
+```
+
+### 字典文件 (dict)
+- 优先使用现有资源：
+  - OSS-Fuzz: https://github.com/google/oss-fuzz/tree/master/projects
+  - AFL++: https://github.com/AFLplusplus/AFLplusplus/tree/stable/dictionaries
+  - 项目自身的 fuzzing 资源
+- 如无现有资源，根据项目语法创建
+
+### 输入语料库 (in/)
+- 包含有效的小型输入文件
+- 覆盖不同的输入类型和边界情况
+- 文件尽量小（< 1KB）
+
+### Fuzzing 脚本 (fuzz.sh)
+```bash
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OUT_DIR="${SCRIPT_DIR}/findings"
+IN_DIR="${SCRIPT_DIR}/in"
+DICT="${SCRIPT_DIR}/dict"
+
+mkdir -p "${OUT_DIR}"
+
+PARALLEL=${AFL_PARALLEL:-1}
+
+echo "=== <项目> AFL++ Fuzzing ==="
+echo "Input corpus: ${IN_DIR}"
+echo "Output directory: ${OUT_DIR}"
+echo "Dictionary: ${DICT}"
+echo ""
+
+if [ "${PARALLEL}" -eq 1 ]; then
+    afl-fuzz \
+        -i "${IN_DIR}" \
+        -o "${OUT_DIR}" \
+        -x "${DICT}" \
+        -c "${SCRIPT_DIR}/<binary>.cmplog" \
+        -- "${SCRIPT_DIR}/<binary>" <参数> @@
+else
+    # 主 fuzzer
+    afl-fuzz \
+        -i "${IN_DIR}" \
+        -o "${OUT_DIR}" \
+        -x "${DICT}" \
+        -c "${SCRIPT_DIR}/<binary>.cmplog" \
+        -M main \
+        -- "${SCRIPT_DIR}/<binary>" <参数> @@ &
+
+    sleep 2
+
+    # 从 fuzzer
+    for i in $(seq 2 ${PARALLEL}); do
+        afl-fuzz \
+            -i "${IN_DIR}" \
+            -o "${OUT_DIR}" \
+            -x "${DICT}" \
+            -S "secondary${i}" \
+            -- "${SCRIPT_DIR}/<binary>" <参数> @@ &
+    done
+
+    wait
+fi
+```
+
+### readme.md
+记录外部资源的来源：
+```markdown
+# <项目> Fuzzing Resources
+
+## External Resources
+
+- dict: 来源于 <URL> (如 OSS-Fuzz)
+- in/: 自行创建 / 来源于 <URL>
+
+## Usage
+
+docker build -f <项目>/fuzz.dockerfile -t <项目>-fuzz .
+docker run -it --rm <项目>-fuzz ./fuzz.sh
+```
+
+## Fuzzing 效率优化
+
+1. **不使用 Address Sanitizer**：影响运行速度
+2. **使用 afl-clang-lto**：防止碰撞，提高覆盖精度
+3. **启用 CMPLOG**：更好地处理比较操作
+4. **静态链接**：减少运行时开销
+5. **使用 -O2**：优化但保持合理速度
+
+## 验证步骤
+
+1. 构建 Docker 镜像：
+   ```bash
+   docker build -f <项目>/fuzz.dockerfile -t <项目>-fuzz .
+   ```
+
+2. 验证 binary 正常工作：
+   ```bash
+   docker run --rm <项目>-fuzz /out/<binary> --version
+   ```
+
+3. 启动 fuzzing（测试）：
+   ```bash
+   docker run -it --rm <项目>-fuzz timeout 60 ./fuzz.sh
+   ```
