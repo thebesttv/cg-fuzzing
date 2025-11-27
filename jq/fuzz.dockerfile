@@ -12,6 +12,8 @@ WORKDIR /src/jq-1.8.1
 # - afl-clang-lto: LTO mode to avoid hash collisions in coverage
 # - Static linking for performance
 # - No sanitizers for speed (focus on coverage, not crash detection)
+# - --allow-multiple-definition is required for static linking with glibc
+#   (common symbols like __libc_csu_init may be defined multiple times)
 RUN CC=afl-clang-lto \
     CFLAGS="-O2 -flto" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
@@ -27,7 +29,9 @@ RUN make clean && AFL_LLVM_CMPLOG=1 make -j$(nproc) && cp jq /src/jq.cmplog
 RUN mkdir -p /fuzz/in /fuzz/out
 
 # Download dictionary from oss-fuzz (existing, well-maintained)
-RUN wget -O /fuzz/jq.dict https://raw.githubusercontent.com/google/oss-fuzz/master/projects/jq/jq.dict
+# Verify checksum to ensure integrity
+RUN wget -O /fuzz/jq.dict https://raw.githubusercontent.com/google/oss-fuzz/master/projects/jq/jq.dict && \
+    echo "23b2a00f23cca225109f6076292e4a4c646704ac0fd6afc2d943c8a036608345  /fuzz/jq.dict" | sha256sum -c -
 
 # Create initial seed corpus with minimal JSON inputs
 # These are basic valid JSON values that exercise different parsing paths
@@ -58,6 +62,8 @@ echo "CMPLOG: $CMPLOG_BIN"
 echo "Filter: $FILTER"
 
 # Single-core fuzzing with CMPLOG
+# Timeout: 1000ms is suitable for jq JSON parsing (simple inputs parse in <10ms,
+# complex nested structures may take longer but 1s is a reasonable upper bound)
 AFL_AUTORESUME=1 afl-fuzz \
     -i "$IN_DIR" \
     -o "$OUT_DIR" \
