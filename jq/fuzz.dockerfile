@@ -56,7 +56,9 @@ RUN cp jq /out/jq.cmplog
 COPY jq/fuzz/dict /out/dict
 COPY jq/fuzz/in /out/in
 COPY jq/fuzz/fuzz.sh /out/fuzz.sh
-RUN chmod +x /out/fuzz.sh
+COPY jq/fuzz/whatsup.sh /out/whatsup.sh
+
+RUN chmod +x /out/fuzz.sh /out/whatsup.sh
 
 WORKDIR /out
 
