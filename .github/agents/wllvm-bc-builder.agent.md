@@ -33,9 +33,12 @@ description: 编译开源项目，生成 LLVM bitcode (.bc) 文件和 AFL++ fuzz
 │   └── *.bc           # 使用 Git LFS 管理的 bitcode 文件
 ├── fuzz.dockerfile    # AFL++ fuzzing 构建
 └── fuzz/
+    ├── <binary>       # 主 fuzzing 二进制文件 (Git LFS)
+    ├── <binary>.cmplog # CMPLOG 版本的二进制文件 (Git LFS)
     ├── dict           # AFL++ 字典文件
     ├── in/            # 初始输入语料库
     ├── fuzz.sh        # 启动 fuzzing 的脚本
+    ├── whatsup.sh     # 监控 fuzzing 进度的脚本
     └── readme.md      # 资源来源说明
 ```
 
@@ -270,7 +273,8 @@ RUN cp <binary> /out/<binary>.cmplog
 COPY <项目>/fuzz/dict /out/dict
 COPY <项目>/fuzz/in /out/in
 COPY <项目>/fuzz/fuzz.sh /out/fuzz.sh
-RUN chmod +x /out/fuzz.sh
+COPY <项目>/fuzz/whatsup.sh /out/whatsup.sh
+RUN chmod +x /out/fuzz.sh /out/whatsup.sh
 
 WORKDIR /out
 
@@ -297,55 +301,213 @@ CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing'"]
 - 文件尽量小（< 1KB）
 
 ### Fuzzing 脚本 (fuzz.sh)
+
+参考 `jq/fuzz/fuzz.sh` 模板，新项目的 fuzz.sh 应包含：
+- 命令行参数解析 (`-j N` 控制并行数)
+- 完整的使用说明
+- 二进制文件存在性检查
+- 无内存限制 (`-m none`)
+- CMPLOG 支持（如果 `.cmplog` 文件存在）
+- 并行模式下的进程管理和信号处理
+- 主 fuzzer (Master) 和从 fuzzer (Slaves) 的区分
+
 ```bash
 #!/bin/bash
+# Fuzzing script for <项目> using AFL++
+# Optimized: Parallel execution support (-j), unlimited memory, cleanup handling.
+
 set -e
 
+# --- Default Configuration ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT_DIR="${SCRIPT_DIR}/findings"
 IN_DIR="${SCRIPT_DIR}/in"
 DICT="${SCRIPT_DIR}/dict"
+CMPLOG_BIN="${SCRIPT_DIR}/<binary>.cmplog"
+TARGET_BIN="${SCRIPT_DIR}/<binary>"
+PARALLEL=1
 
+# --- Usage Function ---
+usage() {
+    echo "Usage: $0 [-j N]"
+    echo "  -j N   Number of parallel fuzzers (Default: 1)"
+    echo "         If N=1: Runs in foreground with TUI."
+    echo "         If N>1: Runs in background (headless) with 1 Master and N-1 Slaves."
+    exit 1
+}
+
+# --- Parse Arguments ---
+while getopts ":j:" opt; do
+  case ${opt} in
+    j)
+      PARALLEL=${OPTARG}
+      ;;
+    \?)
+      echo "Invalid option: -${OPTARG}" >&2
+      usage
+      ;;
+    :)
+      echo "Option -${OPTARG} requires an argument." >&2
+      usage
+      ;;
+  esac
+done
+
+# Validate Parallel Number
+if ! [[ "$PARALLEL" =~ ^[0-9]+$ ]] || [ "$PARALLEL" -le 0 ]; then
+    echo "Error: Parallel count must be an integer > 0."
+    exit 1
+fi
+
+# Ensure output directory exists
 mkdir -p "${OUT_DIR}"
 
-PARALLEL=${AFL_PARALLEL:-1}
-
 echo "=== <项目> AFL++ Fuzzing ==="
-echo "Input corpus: ${IN_DIR}"
+echo "Target:           ${TARGET_BIN}"
+echo "Input corpus:     ${IN_DIR}"
 echo "Output directory: ${OUT_DIR}"
-echo "Dictionary: ${DICT}"
+echo "Dictionary:       ${DICT}"
+echo "Parallel jobs:    ${PARALLEL}"
+echo "Memory Limit:     Unlimited (-m none)"
 echo ""
 
-if [ "${PARALLEL}" -eq 1 ]; then
-    afl-fuzz \
-        -i "${IN_DIR}" \
-        -o "${OUT_DIR}" \
-        -x "${DICT}" \
-        -c "${SCRIPT_DIR}/<binary>.cmplog" \
-        -- "${SCRIPT_DIR}/<binary>" <参数> @@
-else
-    # 主 fuzzer
-    afl-fuzz \
-        -i "${IN_DIR}" \
-        -o "${OUT_DIR}" \
-        -x "${DICT}" \
-        -c "${SCRIPT_DIR}/<binary>.cmplog" \
-        -M main \
-        -- "${SCRIPT_DIR}/<binary>" <参数> @@ &
+# Check for binaries
+if [ ! -x "$TARGET_BIN" ]; then
+    echo "Error: Target binary not found at $TARGET_BIN"
+    exit 1
+fi
 
+# Base AFL arguments
+# -m none: No memory limit
+AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none"
+
+# --- Fuzzing Logic ---
+
+if [ "${PARALLEL}" -eq 1 ]; then
+    # === Serial Mode (Interactive TUI) ===
+    echo "Starting single fuzzer (Interactive Mode)..."
+
+    # Check if cmplog binary exists
+    CMPLOG_ARGS=""
+    if [ -x "${CMPLOG_BIN}" ]; then
+        echo "Enabled CMPLOG."
+        CMPLOG_ARGS="-c ${CMPLOG_BIN}"
+    fi
+
+    afl-fuzz \
+        ${AFL_ARGS} \
+        ${CMPLOG_ARGS} \
+        -- "${TARGET_BIN}" <参数> @@
+
+else
+    # === Parallel Mode (Headless) ===
+    echo "Starting parallel fuzzers..."
+    echo "Mode: 1 Master + $((PARALLEL - 1)) Slaves"
+    echo "Logs are suppressed. Use 'afl-whatsup ${OUT_DIR}' to monitor progress."
+
+    # Trap Ctrl+C (SIGINT) to kill all background processes
+    pids=()
+    trap 'echo "Stopping all fuzzers..."; kill ${pids[@]} 2>/dev/null; wait; exit' SIGINT SIGTERM
+
+    # 1. Start Master (Main)
+    # Master handles CMPLOG (if available) and deterministic checks
+    CMPLOG_ARGS=""
+    if [ -x "${CMPLOG_BIN}" ]; then
+        CMPLOG_ARGS="-c ${CMPLOG_BIN}"
+    fi
+
+    echo "[+] Starting Master fuzzer..."
+    afl-fuzz \
+        ${AFL_ARGS} \
+        ${CMPLOG_ARGS} \
+        -M main \
+        -- "${TARGET_BIN}" <参数> @@ >/dev/null 2>&1 &
+
+    pids+=($!)
+
+    # Give master a moment to initialize structure
     sleep 2
 
-    # 从 fuzzer
-    for i in $(seq 2 ${PARALLEL}); do
+    # 2. Start Slaves (Secondary)
+    # Slaves focus on throughput/havoc, usually don't need CMPLOG to save CPU
+    for i in $(seq 1 $((PARALLEL - 1))); do
+        echo "[+] Starting Slave fuzzer #$i..."
         afl-fuzz \
-            -i "${IN_DIR}" \
-            -o "${OUT_DIR}" \
-            -x "${DICT}" \
-            -S "secondary${i}" \
-            -- "${SCRIPT_DIR}/<binary>" <参数> @@ &
+            ${AFL_ARGS} \
+            -S "slave${i}" \
+            -- "${TARGET_BIN}" <参数> @@ >/dev/null 2>&1 &
+
+        pids+=($!)
     done
 
+    echo ""
+    echo "All ${PARALLEL} fuzzers are running in background."
+    echo "PID list: ${pids[@]}"
+    echo "Press Ctrl+C to stop all instances."
+
+    # Wait indefinitely for children
     wait
+fi
+```
+
+### 监控脚本 (whatsup.sh)
+
+参考 `jq/fuzz/whatsup.sh` 模板，用于监控 fuzzing 进度：
+
+```bash
+#!/bin/bash
+# Monitor AFL++ fuzzing progress
+# Usage: ./whatsup.sh [-w]
+#   -w: Watch mode (refresh every 2 seconds)
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OUT_DIR="${SCRIPT_DIR}/findings"
+
+# 检查 afl-whatsup 是否存在
+if ! command -v afl-whatsup &> /dev/null; then
+    echo "Error: 'afl-whatsup' command not found. Please ensure AFL++ is installed and in your PATH."
+    exit 1
+fi
+
+# 检查输出目录是否存在
+if [ ! -d "${OUT_DIR}" ]; then
+    echo "Error: Output directory '${OUT_DIR}' does not exist yet."
+    echo "Please start the fuzzing script first."
+    exit 1
+fi
+
+# 处理参数
+WATCH_MODE=0
+
+while getopts ":w" opt; do
+  case ${opt} in
+    w)
+      WATCH_MODE=1
+      ;;
+    \?)
+      echo "Invalid option: -${OPTARG}" >&2
+      exit 1
+      ;;
+  esac
+done
+
+if [ "${WATCH_MODE}" -eq 1 ]; then
+    # 检查 watch 命令是否存在
+    if command -v watch &> /dev/null; then
+        echo "Starting watch mode (Press Ctrl+C to exit)..."
+        # 使用 watch 命令每 2 秒刷新一次，-c 支持颜色输出
+        watch -n 2 -c "afl-whatsup -s ${OUT_DIR}"
+    else
+        echo "Error: 'watch' command not found. Running once instead."
+        afl-whatsup -s "${OUT_DIR}"
+    fi
+else
+    # 单次运行
+    echo "=== AFL++ Status Report ==="
+    echo "Dir: ${OUT_DIR}"
+    echo ""
+    # -s 参数表示 summary (摘要)，如果想看详细每个核心的状态，去掉 -s
+    afl-whatsup -s "${OUT_DIR}"
 fi
 ```
 
@@ -379,6 +541,23 @@ docker run -it --rm <项目>-fuzz ./fuzz.sh
 3. 启动 fuzzing（测试）：
    ```bash
    docker run -it --rm <项目>-fuzz timeout 60 ./fuzz.sh
+   ```
+
+4. 从容器中复制 fuzzing 二进制文件：
+   ```bash
+   container_id=$(docker create <项目>-fuzz)
+   docker cp "$container_id:/out/<binary>" <项目>/fuzz/<binary>
+   docker cp "$container_id:/out/<binary>.cmplog" <项目>/fuzz/<binary>.cmplog
+   docker rm "$container_id"
+   ```
+
+5. 设置 Git LFS 并提交 fuzzing 二进制文件：
+   ```bash
+   git lfs install
+   git lfs track "<项目>/fuzz/<binary>"
+   git lfs track "<项目>/fuzz/<binary>.cmplog"
+   git add .gitattributes <项目>/fuzz/<binary> <项目>/fuzz/<binary>.cmplog
+   git commit -m "Add <项目> fuzzing binaries"
    ```
 
 ---
