@@ -1,0 +1,2 @@
+SELECT 1+2, 3*4, 10/2;
+SELECT ABS(-5), LENGTH('hello');
