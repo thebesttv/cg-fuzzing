@@ -1,0 +1,6 @@
+WITH RECURSIVE cnt(x) AS (
+  VALUES(1)
+  UNION ALL
+  SELECT x+1 FROM cnt WHERE x<10
+)
+SELECT x FROM cnt;
