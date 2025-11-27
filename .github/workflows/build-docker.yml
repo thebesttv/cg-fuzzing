@@ -1,0 +1,92 @@
+name: Build Docker Images
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+env:
+  DOCKER_HUB_USERNAME: thebesttv
+
+jobs:
+  find-dockerfiles:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.find.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Find Dockerfiles
+        id: find
+        run: |
+          # Find all bc.dockerfile and fuzz.dockerfile files
+          dockerfiles=$(find . -name "bc.dockerfile" -o -name "fuzz.dockerfile" | sort)
+          
+          # Build matrix JSON
+          matrix_entries=()
+          for dockerfile in $dockerfiles; do
+            # Extract project name (directory containing the dockerfile)
+            project=$(dirname "$dockerfile" | sed 's|^\./||')
+            
+            # Determine image type (bc or fuzz)
+            if [[ "$dockerfile" == *"bc.dockerfile" ]]; then
+              type="bc"
+            else
+              type="fuzz"
+            fi
+            
+            # Image name: <project>-<type>
+            image_name="${project}-${type}"
+            
+            matrix_entries+=("{\"project\":\"${project}\",\"type\":\"${type}\",\"dockerfile\":\"${dockerfile}\",\"image_name\":\"${image_name}\"}")
+          done
+          
+          # Join entries with commas
+          matrix_json=$(printf '%s\n' "${matrix_entries[@]}" | jq -s -c '.')
+          echo "matrix={\"include\":${matrix_json}}" >> $GITHUB_OUTPUT
+          
+          echo "Found Dockerfiles:"
+          echo "$matrix_json" | jq .
+
+  build:
+    needs: find-dockerfiles
+    if: ${{ needs.find-dockerfiles.outputs.matrix != '{"include":[]}' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.find-dockerfiles.outputs.matrix) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          echo "Building ${{ matrix.image_name }} from ${{ matrix.dockerfile }}"
+          docker build \
+            -f "${{ matrix.dockerfile }}" \
+            -t "${{ matrix.image_name }}:latest" \
+            .
+
+      - name: Login to Docker Hub
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Push to Docker Hub
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: |
+          echo "Pushing ${{ env.DOCKER_HUB_USERNAME }}/${{ matrix.image_name }}:latest"
+          docker tag "${{ matrix.image_name }}:latest" "${{ env.DOCKER_HUB_USERNAME }}/${{ matrix.image_name }}:latest"
+          docker push "${{ env.DOCKER_HUB_USERNAME }}/${{ matrix.image_name }}:latest"
