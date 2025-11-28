@@ -32,6 +32,7 @@
 - **mujs** - JavaScript interpreter (in repo)
 - **jsmn** - JSON tokenizer v1.1.0 (in repo)
 - **utf8proc** - Unicode library v2.11.2 (in repo)
+- **miniz** - Compression library v3.1.0 (in repo)
 
 ## Priority List (ranked by suitability):
 
