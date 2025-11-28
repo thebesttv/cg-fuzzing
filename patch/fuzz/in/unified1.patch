@@ -1,0 +1,5 @@
+--- a/test.txt
++++ b/test.txt
+@@ -1 +1 @@
+-old line
++new line
