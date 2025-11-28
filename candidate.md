@@ -20,6 +20,11 @@
 - **pcre2** - Regular expressions (in repo)
 - **jansson** - JSON library (in repo)
 - **cjson** - Ultra-lightweight JSON (in repo)
+- **libxml2** - XML C parser (in repo)
+- **libjpeg-turbo** - JPEG library (in repo)
+- **zstd** - Fast compression (in repo)
+- **lua** - Scripting language (in repo)
+- **mujs** - JavaScript interpreter (in repo)
 
 ## Priority List (ranked by suitability):
 
