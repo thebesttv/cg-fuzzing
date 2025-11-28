@@ -83,7 +83,7 @@ if [ "${PARALLEL}" -eq 1 ]; then
     afl-fuzz \
         ${AFL_ARGS} \
         ${CMPLOG_ARGS} \
-        -- "${TARGET_BIN}" < @@
+        -- "${TARGET_BIN}" :memory: -init @@ '.quit'
 
 else
     # === Parallel Mode (Headless) ===
@@ -107,7 +107,7 @@ else
         ${AFL_ARGS} \
         ${CMPLOG_ARGS} \
         -M main \
-        -- "${TARGET_BIN}" < @@ >/dev/null 2>&1 &
+        -- "${TARGET_BIN}" :memory: -init @@ '.quit' >/dev/null 2>&1 &
 
     pids+=($!)
 
@@ -121,7 +121,7 @@ else
         afl-fuzz \
             ${AFL_ARGS} \
             -S "slave${i}" \
-            -- "${TARGET_BIN}" < @@ >/dev/null 2>&1 &
+            -- "${TARGET_BIN}" :memory: -init @@ '.quit' >/dev/null 2>&1 &
 
         pids+=($!)
     done

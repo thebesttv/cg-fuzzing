@@ -3,3 +3,11 @@ jq/bc/*.bc filter=lfs diff=lfs merge=lfs -text
 jq-harness/bc/*.bc filter=lfs diff=lfs merge=lfs -text
 sqlite/bc/*.bc filter=lfs diff=lfs merge=lfs -text
 sqlite-harness/bc/*.bc filter=lfs diff=lfs merge=lfs -text
+jq/fuzz/jq filter=lfs diff=lfs merge=lfs -text
+jq/fuzz/jq.cmplog filter=lfs diff=lfs merge=lfs -text
+jq-harness/fuzz/jq_fuzz_compile filter=lfs diff=lfs merge=lfs -text
+jq-harness/fuzz/jq_fuzz_compile.cmplog filter=lfs diff=lfs merge=lfs -text
+sqlite/fuzz/sqlite3 filter=lfs diff=lfs merge=lfs -text
+sqlite/fuzz/sqlite3.cmplog filter=lfs diff=lfs merge=lfs -text
+sqlite-harness/fuzz/sqlite_ossfuzz filter=lfs diff=lfs merge=lfs -text
+sqlite-harness/fuzz/sqlite_ossfuzz.cmplog filter=lfs diff=lfs merge=lfs -text
