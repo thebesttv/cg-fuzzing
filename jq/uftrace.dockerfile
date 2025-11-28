@@ -36,6 +36,7 @@ RUN ls -la ~/uftrace/jq && \
     file ~/uftrace/jq && \
     ~/uftrace/jq --version
 
-# Test that uftrace can trace the binary
+# Test that uftrace can trace the binary, then cleanup
 RUN uftrace record ~/uftrace/jq --version && \
-    uftrace report
+    uftrace report && \
+    rm -rf uftrace.data
