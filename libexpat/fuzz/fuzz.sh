@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Fuzzing script for libexpat (xmlwf) using AFL++
 # Optimized: Parallel execution support (-j), unlimited memory, cleanup handling.
 

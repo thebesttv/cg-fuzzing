@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Fuzzing script for yajl (json_verify) using AFL++
 # Optimized: Parallel execution support (-j), unlimited memory, cleanup handling.
 # Note: json_verify reads from stdin, so we use redirection with @@ file input
