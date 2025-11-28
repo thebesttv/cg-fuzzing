@@ -1,25 +1,29 @@
-FROM svftools/svf:latest
+FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies (file for verification, uftrace for tracing)
+# Install build dependencies
 RUN apt-get update && \
-    apt-get install -y file uftrace && \
+    apt-get install -y wget uftrace && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Download and extract jq v1.8.1 (same version as bc.dockerfile)
-WORKDIR /home/SVF-tools
+# Create output directory
+RUN mkdir -p /out
+
+# Download and extract jq v1.8.1 (same version as bc.dockerfile and fuzz.dockerfile)
+WORKDIR /src
 RUN wget https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-1.8.1.tar.gz && \
     tar -xzf jq-1.8.1.tar.gz && \
     rm jq-1.8.1.tar.gz
 
-WORKDIR /home/SVF-tools/jq-1.8.1
+WORKDIR /src/jq-1.8.1
 
-# Build jq with uftrace instrumentation
+# Build jq with uftrace instrumentation using clang from aflplusplus
 # -pg: Enable profiling with mcount calls for uftrace
 # -fno-omit-frame-pointer: Preserve frame pointer for accurate tracing
 # Note: Cannot use -static with -pg for uftrace as it needs dynamic mcount
 # Use builtin oniguruma
 RUN CC=clang \
+    CXX=clang++ \
     CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
     LDFLAGS="-pg -Wl,--allow-multiple-definition" \
     ./configure --with-oniguruma=builtin
@@ -28,17 +32,17 @@ RUN CC=clang \
 RUN make -j$(nproc)
 RUN make install && ldconfig
 
-# Create uftrace directory and copy binary
-# Copy from install location since dynamic linking creates libtool wrapper
-RUN mkdir -p ~/uftrace && \
-    cp /usr/local/bin/jq ~/uftrace/
+# Copy binary to output directory
+RUN cp /usr/local/bin/jq /out/jq
+
+WORKDIR /out
 
 # Verify binary is built
-RUN ls -la ~/uftrace/jq && \
-    file ~/uftrace/jq && \
-    ~/uftrace/jq --version
+RUN ls -la /out/jq && \
+    file /out/jq && \
+    /out/jq --version
 
 # Test that uftrace can trace the binary, then cleanup
-RUN uftrace record ~/uftrace/jq --version && \
+RUN uftrace record /out/jq --version && \
     uftrace report && \
     rm -rf uftrace.data

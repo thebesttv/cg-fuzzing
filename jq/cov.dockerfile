@@ -1,30 +1,28 @@
-FROM svftools/svf:latest
+FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies and copy compiler-rt profile library
+# Install build dependencies
 RUN apt-get update && \
-    apt-get install -y file libclang-rt-16-dev && \
+    apt-get install -y wget && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    # Copy profile runtime to where custom clang expects it
-    mkdir -p /home/SVF-tools/SVF/llvm-16.0.0.obj/lib/clang/16/lib/linux/ && \
-    cp /usr/lib/llvm-16/lib/clang/16/lib/linux/libclang_rt.profile-x86_64.a \
-       /home/SVF-tools/SVF/llvm-16.0.0.obj/lib/clang/16/lib/linux/ && \
-    cp /usr/lib/llvm-16/lib/clang/16/lib/linux/libclang_rt.profile-i386.a \
-       /home/SVF-tools/SVF/llvm-16.0.0.obj/lib/clang/16/lib/linux/
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract jq v1.8.1 (same version as bc.dockerfile)
-WORKDIR /home/SVF-tools
+# Create output directory
+RUN mkdir -p /out
+
+# Download and extract jq v1.8.1 (same version as bc.dockerfile and fuzz.dockerfile)
+WORKDIR /src
 RUN wget https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-1.8.1.tar.gz && \
     tar -xzf jq-1.8.1.tar.gz && \
     rm jq-1.8.1.tar.gz
 
-WORKDIR /home/SVF-tools/jq-1.8.1
+WORKDIR /src/jq-1.8.1
 
-# Build jq with llvm-cov instrumentation
+# Build jq with llvm-cov instrumentation using clang from aflplusplus
 # -fprofile-instr-generate: Generate instrumented code for profiling
 # -fcoverage-mapping: Generate coverage mapping data
-# Use builtin oniguruma and enable all-static for static linking
+# Use static linking and builtin oniguruma
 RUN CC=clang \
+    CXX=clang++ \
     CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
     LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
     ./configure --with-oniguruma=builtin --disable-shared --enable-all-static
@@ -32,11 +30,12 @@ RUN CC=clang \
 # Build jq
 RUN make -j$(nproc)
 
-# Create cov directory and copy binary
-RUN mkdir -p ~/cov && \
-    cp jq ~/cov/
+# Copy binary to output directory
+RUN cp jq /out/jq
+
+WORKDIR /out
 
 # Verify binary is built
-RUN ls -la ~/cov/jq && \
-    file ~/cov/jq && \
-    ~/cov/jq --version
+RUN ls -la /out/jq && \
+    file /out/jq && \
+    /out/jq --version
