@@ -1,0 +1,61 @@
+# gzip dictionary for AFL++ fuzzing
+# Based on RFC 1952 - GZIP file format specification
+
+# Magic numbers
+gzip_magic="\x1f\x8b"
+
+# Compression methods
+deflate="\x08"
+
+# Flags (FLG byte)
+ftext="\x01"
+fhcrc="\x02"
+fextra="\x04"
+fname="\x08"
+fcomment="\x10"
+
+# MTIME (modification time)
+mtime_zero="\x00\x00\x00\x00"
+
+# Extra flags (XFL)
+xfl_max_comp="\x02"
+xfl_fast="\x04"
+
+# OS identifiers
+os_fat="\x00"
+os_amiga="\x01"
+os_vms="\x02"
+os_unix="\x03"
+os_vm_cms="\x04"
+os_atari="\x05"
+os_hpfs="\x06"
+os_mac="\x07"
+os_zsystem="\x08"
+os_cpm="\x09"
+os_tops20="\x0a"
+os_ntfs="\x0b"
+os_qdos="\x0c"
+os_acorn="\x0d"
+os_unknown="\xff"
+
+# Common file extensions in gzip
+ext_gz=".gz"
+ext_z=".z"
+ext_tgz=".tgz"
+ext_taz=".taz"
+
+# Minimum valid gzip header
+min_header="\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03"
+
+# Empty compressed block
+empty_block="\x03\x00"
+
+# Deflate block types
+block_stored="\x00"
+block_static="\x01"
+block_dynamic="\x02"
+block_reserved="\x03"
+
+# CRC32 and size (typical values)
+crc_zero="\x00\x00\x00\x00"
+size_zero="\x00\x00\x00\x00"
