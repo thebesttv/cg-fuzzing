@@ -12,106 +12,181 @@ on:
 env:
   DOCKER_HUB_USERNAME: thebesttv
 
-# Limit permissions for security
+# Permissions for artifacts and releases
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  find-dockerfiles:
+  find-projects:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.find.outputs.matrix }}
+      projects: ${{ steps.find.outputs.projects }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Find Dockerfiles
+      - name: Find projects with dockerfiles
         id: find
         run: |
-          # Find all bc.dockerfile and fuzz.dockerfile files
-          # Only search in project directories (not hidden directories)
-          dockerfiles=$(find . -maxdepth 2 -type f \( -name "bc.dockerfile" -o -name "fuzz.dockerfile" \) ! -path "./.git/*" | sort)
+          # Find all unique project directories containing any dockerfile
+          # (bc.dockerfile, fuzz.dockerfile, cov.dockerfile, uftrace.dockerfile)
+          projects=$(find . -maxdepth 2 -type f \( -name "bc.dockerfile" -o -name "fuzz.dockerfile" -o -name "cov.dockerfile" -o -name "uftrace.dockerfile" \) ! -path "./.git/*" \
+            | xargs -I{} dirname {} \
+            | sed 's|^\./||' \
+            | sort -u \
+            | jq -R -s -c 'split("\n") | map(select(length > 0))')
           
-          # Build matrix JSON using jq for proper escaping
-          matrix_json=$(echo "$dockerfiles" | while read -r dockerfile; do
-            if [ -n "$dockerfile" ]; then
-              # Extract project name (directory containing the dockerfile)
-              project=$(dirname "$dockerfile" | sed 's|^\./||')
-              
-              # Validate project name contains only safe characters
-              if ! echo "$project" | grep -qE '^[a-zA-Z0-9_-]+$'; then
-                echo "Warning: Skipping invalid project name: $project" >&2
-                continue
-              fi
-              
-              # Determine image type (bc or fuzz)
-              if [[ "$dockerfile" == *"bc.dockerfile" ]]; then
-                type="bc"
-              else
-                type="fuzz"
-              fi
-              
-              # Image name: <project>-<type>
-              image_name="${project}-${type}"
-              
-              # Use jq to properly escape and create JSON
-              jq -n \
-                --arg project "$project" \
-                --arg type "$type" \
-                --arg dockerfile "$dockerfile" \
-                --arg image_name "$image_name" \
-                '{project: $project, type: $type, dockerfile: $dockerfile, image_name: $image_name}'
-            fi
-          done | jq -s -c '.')
-          
-          echo "matrix={\"include\":${matrix_json}}" >> $GITHUB_OUTPUT
-          
-          echo "Found Dockerfiles:"
-          echo "$matrix_json" | jq .
+          echo "projects=${projects}" >> $GITHUB_OUTPUT
+          echo "Found projects: ${projects}"
 
-  build:
-    needs: find-dockerfiles
-    if: ${{ needs.find-dockerfiles.outputs.matrix != '{"include":[]}' && needs.find-dockerfiles.outputs.matrix != '{"include":null}' }}
+  build-project:
+    needs: find-projects
+    if: ${{ needs.find-projects.outputs.projects != '[]' && needs.find-projects.outputs.projects != 'null' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.find-dockerfiles.outputs.matrix) }}
+      matrix:
+        project: ${{ fromJson(needs.find-projects.outputs.projects) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           lfs: true
 
-      - name: Validate inputs
+      - name: Validate project name
         run: |
-          # Validate dockerfile path
-          if [[ ! "${{ matrix.dockerfile }}" =~ ^\.\/[a-zA-Z0-9_-]+\/(bc|fuzz)\.dockerfile$ ]]; then
-            echo "Error: Invalid dockerfile path: ${{ matrix.dockerfile }}"
-            exit 1
-          fi
-          
-          # Validate image name
-          if [[ ! "${{ matrix.image_name }}" =~ ^[a-zA-Z0-9_-]+-[a-z]+$ ]]; then
-            echo "Error: Invalid image name: ${{ matrix.image_name }}"
-            exit 1
-          fi
-          
-          # Verify dockerfile exists
-          if [ ! -f "${{ matrix.dockerfile }}" ]; then
-            echo "Error: Dockerfile not found: ${{ matrix.dockerfile }}"
+          # Validate project name contains only safe characters
+          if ! echo "${{ matrix.project }}" | grep -qE '^[a-zA-Z0-9_-]+$'; then
+            echo "Error: Invalid project name: ${{ matrix.project }}"
             exit 1
           fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
+      - name: Create output directories
         run: |
-          echo "Building ${{ matrix.image_name }} from ${{ matrix.dockerfile }}"
-          docker build \
-            -f "${{ matrix.dockerfile }}" \
-            -t "${{ matrix.image_name }}:latest" \
-            .
+          mkdir -p output/${{ matrix.project }}/{bc,fuzz,cov,uftrace}
+
+      - name: Build bc.dockerfile (if exists)
+        id: build-bc
+        run: |
+          if [ -f "${{ matrix.project }}/bc.dockerfile" ]; then
+            echo "Building ${{ matrix.project }}-bc from ${{ matrix.project }}/bc.dockerfile"
+            docker build \
+              -f "${{ matrix.project }}/bc.dockerfile" \
+              -t "${{ matrix.project }}-bc:latest" \
+              .
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "bc.dockerfile not found for ${{ matrix.project }}"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract bc artifacts
+        if: steps.build-bc.outputs.exists == 'true'
+        run: |
+          container_id=$(docker create "${{ matrix.project }}-bc:latest")
+          # Copy bc files from container
+          docker cp "$container_id:/home/SVF-tools/bc/." "output/${{ matrix.project }}/bc/" 2>/dev/null || true
+          docker rm "$container_id"
+          echo "=== bc artifacts ==="
+          ls -la "output/${{ matrix.project }}/bc/" || true
+
+      - name: Build fuzz.dockerfile (if exists)
+        id: build-fuzz
+        run: |
+          if [ -f "${{ matrix.project }}/fuzz.dockerfile" ]; then
+            echo "Building ${{ matrix.project }}-fuzz from ${{ matrix.project }}/fuzz.dockerfile"
+            docker build \
+              -f "${{ matrix.project }}/fuzz.dockerfile" \
+              -t "${{ matrix.project }}-fuzz:latest" \
+              .
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "fuzz.dockerfile not found for ${{ matrix.project }}"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract fuzz artifacts
+        if: steps.build-fuzz.outputs.exists == 'true'
+        run: |
+          container_id=$(docker create "${{ matrix.project }}-fuzz:latest")
+          # Copy fuzz binaries and resources from container
+          docker cp "$container_id:/out/." "output/${{ matrix.project }}/fuzz/" 2>/dev/null || true
+          docker rm "$container_id"
+          echo "=== fuzz artifacts ==="
+          ls -la "output/${{ matrix.project }}/fuzz/" || true
+
+      - name: Build cov.dockerfile (if exists)
+        id: build-cov
+        run: |
+          if [ -f "${{ matrix.project }}/cov.dockerfile" ]; then
+            echo "Building ${{ matrix.project }}-cov from ${{ matrix.project }}/cov.dockerfile"
+            docker build \
+              -f "${{ matrix.project }}/cov.dockerfile" \
+              -t "${{ matrix.project }}-cov:latest" \
+              .
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "cov.dockerfile not found for ${{ matrix.project }}"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract cov artifacts
+        if: steps.build-cov.outputs.exists == 'true'
+        run: |
+          container_id=$(docker create "${{ matrix.project }}-cov:latest")
+          # Copy coverage binary from container (stored in ~/cov = /home/SVF-tools/cov)
+          docker cp "$container_id:/home/SVF-tools/cov/." "output/${{ matrix.project }}/cov/" 2>/dev/null || true
+          docker rm "$container_id"
+          echo "=== cov artifacts ==="
+          ls -la "output/${{ matrix.project }}/cov/" || true
+
+      - name: Build uftrace.dockerfile (if exists)
+        id: build-uftrace
+        run: |
+          if [ -f "${{ matrix.project }}/uftrace.dockerfile" ]; then
+            echo "Building ${{ matrix.project }}-uftrace from ${{ matrix.project }}/uftrace.dockerfile"
+            docker build \
+              -f "${{ matrix.project }}/uftrace.dockerfile" \
+              -t "${{ matrix.project }}-uftrace:latest" \
+              .
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "uftrace.dockerfile not found for ${{ matrix.project }}"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract uftrace artifacts
+        if: steps.build-uftrace.outputs.exists == 'true'
+        run: |
+          container_id=$(docker create "${{ matrix.project }}-uftrace:latest")
+          # Copy uftrace binary from container (stored in ~/uftrace = /home/SVF-tools/uftrace)
+          docker cp "$container_id:/home/SVF-tools/uftrace/." "output/${{ matrix.project }}/uftrace/" 2>/dev/null || true
+          docker rm "$container_id"
+          echo "=== uftrace artifacts ==="
+          ls -la "output/${{ matrix.project }}/uftrace/" || true
+
+      - name: Remove empty directories
+        run: |
+          # Remove empty subdirectories from output
+          find "output/${{ matrix.project }}" -type d -empty -delete 2>/dev/null || true
+          echo "=== Final output structure ==="
+          find "output/${{ matrix.project }}" -type f | head -50
+
+      - name: Create project zip
+        run: |
+          cd output
+          zip -r "${{ matrix.project }}.zip" "${{ matrix.project }}"
+          ls -la "${{ matrix.project }}.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.project }}
+          path: output/${{ matrix.project }}.zip
+          retention-days: 30
 
       - name: Login to Docker Hub
         if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && github.event_name != 'pull_request'
@@ -120,9 +195,49 @@ jobs:
           username: ${{ env.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Push to Docker Hub
+      - name: Push Docker images to Docker Hub
         if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && github.event_name != 'pull_request'
         run: |
-          echo "Pushing ${{ env.DOCKER_HUB_USERNAME }}/${{ matrix.image_name }}:latest"
-          docker tag "${{ matrix.image_name }}:latest" "${{ env.DOCKER_HUB_USERNAME }}/${{ matrix.image_name }}:latest"
-          docker push "${{ env.DOCKER_HUB_USERNAME }}/${{ matrix.image_name }}:latest"
+          for type in bc fuzz cov uftrace; do
+            image="${{ matrix.project }}-${type}"
+            if docker image inspect "${image}:latest" >/dev/null 2>&1; then
+              echo "Pushing ${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
+              docker tag "${image}:latest" "${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
+              docker push "${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
+            fi
+          done
+
+  create-release:
+    needs: build-project
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List downloaded artifacts
+        run: |
+          echo "=== Downloaded artifacts ==="
+          find artifacts -type f -name "*.zip"
+
+      - name: Create or update release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest Build
+          body: |
+            Automatically built artifacts from the main branch.
+            
+            Each zip file contains:
+            - `bc/` - LLVM bitcode files for static analysis
+            - `fuzz/` - AFL++ fuzzing binaries and resources
+            - `cov/` - LLVM-cov instrumented binaries for code coverage
+            - `uftrace/` - uftrace instrumented binaries for function tracing
+          draft: false
+          prerelease: false
+          files: artifacts/**/*.zip
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
