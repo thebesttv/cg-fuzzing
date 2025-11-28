@@ -1,0 +1,68 @@
+#
+# AFL dictionary for zstd compressed data
+# Based on zstd frame format specification
+#
+
+# zstd magic number (little-endian)
+magic="\xfd\x2f\xb5\x28"
+
+# Skippable frame magic (0x184D2A50 to 0x184D2A5F)
+skippable_magic="\x50\x2a\x4d\x18"
+
+# Frame header descriptor byte values
+fhd_single_seg="\x60"
+fhd_checksum="\x04"
+fhd_dict_id="\x03"
+fhd_reserved="\x00"
+
+# Window size (various powers of 2)
+window_1kb="\x00"
+window_4kb="\x01"
+window_16kb="\x02"
+window_64kb="\x03"
+window_256kb="\x04"
+window_1mb="\x05"
+window_4mb="\x06"
+window_16mb="\x07"
+
+# Block types
+block_raw="\x00"
+block_rle="\x01"
+block_compressed="\x02"
+block_reserved="\x03"
+
+# Block last flag
+block_last="\x01"
+block_not_last="\x00"
+
+# Common literals section types
+lit_raw="\x00"
+lit_rle="\x01"
+lit_huff="\x02"
+lit_repeat="\x03"
+
+# Common Huffman weights
+huff_weight_0="\x00"
+huff_weight_1="\x01"
+huff_weight_2="\x02"
+huff_weight_3="\x03"
+
+# FSE table log values
+fse_log_5="\x05"
+fse_log_6="\x06"
+fse_log_7="\x07"
+fse_log_8="\x08"
+fse_log_9="\x09"
+
+# Common content sizes (1, 2, 4, 8 bytes encoded)
+size_small="\x01"
+size_medium="\xff\x00"
+size_larger="\xff\xff\xff\x00"
+
+# Null/empty patterns
+null_1="\x00"
+null_2="\x00\x00"
+null_4="\x00\x00\x00\x00"
+
+# Checksum placeholder
+checksum="\x00\x00\x00\x00"
