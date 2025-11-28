@@ -1,0 +1,97 @@
+# PCRE2 regex dictionary for fuzzing
+# Based on regex syntax
+
+# Basic regex metacharacters
+"."
+"*"
+"+"
+"?"
+"^"
+"$"
+"|"
+"\\"
+
+# Character classes
+"\\d"
+"\\D"
+"\\s"
+"\\S"
+"\\w"
+"\\W"
+"\\b"
+"\\B"
+
+# Groups
+"("
+")"
+"(?:"
+"(?="
+"(?!"
+"(?<="
+"(?<!"
+"(?>"
+"(?|"
+
+# Quantifiers
+"{1}"
+"{1,}"
+"{1,3}"
+"*?"
+"+?"
+"??"
+"*+"
+"++"
+"?+"
+
+# Anchors
+"\\A"
+"\\Z"
+"\\z"
+
+# Character classes
+"[a-z]"
+"[A-Z]"
+"[0-9]"
+"[^a-z]"
+"[:alpha:]"
+"[:digit:]"
+"[:alnum:]"
+"[:space:]"
+
+# Backreferences
+"\\1"
+"\\2"
+"\\g{1}"
+
+# Comments and extended
+"(?#)"
+"(?x)"
+"(?i)"
+"(?m)"
+"(?s)"
+"(?x)"
+
+# Named groups
+"(?<name>)"
+"(?P<name>)"
+"(?'name')"
+
+# Conditional
+"(?(1))"
+"(?(?=))"
+
+# Atomic grouping
+"(?>)"
+
+# Unicode
+"\\p{L}"
+"\\P{L}"
+"\\x{1234}"
+
+# Special sequences
+"\\n"
+"\\r"
+"\\t"
+"\\f"
+"\\v"
+"\\0"

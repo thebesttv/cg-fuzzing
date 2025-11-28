@@ -15,6 +15,11 @@
 - **libyaml** - YAML parser (in repo)
 - **bzip2** - Compression library (in repo)
 - **lz4** - Fast compression (in repo)
+- **zlib** - Compression library (in repo)
+- **libpng** - PNG library (in repo)
+- **pcre2** - Regular expressions (in repo)
+- **jansson** - JSON library (in repo)
+- **cjson** - Ultra-lightweight JSON (in repo)
 
 ## Priority List (ranked by suitability):
 

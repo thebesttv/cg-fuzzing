@@ -1,0 +1,41 @@
+# zlib/gzip dictionary for fuzzing
+# Based on gzip magic numbers and common patterns
+
+# gzip magic number
+"\x1f\x8b"
+
+# gzip compression methods
+"\x08"
+
+# gzip flags
+"\x00"
+"\x01"
+"\x02"
+"\x04"
+"\x08"
+"\x10"
+"\x20"
+
+# Common compression levels
+"\x00"
+"\x02"
+"\x04"
+"\x09"
+
+# zlib header magic
+"\x78\x01"
+"\x78\x5e"
+"\x78\x9c"
+"\x78\xda"
+
+# Deflate block types
+"\x00"
+"\x01"
+"\x02"
+"\x03"
+
+# Common patterns
+"deflate"
+"inflate"
+"compress"
+"uncompress"

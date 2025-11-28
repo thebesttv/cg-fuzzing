@@ -1,0 +1,71 @@
+# JSON dictionary for fuzzing
+# Based on JSON specification (RFC 8259)
+
+# Structural tokens
+"{"
+"}"
+"["
+"]"
+":"
+","
+
+# Literals
+"true"
+"false"
+"null"
+
+# String delimiters
+"\""
+
+# Escape sequences
+"\\\""
+"\\\\"
+"\\/"
+"\\b"
+"\\f"
+"\\n"
+"\\r"
+"\\t"
+"\\u"
+"\\u0000"
+"\\uFFFF"
+
+# Numbers
+"0"
+"-0"
+"1"
+"-1"
+"0.0"
+"1.0"
+"-1.0"
+"1e0"
+"1E0"
+"1e+0"
+"1e-0"
+"1.0e0"
+
+# Common keys
+"\"id\":"
+"\"name\":"
+"\"type\":"
+"\"value\":"
+"\"data\":"
+"\"items\":"
+"\"count\":"
+"\"error\":"
+"\"message\":"
+"\"status\":"
+
+# Whitespace
+" "
+"\t"
+"\n"
+"\r"
+
+# Edge cases
+"0e1"
+"-0e1"
+"1e308"
+"1e-308"
+"1.7976931348623157e+308"
+"2.2250738585072014e-308"
