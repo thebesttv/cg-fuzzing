@@ -1,0 +1,78 @@
+# INI dictionary for AFL++ fuzzing
+
+# Section markers
+"["
+"]"
+
+# Key-value delimiters
+"="
+":"
+
+# Comment prefixes
+";"
+"#"
+
+# Common section names
+"[section]"
+"[global]"
+"[default]"
+"[settings]"
+"[config]"
+"[options]"
+"[general]"
+
+# Common key names
+"name"
+"value"
+"key"
+"type"
+"path"
+"file"
+"host"
+"port"
+"user"
+"password"
+"enabled"
+"disabled"
+"true"
+"false"
+"yes"
+"no"
+"on"
+"off"
+"1"
+"0"
+
+# Whitespace
+" "
+"\t"
+"\r\n"
+"\n"
+
+# Escape sequences
+"\\"
+"\\\\"
+"\\n"
+"\\t"
+
+# Special characters
+"\""
+"'"
+"$"
+"%"
+"&"
+"|"
+
+# Numbers
+"0"
+"1"
+"123"
+"-1"
+"3.14"
+
+# Empty values
+"key="
+"key= "
+
+# Multiline (if supported)
+"    "

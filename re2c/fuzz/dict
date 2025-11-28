@@ -1,0 +1,117 @@
+# re2c dictionary for AFL++ fuzzing
+
+# re2c directives
+"re2c:"
+"!re2c"
+"/*!re2c"
+"*/"
+"!use:"
+"!local:"
+"!rules:"
+"!max:"
+"!stags:"
+"!mtags:"
+"!types:"
+"!include"
+"!header:"
+
+# Configuration options
+"re2c:define:"
+"re2c:flags:"
+"re2c:yyfill:enable"
+"re2c:eof"
+"re2c:sentinel"
+"re2c:api"
+"re2c:api:style"
+"re2c:indent:string"
+"re2c:indent:top"
+"re2c:variable:"
+"re2c:label:"
+"re2c:cond:"
+"re2c:condprefix"
+"re2c:condenumprefix"
+
+# API macros
+"YYCTYPE"
+"YYCURSOR"
+"YYMARKER"
+"YYCTXMARKER"
+"YYLIMIT"
+"YYFILL"
+"YYGETSTATE"
+"YYSETSTATE"
+"YYLESSTHAN"
+"YYPEEK"
+"YYSKIP"
+"YYBACKUP"
+"YYBACKUPCTX"
+"YYRESTORE"
+"YYRESTORECTX"
+"YYRESTORETAG"
+"YYSTAGN"
+"YYSTAGP"
+"YYMTAGN"
+"YYMTAGP"
+"YYMAXFILL"
+"YYMAXNMATCH"
+
+# Regular expression syntax
+"*"
+"+"
+"?"
+"|"
+"("
+")"
+"["
+"]"
+"{"
+"}"
+"\\"
+"^"
+"$"
+"."
+"-"
+
+# Character classes
+"[a-z]"
+"[A-Z]"
+"[0-9]"
+"[^]"
+"[\\n]"
+"[\\t]"
+"[\\r]"
+
+# Named definitions
+"@"
+"#"
+":"
+
+# Quantifiers
+"{0,}"
+"{1,}"
+"{0,1}"
+"{n}"
+"{n,}"
+"{n,m}"
+
+# Strings
+"\""
+"'"
+
+# Code blocks
+"{"
+"}"
+"=>"
+":="
+
+# Keywords used in actions
+"return"
+"goto"
+"continue"
+"break"
+
+# Common patterns
+"any"
+"eof"
+"yych"
+"yyaccept"

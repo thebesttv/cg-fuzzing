@@ -1,0 +1,12 @@
+# Inline tables
+name = { first = "Tom", last = "Preston-Werner" }
+point = { x = 1, y = 2 }
+animal = { type.name = "pug" }
+
+# Regular table
+[table]
+key1 = "value1"
+key2 = 123
+
+[table.nested]
+key3 = true
