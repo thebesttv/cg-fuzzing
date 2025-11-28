@@ -30,6 +30,7 @@
 - **zstd** - Fast compression (in repo)
 - **lua** - Scripting language (in repo)
 - **mujs** - JavaScript interpreter (in repo)
+- **jsmn** - JSON tokenizer v1.1.0 (in repo)
 
 ## Priority List (ranked by suitability):
 
