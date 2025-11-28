@@ -34,6 +34,12 @@ RUN afl-clang-lto -O2 -static -Wl,--allow-multiple-definition \
 RUN cp build/release/mujs /out/mujs
 
 # Build CMPLOG version for better fuzzing (comparison logging)
+# Save Unicode data files before cleaning (they are downloaded from unicode.org during build)
+# and can fail due to network issues
+WORKDIR /src/mujs-1.3.8
+RUN cp /src/mujs-1.3.8/UnicodeData.txt /src/mujs-1.3.8/SpecialCasing.txt /tmp/ || true
+
+# Clean and rebuild for CMPLOG
 WORKDIR /src
 RUN rm -rf mujs-1.3.8 && \
     wget https://github.com/ArtifexSoftware/mujs/archive/refs/tags/1.3.8.tar.gz && \
@@ -41,6 +47,9 @@ RUN rm -rf mujs-1.3.8 && \
     rm 1.3.8.tar.gz
 
 WORKDIR /src/mujs-1.3.8
+
+# Restore Unicode data files to avoid re-downloading (network can be flaky), then clean up temp files
+RUN (cp /tmp/UnicodeData.txt /tmp/SpecialCasing.txt . && rm -f /tmp/UnicodeData.txt /tmp/SpecialCasing.txt) || true
 
 RUN AFL_LLVM_CMPLOG=1 make -j$(nproc) \
     CC=afl-clang-lto \
