@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- comment -->
+<root attr1="a" attr2="b" attr3="c">
+  <item id="1"/>
+  <item id="2"/>
+  <?pi data?>
+</root>

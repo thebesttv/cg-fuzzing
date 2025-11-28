@@ -1,0 +1,7 @@
+<root>
+  <a>1</a>
+  <b>2</b>
+  <c>
+    <d>nested</d>
+  </c>
+</root>
