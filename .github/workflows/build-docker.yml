@@ -92,6 +92,11 @@ jobs:
           docker rm "$container_id"
           echo "=== bc artifacts ==="
           ls -la "output/${{ matrix.project }}/bc/" || true
+          # Verify directory is non-empty
+          if [ -z "$(ls -A "output/${{ matrix.project }}/bc/" 2>/dev/null)" ]; then
+            echo "Error: bc artifacts directory is empty!"
+            exit 1
+          fi
 
       - name: Build fuzz.dockerfile (if exists)
         id: build-fuzz
@@ -117,6 +122,11 @@ jobs:
           docker rm "$container_id"
           echo "=== fuzz artifacts ==="
           ls -la "output/${{ matrix.project }}/fuzz/" || true
+          # Verify directory is non-empty
+          if [ -z "$(ls -A "output/${{ matrix.project }}/fuzz/" 2>/dev/null)" ]; then
+            echo "Error: fuzz artifacts directory is empty!"
+            exit 1
+          fi
 
       - name: Build cov.dockerfile (if exists)
         id: build-cov
@@ -137,11 +147,16 @@ jobs:
         if: steps.build-cov.outputs.exists == 'true'
         run: |
           container_id=$(docker create "${{ matrix.project }}-cov:latest")
-          # Copy coverage binary from container (stored in ~/cov = /home/SVF-tools/cov)
-          docker cp "$container_id:/home/SVF-tools/cov/." "output/${{ matrix.project }}/cov/" 2>/dev/null || true
+          # Copy coverage binary from container (stored in /out)
+          docker cp "$container_id:/out/." "output/${{ matrix.project }}/cov/" 2>/dev/null || true
           docker rm "$container_id"
           echo "=== cov artifacts ==="
           ls -la "output/${{ matrix.project }}/cov/" || true
+          # Verify directory is non-empty
+          if [ -z "$(ls -A "output/${{ matrix.project }}/cov/" 2>/dev/null)" ]; then
+            echo "Error: cov artifacts directory is empty!"
+            exit 1
+          fi
 
       - name: Build uftrace.dockerfile (if exists)
         id: build-uftrace
@@ -162,11 +177,16 @@ jobs:
         if: steps.build-uftrace.outputs.exists == 'true'
         run: |
           container_id=$(docker create "${{ matrix.project }}-uftrace:latest")
-          # Copy uftrace binary from container (stored in ~/uftrace = /home/SVF-tools/uftrace)
-          docker cp "$container_id:/home/SVF-tools/uftrace/." "output/${{ matrix.project }}/uftrace/" 2>/dev/null || true
+          # Copy uftrace binary from container (stored in /out)
+          docker cp "$container_id:/out/." "output/${{ matrix.project }}/uftrace/" 2>/dev/null || true
           docker rm "$container_id"
           echo "=== uftrace artifacts ==="
           ls -la "output/${{ matrix.project }}/uftrace/" || true
+          # Verify directory is non-empty
+          if [ -z "$(ls -A "output/${{ matrix.project }}/uftrace/" 2>/dev/null)" ]; then
+            echo "Error: uftrace artifacts directory is empty!"
+            exit 1
+          fi
 
       - name: Remove empty directories
         run: |
