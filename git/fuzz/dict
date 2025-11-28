@@ -1,0 +1,131 @@
+#
+# AFL dictionary for git
+# Based on git configuration file syntax and common patterns
+#
+
+# Git config file section headers
+"[core]"
+"[user]"
+"[remote]"
+"[branch]"
+"[alias]"
+"[color]"
+"[diff]"
+"[merge]"
+"[push]"
+"[pull]"
+"[fetch]"
+"[http]"
+"[https]"
+"[url]"
+"[credential]"
+"[submodule]"
+"[include]"
+"[includeIf]"
+"[init]"
+"[status]"
+"[commit]"
+"[log]"
+"[advice]"
+"[gc]"
+"[pack]"
+"[transfer]"
+"[receive]"
+
+# Common config keys
+"name"
+"email"
+"editor"
+"pager"
+"autocrlf"
+"filemode"
+"bare"
+"logallrefupdates"
+"worktree"
+"repositoryformatversion"
+"ignorecase"
+"precomposeunicode"
+"defaultBranch"
+"symlinks"
+
+# Boolean values
+"true"
+"false"
+"yes"
+"no"
+"on"
+"off"
+"1"
+"0"
+
+# Remote config
+"url"
+"pushurl"
+"fetch"
+"push"
+"mirror"
+
+# Branch config
+"remote"
+"merge"
+"rebase"
+
+# Git refs
+"refs/heads/"
+"refs/tags/"
+"refs/remotes/"
+"refs/notes/"
+"refs/stash"
+"HEAD"
+"FETCH_HEAD"
+"ORIG_HEAD"
+"MERGE_HEAD"
+"CHERRY_PICK_HEAD"
+
+# Special characters
+"="
+"\n"
+"\t"
+" "
+"#"
+";"
+"["
+"]"
+"\""
+
+# Common path patterns
+".git"
+".gitignore"
+".gitattributes"
+".gitmodules"
+".gitconfig"
+
+# Protocol prefixes
+"https://"
+"http://"
+"git://"
+"ssh://"
+"file://"
+
+# Common git patterns
+"origin"
+"master"
+"main"
+"develop"
+"feature/"
+"bugfix/"
+"release/"
+"hotfix/"
+
+# Wildcard patterns
+"*"
+"**"
+"?"
+"!"
+
+# Quote patterns
+"'"
+"\\\""
+"\\n"
+"\\t"
+"\\0"
