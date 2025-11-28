@@ -1,0 +1,164 @@
+#
+# AFL dictionary for JavaScript (mujs)
+# Based on ECMAScript/JavaScript syntax
+#
+
+# Reserved keywords
+kw_break="break"
+kw_case="case"
+kw_catch="catch"
+kw_continue="continue"
+kw_debugger="debugger"
+kw_default="default"
+kw_delete="delete"
+kw_do="do"
+kw_else="else"
+kw_finally="finally"
+kw_for="for"
+kw_function="function"
+kw_if="if"
+kw_in="in"
+kw_instanceof="instanceof"
+kw_new="new"
+kw_return="return"
+kw_switch="switch"
+kw_this="this"
+kw_throw="throw"
+kw_try="try"
+kw_typeof="typeof"
+kw_var="var"
+kw_void="void"
+kw_while="while"
+kw_with="with"
+
+# Future reserved words
+kw_class="class"
+kw_const="const"
+kw_enum="enum"
+kw_export="export"
+kw_extends="extends"
+kw_import="import"
+kw_super="super"
+kw_let="let"
+kw_yield="yield"
+
+# Literals
+lit_true="true"
+lit_false="false"
+lit_null="null"
+lit_undefined="undefined"
+lit_NaN="NaN"
+lit_Infinity="Infinity"
+
+# Operators
+op_plus="+"
+op_minus="-"
+op_mul="*"
+op_div="/"
+op_mod="%"
+op_inc="++"
+op_dec="--"
+op_eq="=="
+op_neq="!="
+op_seq="==="
+op_sneq="!=="
+op_lt="<"
+op_gt=">"
+op_le="<="
+op_ge=">="
+op_and="&&"
+op_or="||"
+op_not="!"
+op_band="&"
+op_bor="|"
+op_bnot="~"
+op_bxor="^"
+op_shl="<<"
+op_shr=">>"
+op_ushr=">>>"
+op_assign="="
+op_ternary="?"
+op_colon=":"
+op_comma=","
+op_semi=";"
+op_dot="."
+
+# Punctuators
+punc_lparen="("
+punc_rparen=")"
+punc_lbrace="{"
+punc_rbrace="}"
+punc_lbrack="["
+punc_rbrack="]"
+
+# Built-in objects
+obj_Array="Array"
+obj_Boolean="Boolean"
+obj_Date="Date"
+obj_Error="Error"
+obj_Function="Function"
+obj_JSON="JSON"
+obj_Math="Math"
+obj_Number="Number"
+obj_Object="Object"
+obj_RegExp="RegExp"
+obj_String="String"
+
+# Common methods
+fn_eval="eval"
+fn_parseInt="parseInt"
+fn_parseFloat="parseFloat"
+fn_isNaN="isNaN"
+fn_isFinite="isFinite"
+fn_encodeURI="encodeURI"
+fn_decodeURI="decodeURI"
+fn_escape="escape"
+fn_unescape="unescape"
+fn_print="print"
+
+# String methods
+fn_charAt="charAt"
+fn_indexOf="indexOf"
+fn_split="split"
+fn_substring="substring"
+fn_toLowerCase="toLowerCase"
+fn_toUpperCase="toUpperCase"
+fn_trim="trim"
+
+# Array methods
+fn_push="push"
+fn_pop="pop"
+fn_shift="shift"
+fn_join="join"
+fn_forEach="forEach"
+fn_map="map"
+fn_filter="filter"
+
+# Object methods
+fn_toString="toString"
+fn_valueOf="valueOf"
+fn_hasOwnProperty="hasOwnProperty"
+fn_prototype="prototype"
+fn_constructor="constructor"
+
+# Special values
+val_length="length"
+val_arguments="arguments"
+
+# String escapes
+str_newline="\\n"
+str_tab="\\t"
+str_quote="\\\""
+str_backslash="\\\\"
+str_unicode="\\u0000"
+
+# Number formats
+num_int="123"
+num_hex="0x1F"
+num_float="3.14"
+num_exp="1e10"
+
+# Regex patterns
+regex_simple="/a/"
+regex_flags="/a/gi"
+regex_group="/(a)/"
