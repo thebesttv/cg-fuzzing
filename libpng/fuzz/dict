@@ -1,0 +1,64 @@
+# PNG file format dictionary for fuzzing
+# Based on PNG specification
+
+# PNG signature
+"\x89PNG\x0d\x0a\x1a\x0a"
+
+# Critical chunk types
+"IHDR"
+"PLTE"
+"IDAT"
+"IEND"
+
+# Ancillary chunk types
+"cHRM"
+"gAMA"
+"iCCP"
+"sBIT"
+"sRGB"
+"bKGD"
+"hIST"
+"tRNS"
+"pHYs"
+"sPLT"
+"tIME"
+"iTXt"
+"tEXt"
+"zTXt"
+"eXIf"
+
+# Color types
+"\x00"
+"\x02"
+"\x03"
+"\x04"
+"\x06"
+
+# Bit depths
+"\x01"
+"\x02"
+"\x04"
+"\x08"
+"\x10"
+
+# Compression method
+"\x00"
+
+# Filter method
+"\x00"
+
+# Interlace method
+"\x00"
+"\x01"
+
+# Common keywords for text chunks
+"Title"
+"Author"
+"Description"
+"Copyright"
+"Creation Time"
+"Software"
+"Disclaimer"
+"Warning"
+"Source"
+"Comment"
