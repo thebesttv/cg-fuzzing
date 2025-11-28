@@ -1,0 +1,7 @@
+# Nested structure
+root:
+  child1:
+    key: value
+  child2:
+    - item1
+    - item2

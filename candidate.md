@@ -12,6 +12,9 @@
 - **coreutils** - GNU core utilities (in repo, bc only)
 - **libexpat** - XML parser (in repo)
 - **yajl** - Yet Another JSON Library (in repo)
+- **libyaml** - YAML parser (in repo)
+- **bzip2** - Compression library (in repo)
+- **lz4** - Fast compression (in repo)
 
 ## Priority List (ranked by suitability):
 
@@ -23,105 +26,87 @@
    - Fuzzing: OSS-Fuzz project, extensive coverage
    - Source: https://gitlab.gnome.org/GNOME/libxml2
 
-2. **libyaml** - YAML parser
-   - Size: ~10K LOC
-   - Function pointers: Event handlers
-   - Fuzzing: Good for structured input
-   - Source: https://github.com/yaml/libyaml
-
-3. **bzip2** - Compression library
-   - Size: ~8K LOC
-   - Function pointers: I/O callbacks
-   - Fuzzing: OSS-Fuzz project, good coverage
-   - Source: https://sourceware.org/bzip2/
-
-4. **zlib** - Compression library
+2. **zlib** - Compression library
    - Size: ~15K LOC
    - Function pointers: Memory allocation callbacks
    - Fuzzing: Well-fuzzed, stable
    - Source: https://github.com/madler/zlib
 
-5. **mupdf** - PDF viewer/parser
+3. **mupdf** - PDF viewer/parser
    - Size: Moderate
    - Function pointers: Device callbacks, font handlers
    - Fuzzing: OSS-Fuzz project
    - Source: https://mupdf.com/
 
-6. **libpng** - PNG library
+4. **libpng** - PNG library
    - Size: ~50K LOC
    - Function pointers: Error/warning handlers, I/O callbacks
    - Fuzzing: OSS-Fuzz project
    - Source: https://github.com/glennrp/libpng
 
-7. **libjpeg-turbo** - JPEG library
+5. **libjpeg-turbo** - JPEG library
    - Size: ~50K LOC
    - Function pointers: Error managers, source/dest managers
    - Fuzzing: OSS-Fuzz project
    - Source: https://github.com/libjpeg-turbo/libjpeg-turbo
 
-8. **lz4** - Fast compression
-   - Size: ~10K LOC
-   - Function pointers: Memory handlers
-   - Fuzzing: Simple API, good coverage
-   - Source: https://github.com/lz4/lz4
-
 ### Tier 2: Good candidates (moderate complexity)
 
-9. **zstd** - Fast compression
+6. **zstd** - Fast compression
    - Size: ~50K LOC
    - Function pointers: Custom allocators, sequence producers
    - Fuzzing: OSS-Fuzz project
    - Source: https://github.com/facebook/zstd
 
-10. **pcre2** - Regular expressions
+7. **pcre2** - Regular expressions
     - Size: ~80K LOC
     - Function pointers: Match callbacks
     - Fuzzing: Good for pattern matching
     - Source: https://github.com/PCRE2Project/pcre2
 
-11. **lua** - Scripting language
+8. **lua** - Scripting language
     - Size: ~20K LOC
     - Function pointers: C API callbacks, metamethods
     - Fuzzing: OSS-Fuzz project
     - Source: https://www.lua.org/
 
-12. **mujs** - JavaScript interpreter
+9. **mujs** - JavaScript interpreter
     - Size: ~20K LOC
     - Function pointers: Built-in functions, property handlers
     - Fuzzing: Good for JS parsing
     - Source: https://mujs.com/
 
-13. **duktape** - Embeddable JavaScript
+10. **duktape** - Embeddable JavaScript
     - Size: ~80K LOC
     - Function pointers: Native functions, finalizers
     - Fuzzing: Good coverage potential
     - Source: https://duktape.org/
 
-14. **mruby** - Lightweight Ruby
+11. **mruby** - Lightweight Ruby
     - Size: Moderate
     - Function pointers: Method dispatch
     - Fuzzing: OSS-Fuzz project
     - Source: https://mruby.org/
 
-15. **jansson** - JSON library
+12. **jansson** - JSON library
     - Size: ~8K LOC
     - Function pointers: Memory callbacks
     - Fuzzing: Simple structured input
     - Source: https://github.com/akheron/jansson
 
-16. **cjson** - Ultra-lightweight JSON
+13. **cjson** - Ultra-lightweight JSON
     - Size: ~2K LOC
     - Function pointers: Memory hooks
     - Fuzzing: Very simple, good coverage
     - Source: https://github.com/DaveGamble/cJSON
 
-17. **tomlc99** - TOML parser
+14. **tomlc99** - TOML parser
     - Size: ~3K LOC
     - Function pointers: Minimal but present
     - Fuzzing: Simple structured format
     - Source: https://github.com/cktan/tomlc99
 
-18. **tinyexpr** - Math expression parser
+15. **tinyexpr** - Math expression parser
     - Size: ~1K LOC
     - Function pointers: Custom function callbacks
     - Fuzzing: Good for expression parsing

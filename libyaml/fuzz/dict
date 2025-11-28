@@ -1,0 +1,152 @@
+#
+# AFL dictionary for YAML (libyaml fuzzing)
+# Based on YAML specification and common patterns
+#
+
+# YAML indicators
+"-"
+"---"
+"..."
+":"
+"?"
+"|"
+">"
+"!"
+"&"
+"*"
+"%"
+"@"
+"`"
+
+# Block structure
+"- "
+"  "
+"    "
+
+# Flow indicators
+"["
+"]"
+"{"
+"}"
+","
+
+# Quotes and strings
+"\""
+"'"
+"''"
+"\"\""
+
+# Comments
+"#"
+" #"
+"# "
+
+# Special values
+"null"
+"Null"
+"NULL"
+"~"
+"true"
+"True"
+"TRUE"
+"false"
+"False"
+"FALSE"
+"yes"
+"Yes"
+"YES"
+"no"
+"No"
+"NO"
+"on"
+"On"
+"ON"
+"off"
+"Off"
+"OFF"
+
+# Numbers
+"0"
+"1"
+"-1"
+"0.0"
+"1.0"
+"-1.0"
+".inf"
+"-.inf"
+".nan"
+".Inf"
+"-.Inf"
+".NaN"
+"0o7"
+"0x1A"
+"0b1010"
+"1e10"
+"1E10"
+"1.5e10"
+
+# Dates
+"2000-01-01"
+"2000-01-01T00:00:00Z"
+
+# Tags
+"!!"
+"!!str"
+"!!int"
+"!!float"
+"!!bool"
+"!!null"
+"!!map"
+"!!seq"
+"!!set"
+"!!omap"
+"!!binary"
+"!!timestamp"
+"!tag"
+"!<tag>"
+
+# Directives
+"%YAML"
+"%TAG"
+"%YAML 1.1"
+"%YAML 1.2"
+
+# Escape sequences
+"\\"
+"\\n"
+"\\t"
+"\\r"
+"\\0"
+"\\x00"
+"\\u0000"
+"\\U00000000"
+
+# Anchors and aliases
+"&anchor"
+"*alias"
+"<<:"
+"<<: *"
+
+# Multiline
+"|+"
+"|-"
+">+"
+">-"
+"|2"
+">2"
+
+# Complex keys
+"? "
+": "
+"?:"
+
+# Edge cases
+"key:"
+"key: value"
+"- item"
+"  - nested"
+"{}"
+"[]"
+"{a: b}"
+"[1, 2, 3]"
+"key:\n  nested: value"

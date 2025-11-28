@@ -1,0 +1,73 @@
+#
+# AFL dictionary for bzip2
+# Based on bzip2 file format specification
+#
+
+# bzip2 magic number
+"BZ"
+"BZh"
+
+# Block headers (BZh followed by block size 1-9)
+"BZh1"
+"BZh2"
+"BZh3"
+"BZh4"
+"BZh5"
+"BZh6"
+"BZh7"
+"BZh8"
+"BZh9"
+
+# Block magic (pi digits)
+"\x31\x41\x59\x26\x53\x59"
+
+# End of stream magic (sqrt(2) digits)
+"\x17\x72\x45\x38\x50\x90"
+
+# Common byte patterns
+"\x00"
+"\xff"
+"\x00\x00"
+"\xff\xff"
+"\x00\x00\x00\x00"
+"\xff\xff\xff\xff"
+
+# CRC patterns
+"\x00\x00\x00\x00"
+"\xff\xff\xff\xff"
+
+# Block size indicators
+"\x00\x01"
+"\x00\x02"
+"\x00\x04"
+"\x00\x08"
+"\x00\x10"
+"\x00\x20"
+"\x00\x40"
+"\x00\x80"
+
+# Huffman coding patterns
+"\x00"
+"\x01"
+"\x02"
+"\x03"
+"\x04"
+"\x05"
+"\x06"
+"\x07"
+"\x08"
+"\x09"
+"\x0a"
+"\x0b"
+"\x0c"
+"\x0d"
+"\x0e"
+"\x0f"
+
+# Run-length encoding patterns
+"\x00\x00\x00"
+"\x01\x01\x01"
+"\xff\xff\xff"
+
+# Padding bytes
+"\x00\x00\x00\x00\x00\x00\x00\x00"
