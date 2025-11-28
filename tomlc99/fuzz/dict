@@ -1,0 +1,89 @@
+# TOML dictionary for AFL++ fuzzing
+
+# Basic types
+"true"
+"false"
+
+# String quotes
+"\""
+"'"
+"'''"
+"\"\"\""
+
+# Numbers
+"0"
+"1"
+"-1"
+"0.0"
+"1.0"
+"-1.0"
+"inf"
+"+inf"
+"-inf"
+"nan"
+"+nan"
+"-nan"
+
+# Dates and times
+"1979-05-27"
+"07:32:00"
+"1979-05-27T07:32:00Z"
+"1979-05-27T07:32:00-07:00"
+"1979-05-27 07:32:00Z"
+
+# Arrays
+"["
+"]"
+"[["
+"]]"
+
+# Tables
+"{"
+"}"
+"."
+
+# Special characters
+"="
+","
+"#"
+"\\"
+"\n"
+"\t"
+"\r"
+
+# Escape sequences
+"\\b"
+"\\t"
+"\\n"
+"\\f"
+"\\r"
+"\\\""
+"\\\\"
+"\\u"
+"\\U"
+
+# Comments
+"# comment"
+
+# Keys
+"key"
+"bare_key"
+"bare-key"
+"1234"
+"\"quoted key\""
+"'literal key'"
+
+# Table headers
+"[table]"
+"[table.subtable]"
+"[[array]]"
+"[[array.nested]]"
+
+# Inline table
+"{ key = \"value\" }"
+
+# Multiline
+"""
+"""
+'''
+'''
