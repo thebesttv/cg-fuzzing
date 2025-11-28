@@ -1,0 +1,72 @@
+# diff dictionary for AFL++ fuzzing
+# Based on unified diff format and input text patterns
+
+# Line types in unified diff
+"---"
+"+++"
+"@@"
+"-"
+"+"
+" "
+
+# Diff header patterns
+"--- a/"
+"+++ b/"
+"@@ -"
+",0 +"
+
+# Common line patterns
+"diff --git"
+"index"
+"new file mode"
+"deleted file mode"
+"old mode"
+"new mode"
+
+# Range patterns
+"@@ -1,1 +1,1 @@"
+"@@ -0,0 +1 @@"
+"@@ -1 +0,0 @@"
+
+# Text content patterns
+"hello"
+"world"
+"test"
+"line"
+"foo"
+"bar"
+
+# Whitespace
+" "
+"\t"
+"\n"
+"\r\n"
+
+# Numbers
+"0"
+"1"
+"10"
+"100"
+
+# Empty line
+""
+
+# Special characters
+"\\"
+"/"
+"<"
+">"
+"="
+"*"
+"?"
+
+# Context markers
+"***"
+"!"
+
+# Binary markers
+"Binary files"
+"differ"
+
+# No newline marker
+"\\ No newline at end of file"
