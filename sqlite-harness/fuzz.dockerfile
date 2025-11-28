@@ -86,8 +86,6 @@ COPY sqlite-harness/fuzz/in /out/in
 COPY sqlite-harness/fuzz/fuzz.sh /out/fuzz.sh
 COPY sqlite-harness/fuzz/whatsup.sh /out/whatsup.sh
 
-RUN chmod +x /out/fuzz.sh /out/whatsup.sh
-
 WORKDIR /out
 
 # Verify binaries are built

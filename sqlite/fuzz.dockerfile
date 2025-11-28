@@ -58,8 +58,6 @@ COPY sqlite/fuzz/in /out/in
 COPY sqlite/fuzz/fuzz.sh /out/fuzz.sh
 COPY sqlite/fuzz/whatsup.sh /out/whatsup.sh
 
-RUN chmod +x /out/fuzz.sh /out/whatsup.sh
-
 WORKDIR /out
 
 # Verify binaries are built

@@ -66,7 +66,7 @@ jobs:
 
       - name: Create output directories
         run: |
-          mkdir -p output/${{ matrix.project }}/{bc,fuzz,cov,uftrace}
+          mkdir -p output/${{ matrix.project }}/{bc,fuzz}
 
       - name: Build bc.dockerfile (if exists)
         id: build-bc
@@ -143,21 +143,6 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Extract cov artifacts
-        if: steps.build-cov.outputs.exists == 'true'
-        run: |
-          container_id=$(docker create "${{ matrix.project }}-cov:latest")
-          # Copy coverage binary from container (stored in /out)
-          docker cp "$container_id:/out/." "output/${{ matrix.project }}/cov/" 2>/dev/null || true
-          docker rm "$container_id"
-          echo "=== cov artifacts ==="
-          ls -la "output/${{ matrix.project }}/cov/" || true
-          # Verify directory is non-empty
-          if [ -z "$(ls -A "output/${{ matrix.project }}/cov/" 2>/dev/null)" ]; then
-            echo "Error: cov artifacts directory is empty!"
-            exit 1
-          fi
-
       - name: Build uftrace.dockerfile (if exists)
         id: build-uftrace
         run: |
@@ -171,21 +156,6 @@ jobs:
           else
             echo "uftrace.dockerfile not found for ${{ matrix.project }}"
             echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Extract uftrace artifacts
-        if: steps.build-uftrace.outputs.exists == 'true'
-        run: |
-          container_id=$(docker create "${{ matrix.project }}-uftrace:latest")
-          # Copy uftrace binary from container (stored in /out)
-          docker cp "$container_id:/out/." "output/${{ matrix.project }}/uftrace/" 2>/dev/null || true
-          docker rm "$container_id"
-          echo "=== uftrace artifacts ==="
-          ls -la "output/${{ matrix.project }}/uftrace/" || true
-          # Verify directory is non-empty
-          if [ -z "$(ls -A "output/${{ matrix.project }}/uftrace/" 2>/dev/null)" ]; then
-            echo "Error: uftrace artifacts directory is empty!"
-            exit 1
           fi
 
       - name: Remove empty directories
@@ -232,6 +202,9 @@ jobs:
     if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -242,7 +215,32 @@ jobs:
           echo "=== Downloaded artifacts ==="
           find artifacts -type f -name "*.zip"
 
-      - name: Create or update release
+      - name: Create all.zip with all project contents
+        run: |
+          mkdir -p all_projects
+          # Unzip each project zip into all_projects directory
+          for zip_file in artifacts/**/*.zip; do
+            if [ -f "$zip_file" ]; then
+              echo "Extracting $zip_file..."
+              unzip -q "$zip_file" -d all_projects/
+            fi
+          done
+          echo "=== all_projects structure ==="
+          find all_projects -type f | head -50
+          # Create all.zip from the combined contents
+          cd all_projects
+          zip -r ../all.zip .
+          cd ..
+          ls -la all.zip
+
+      - name: Delete existing release
+        run: |
+          # Delete existing release and tag if they exist
+          gh release delete latest --yes --cleanup-tag 2>/dev/null || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
@@ -250,14 +248,19 @@ jobs:
           body: |
             Automatically built artifacts from the main branch.
             
-            Each zip file contains:
+            ## Downloads
+            
+            - `all.zip` - All projects combined (unpacked contents)
+            - Individual project zips (e.g., `jq.zip`, `sqlite.zip`)
+            
+            ## Each project zip contains:
             - `bc/` - LLVM bitcode files for static analysis
             - `fuzz/` - AFL++ fuzzing binaries and resources
-            - `cov/` - LLVM-cov instrumented binaries for code coverage
-            - `uftrace/` - uftrace instrumented binaries for function tracing
           draft: false
           prerelease: false
-          files: artifacts/**/*.zip
+          files: |
+            all.zip
+            artifacts/**/*.zip
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

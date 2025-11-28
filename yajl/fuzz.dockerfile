@@ -66,8 +66,6 @@ COPY yajl/fuzz/in /out/in
 COPY yajl/fuzz/fuzz.sh /out/fuzz.sh
 COPY yajl/fuzz/whatsup.sh /out/whatsup.sh
 
-RUN chmod +x /out/fuzz.sh /out/whatsup.sh
-
 WORKDIR /out
 
 # Verify binaries are built

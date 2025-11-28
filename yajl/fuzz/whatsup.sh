@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Monitor AFL++ fuzzing progress
 # Usage: ./whatsup.sh [-w]
 #   -w: Watch mode (refresh every 2 seconds)

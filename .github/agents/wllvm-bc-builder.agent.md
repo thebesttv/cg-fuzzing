@@ -29,20 +29,16 @@ description: 编译开源项目，生成 LLVM bitcode (.bc) 文件和 AFL++ fuzz
 ```
 <项目>/
 ├── bc.dockerfile      # WLLVM bitcode 构建
-├── bc/
-│   └── *.bc           # 使用 Git LFS 管理的 bitcode 文件
 ├── fuzz.dockerfile    # AFL++ fuzzing 构建
 └── fuzz/
-    ├── <binary>       # 主 fuzzing 二进制文件 (Git LFS)
-    ├── <binary>.cmplog # CMPLOG 版本的二进制文件 (Git LFS)
     ├── dict           # AFL++ 字典文件
     ├── in/            # 初始输入语料库
-    ├── fuzz.sh        # 启动 fuzzing 的脚本
-    ├── whatsup.sh     # 监控 fuzzing 进度的脚本
+    ├── fuzz.sh        # 启动 fuzzing 的脚本 (已设置可执行权限)
+    ├── whatsup.sh     # 监控 fuzzing 进度的脚本 (已设置可执行权限)
     └── readme.md      # 资源来源说明
 ```
 
-同时更新根目录的 `.gitattributes` 文件以支持 Git LFS。
+注意：bc 文件和 fuzz 二进制文件不需要提交到仓库，它们会在 GitHub Actions 构建时生成并发布到 Release 中。
 
 ## 核心要求
 
@@ -179,27 +175,14 @@ RUN ./bootstrap --skip-po --gnulib-srcdir=<依赖目录>
    docker run --rm <项目>-bc sh -c 'ls ~/bc/*.bc | wc -l'
    ```
 
-3. 从容器中复制 .bc 文件：
+3. 验证静态链接（检查未定义符号）：
    ```bash
-   container_id=$(docker create <项目>-bc)
-   docker cp "$container_id:/home/SVF-tools/bc/." <项目>/bc/
-   docker rm "$container_id"
-   ```
-
-4. 验证静态链接（检查未定义符号）：
-   ```bash
-   docker run --rm -v $(pwd)/<项目>/bc:/bc:ro <项目>-bc sh -c 'llvm-nm -u /bc/*.bc'
+   docker run --rm <项目>-bc sh -c 'llvm-nm -u ~/bc/*.bc'
    ```
    
    **验证标准**：输出应该只包含标准 libc/系统库函数（如 `malloc`, `printf`, `pthread_*` 等）
 
-5. 设置 Git LFS 并提交：
-   ```bash
-   git lfs install
-   git lfs track "<项目>/bc/*.bc"
-   git add .gitattributes <项目>/
-   git commit -m "Add <项目> bitcode files"
-   ```
+注意：bc 文件会在 GitHub Actions 构建时自动提取并发布到 Release 中，不需要手动复制或使用 Git LFS 提交。
 
 ---
 
@@ -269,12 +252,11 @@ RUN CC=afl-clang-lto \
 RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp <binary> /out/<binary>.cmplog
 
-# 复制 fuzzing 资源
+# 复制 fuzzing 资源（脚本已设置可执行权限）
 COPY <项目>/fuzz/dict /out/dict
 COPY <项目>/fuzz/in /out/in
 COPY <项目>/fuzz/fuzz.sh /out/fuzz.sh
 COPY <项目>/fuzz/whatsup.sh /out/whatsup.sh
-RUN chmod +x /out/fuzz.sh /out/whatsup.sh
 
 WORKDIR /out
 
@@ -312,7 +294,7 @@ CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing'"]
 - 主 fuzzer (Master) 和从 fuzzer (Slaves) 的区分
 
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 # Fuzzing script for <项目> using AFL++
 # Optimized: Parallel execution support (-j), unlimited memory, cleanup handling.
 
@@ -455,7 +437,7 @@ fi
 参考 `jq/fuzz/whatsup.sh` 模板，用于监控 fuzzing 进度：
 
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 # Monitor AFL++ fuzzing progress
 # Usage: ./whatsup.sh [-w]
 #   -w: Watch mode (refresh every 2 seconds)
@@ -543,22 +525,7 @@ docker run -it --rm <项目>-fuzz ./fuzz.sh
    docker run -it --rm <项目>-fuzz timeout 60 ./fuzz.sh
    ```
 
-4. 从容器中复制 fuzzing 二进制文件：
-   ```bash
-   container_id=$(docker create <项目>-fuzz)
-   docker cp "$container_id:/out/<binary>" <项目>/fuzz/<binary>
-   docker cp "$container_id:/out/<binary>.cmplog" <项目>/fuzz/<binary>.cmplog
-   docker rm "$container_id"
-   ```
-
-5. 设置 Git LFS 并提交 fuzzing 二进制文件：
-   ```bash
-   git lfs install
-   git lfs track "<项目>/fuzz/<binary>"
-   git lfs track "<项目>/fuzz/<binary>.cmplog"
-   git add .gitattributes <项目>/fuzz/<binary> <项目>/fuzz/<binary>.cmplog
-   git commit -m "Add <项目> fuzzing binaries"
-   ```
+注意：fuzzing 二进制文件会在 GitHub Actions 构建时自动提取并发布到 Release 中，不需要手动复制或使用 Git LFS 提交。
 
 ---
 

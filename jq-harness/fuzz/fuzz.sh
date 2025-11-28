@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Fuzzing script for jq harness (jq_fuzz_compile) using AFL++
 # Optimized: Parallel execution support (-j), unlimited memory, cleanup handling.
 
