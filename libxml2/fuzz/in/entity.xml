@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!DOCTYPE note [
+  <!ENTITY nbsp "&#160;">
+]>
+<note>
+  <to>User</to>
+  <from>System</from>
+  <body>Hello &nbsp; World</body>
+</note>

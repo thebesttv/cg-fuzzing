@@ -25,6 +25,11 @@
 - **mruby** - Lightweight Ruby v3.4.0 (in repo)
 - **inih** - INI parser r62 (in repo)
 - **re2c** - Lexer generator v4.3 (in repo)
+- **libxml2** - XML C parser (in repo)
+- **libjpeg-turbo** - JPEG library (in repo)
+- **zstd** - Fast compression (in repo)
+- **lua** - Scripting language (in repo)
+- **mujs** - JavaScript interpreter (in repo)
 
 ## Priority List (ranked by suitability):
 
