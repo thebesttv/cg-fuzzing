@@ -4,6 +4,7 @@ jq-harness/bc/*.bc filter=lfs diff=lfs merge=lfs -text
 sqlite/bc/*.bc filter=lfs diff=lfs merge=lfs -text
 sqlite-harness/bc/*.bc filter=lfs diff=lfs merge=lfs -text
 libexpat/bc/*.bc filter=lfs diff=lfs merge=lfs -text
+yajl/bc/*.bc filter=lfs diff=lfs merge=lfs -text
 jq/fuzz/jq filter=lfs diff=lfs merge=lfs -text
 jq/fuzz/jq.cmplog filter=lfs diff=lfs merge=lfs -text
 jq-harness/fuzz/jq_fuzz_compile filter=lfs diff=lfs merge=lfs -text
@@ -14,3 +15,5 @@ sqlite-harness/fuzz/sqlite_ossfuzz filter=lfs diff=lfs merge=lfs -text
 sqlite-harness/fuzz/sqlite_ossfuzz.cmplog filter=lfs diff=lfs merge=lfs -text
 libexpat/fuzz/xmlwf filter=lfs diff=lfs merge=lfs -text
 libexpat/fuzz/xmlwf.cmplog filter=lfs diff=lfs merge=lfs -text
+yajl/fuzz/json_verify filter=lfs diff=lfs merge=lfs -text
+yajl/fuzz/json_verify.cmplog filter=lfs diff=lfs merge=lfs -text
