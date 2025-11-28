@@ -24,12 +24,14 @@ RUN CC=clang \
     LDFLAGS="-pg -Wl,--allow-multiple-definition" \
     ./configure --with-oniguruma=builtin
 
-# Build jq
+# Build and install jq
 RUN make -j$(nproc)
+RUN make install && ldconfig
 
 # Create uftrace directory and copy binary
+# Copy from install location since dynamic linking creates libtool wrapper
 RUN mkdir -p ~/uftrace && \
-    cp jq ~/uftrace/
+    cp /usr/local/bin/jq ~/uftrace/
 
 # Verify binary is built
 RUN ls -la ~/uftrace/jq && \

@@ -1,10 +1,16 @@
 FROM svftools/svf:latest
 
-# Install build dependencies (file for verification)
+# Install build dependencies and copy compiler-rt profile library
 RUN apt-get update && \
-    apt-get install -y file && \
+    apt-get install -y file libclang-rt-16-dev && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    # Copy profile runtime to where custom clang expects it
+    mkdir -p /home/SVF-tools/SVF/llvm-16.0.0.obj/lib/clang/16/lib/linux/ && \
+    cp /usr/lib/llvm-16/lib/clang/16/lib/linux/libclang_rt.profile-x86_64.a \
+       /home/SVF-tools/SVF/llvm-16.0.0.obj/lib/clang/16/lib/linux/ && \
+    cp /usr/lib/llvm-16/lib/clang/16/lib/linux/libclang_rt.profile-i386.a \
+       /home/SVF-tools/SVF/llvm-16.0.0.obj/lib/clang/16/lib/linux/
 
 # Download and extract jq v1.8.1 (same version as bc.dockerfile)
 WORKDIR /home/SVF-tools
