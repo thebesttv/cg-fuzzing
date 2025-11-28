@@ -1,0 +1,87 @@
+#
+# AFL dictionary for lz4
+# Based on lz4 frame format specification
+#
+
+# lz4 frame magic number (little-endian)
+"\x04\x22\x4d\x18"
+
+# Legacy frame magic
+"\x02\x21\x4c\x18"
+
+# Skippable frame magic (0x184D2A50 to 0x184D2A5F)
+"\x50\x2a\x4d\x18"
+"\x51\x2a\x4d\x18"
+"\x5f\x2a\x4d\x18"
+
+# Frame descriptor flags
+"\x40"
+"\x60"
+"\x64"
+"\x68"
+"\x6c"
+"\x70"
+"\x74"
+"\x78"
+"\x7c"
+
+# Block sizes
+"\x00\x00\x00\x00"
+"\x00\x00\x01\x00"
+"\x00\x00\x10\x00"
+"\x00\x01\x00\x00"
+"\x00\x10\x00\x00"
+"\x00\x00\x00\x80"
+
+# Block header with compression flag
+"\x00\x00\x00\x00"
+"\x80\x00\x00\x00"
+
+# End mark
+"\x00\x00\x00\x00"
+
+# Common byte patterns
+"\x00"
+"\xff"
+"\x00\x00"
+"\xff\xff"
+"\x00\x00\x00\x00"
+"\xff\xff\xff\xff"
+
+# Content checksum patterns
+"\x00\x00\x00\x00"
+
+# Dictionary ID patterns
+"\x00\x00\x00\x00"
+"\x01\x00\x00\x00"
+
+# Token bytes (literal length + match length encoding)
+"\x00"
+"\x0f"
+"\x10"
+"\x1f"
+"\x20"
+"\xf0"
+"\xff"
+
+# Offset patterns (minimum offset is 1)
+"\x01\x00"
+"\x02\x00"
+"\x04\x00"
+"\x08\x00"
+"\x10\x00"
+"\x00\x01"
+"\x00\x10"
+"\xff\xff"
+
+# Match length extensions
+"\x00"
+"\x0f"
+"\xff"
+"\xff\xff"
+
+# Literal length extensions
+"\x00"
+"\x0f"
+"\xff"
+"\xff\xff"

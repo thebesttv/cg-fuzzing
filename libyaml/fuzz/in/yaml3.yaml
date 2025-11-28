@@ -1,0 +1,3 @@
+# Flow style
+mapping: {a: 1, b: 2}
+sequence: [1, 2, 3]

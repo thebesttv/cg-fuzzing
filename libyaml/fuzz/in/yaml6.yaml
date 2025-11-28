@@ -1,0 +1,9 @@
+# Multi-line strings
+literal: |
+  Line 1
+  Line 2
+  Line 3
+
+folded: >
+  This is a
+  long line

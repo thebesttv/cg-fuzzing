@@ -1,0 +1,7 @@
+# Scalar types
+string: "hello"
+integer: 42
+float: 3.14
+bool: true
+null_val: ~
+date: 2024-01-01
