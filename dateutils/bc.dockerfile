@@ -1,0 +1,41 @@
+FROM svftools/svf:latest
+
+# Install wllvm using pipx
+RUN apt-get update && \
+    apt-get install -y pipx file xz-utils autoconf automake libtool flex bison && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pipx install wllvm
+
+ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
+ENV LLVM_COMPILER=clang
+
+# Download and extract dateutils v0.4.11
+WORKDIR /home/SVF-tools
+RUN wget https://github.com/hroptatyr/dateutils/releases/download/v0.4.11/dateutils-0.4.11.tar.xz && \
+    tar -xJf dateutils-0.4.11.tar.xz && \
+    rm dateutils-0.4.11.tar.xz
+
+WORKDIR /home/SVF-tools/dateutils-0.4.11
+
+# Build dateutils with WLLVM (autotools project)
+RUN CC=wllvm \
+    CFLAGS="-g -O0" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared
+
+RUN make -j$(nproc)
+
+# Create bc directory and extract bitcode files
+RUN mkdir -p ~/bc && \
+    for bin in src/dadd src/dconv src/ddiff src/dgrep src/dround \
+               src/dseq src/dsort src/dtest src/dzone src/strptime; do \
+        if [ -f "$bin" ] && [ -x "$bin" ]; then \
+            extract-bc "$bin" && \
+            mv "${bin}.bc" ~/bc/ 2>/dev/null || true; \
+        fi; \
+    done
+
+# Verify that bc files were created
+RUN ls -la ~/bc/
