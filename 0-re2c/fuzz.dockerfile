@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp re2c /out/re2c.cmplog
 
 # Copy fuzzing resources
-COPY re2c/fuzz/dict /out/dict
-COPY re2c/fuzz/in /out/in
-COPY re2c/fuzz/fuzz.sh /out/fuzz.sh
-COPY re2c/fuzz/whatsup.sh /out/whatsup.sh
+COPY 0-re2c/fuzz/dict /out/dict
+COPY 0-re2c/fuzz/in /out/in
+COPY 0-re2c/fuzz/fuzz.sh /out/fuzz.sh
+COPY 0-re2c/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 
