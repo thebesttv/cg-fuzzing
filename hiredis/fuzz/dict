@@ -1,0 +1,94 @@
+# Redis RESP Protocol Dictionary for AFL++
+# Based on RESP2 and RESP3 protocol specifications
+
+# RESP type prefixes
+"+"
+"-"
+":"
+"$"
+"*"
+"_"
+","
+"#"
+"!"
+"="
+"("
+"~"
+">"
+"%"
+"|"
+
+# Line terminator
+"\r\n"
+
+# Common response patterns
+"+OK\r\n"
+"-ERR"
+"-WRONGTYPE"
+"$-1\r\n"
+"*-1\r\n"
+":-1\r\n"
+":0\r\n"
+":1\r\n"
+"*0\r\n"
+"$0\r\n\r\n"
+
+# Bulk string patterns
+"$5\r\nhello\r\n"
+"$3\r\nGET\r\n"
+"$3\r\nSET\r\n"
+
+# Array patterns
+"*2\r\n"
+"*3\r\n"
+"*1\r\n"
+
+# Integer patterns
+":100\r\n"
+":-100\r\n"
+":9223372036854775807\r\n"
+":-9223372036854775808\r\n"
+
+# Error patterns
+"-ERR unknown command\r\n"
+"-MOVED"
+"-ASK"
+"-CLUSTERDOWN"
+"-NOSCRIPT"
+"-BUSY"
+"-NOPERM"
+"-READONLY"
+
+# Boolean (RESP3)
+"#t\r\n"
+"#f\r\n"
+
+# Double (RESP3)
+",1.5\r\n"
+",inf\r\n"
+",-inf\r\n"
+",nan\r\n"
+
+# Big number (RESP3)
+"(1234567890123456789\r\n"
+
+# Null (RESP3)
+"_\r\n"
+
+# Verbatim string (RESP3)
+"=15\r\ntxt:Some string\r\n"
+
+# Push type (RESP3)
+">2\r\n"
+
+# Attribute type (RESP3)
+"|1\r\n"
+
+# Numeric values
+"0"
+"1"
+"-1"
+"255"
+"65535"
+"4294967295"
+"18446744073709551615"
