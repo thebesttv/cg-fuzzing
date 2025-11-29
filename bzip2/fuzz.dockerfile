@@ -9,11 +9,11 @@ RUN apt-get update && \
 # Create output directory
 RUN mkdir -p /out
 
-# Download and extract bzip2 1.0.8 from GitHub mirror (same version as bc.dockerfile)
+# Download and extract bzip2 1.0.8 from official GitLab repository (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/libarchive/bzip2/archive/refs/tags/bzip2-1.0.8.tar.gz && \
-    tar -xzf bzip2-1.0.8.tar.gz && \
-    rm bzip2-1.0.8.tar.gz
+RUN wget https://gitlab.com/bzip2/bzip2/-/archive/bzip2-1.0.8/bzip2-bzip2-1.0.8.tar.gz && \
+    tar -xzf bzip2-bzip2-1.0.8.tar.gz && \
+    rm bzip2-bzip2-1.0.8.tar.gz
 
 WORKDIR /src/bzip2-bzip2-1.0.8
 
@@ -33,9 +33,9 @@ RUN cp bzip2 /out/bzip2
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf bzip2-bzip2-1.0.8 && \
-    wget https://github.com/libarchive/bzip2/archive/refs/tags/bzip2-1.0.8.tar.gz && \
-    tar -xzf bzip2-1.0.8.tar.gz && \
-    rm bzip2-1.0.8.tar.gz
+    wget https://gitlab.com/bzip2/bzip2/-/archive/bzip2-1.0.8/bzip2-bzip2-1.0.8.tar.gz && \
+    tar -xzf bzip2-bzip2-1.0.8.tar.gz && \
+    rm bzip2-bzip2-1.0.8.tar.gz
 
 WORKDIR /src/bzip2-bzip2-1.0.8
 
