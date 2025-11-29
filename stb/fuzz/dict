@@ -1,0 +1,107 @@
+#
+# AFL dictionary for image file formats (stb_image)
+# Covers PNG, JPEG, BMP, GIF, PSD, TGA, HDR, PIC, PNM
+# --------------------------------------------------------
+
+# PNG signatures and chunks
+png_sig="\x89PNG\x0d\x0a\x1a\x0a"
+png_ihdr="IHDR"
+png_idat="IDAT"
+png_iend="IEND"
+png_plte="PLTE"
+png_trns="tRNS"
+png_gama="gAMA"
+png_chrm="cHRM"
+png_srgb="sRGB"
+png_iccp="iCCP"
+png_text="tEXt"
+png_ztxt="zTXt"
+png_itxt="iTXt"
+png_bkgd="bKGD"
+png_phys="pHYs"
+png_time="tIME"
+
+# JPEG signatures and markers
+jpeg_soi="\xff\xd8"
+jpeg_eoi="\xff\xd9"
+jpeg_sof0="\xff\xc0"
+jpeg_sof2="\xff\xc2"
+jpeg_dht="\xff\xc4"
+jpeg_dqt="\xff\xdb"
+jpeg_dri="\xff\xdd"
+jpeg_sos="\xff\xda"
+jpeg_app0="\xff\xe0"
+jpeg_app1="\xff\xe1"
+jpeg_com="\xff\xfe"
+jpeg_rst0="\xff\xd0"
+jfif_id="JFIF\x00"
+exif_id="Exif\x00"
+
+# BMP signatures
+bmp_sig="BM"
+bmp_ba="BA"
+bmp_ci="CI"
+bmp_cp="CP"
+bmp_ic="IC"
+bmp_pt="PT"
+
+# GIF signatures
+gif87a="GIF87a"
+gif89a="GIF89a"
+gif_trailer="\x3b"
+gif_ext="\x21"
+gif_img="\x2c"
+gif_gce="\x21\xf9"
+gif_comment="\x21\xfe"
+gif_app="\x21\xff"
+gif_netscape="NETSCAPE2.0"
+
+# PSD signature
+psd_sig="8BPS"
+
+# TGA (Targa) - mostly binary, but version identifier
+tga_truevision="TRUEVISION-XFILE."
+
+# HDR (Radiance RGBE format)
+hdr_sig1="#?RADIANCE"
+hdr_sig2="#?RGBE"
+hdr_format="FORMAT="
+hdr_32bit="32-bit_rle_rgbe"
+hdr_32bit_xyz="32-bit_rle_xyze"
+
+# PIC (Softimage)
+pic_sig="\x53\x80\xf6\x34"
+
+# PNM formats (PPM, PGM, PBM)
+pnm_p1="P1"
+pnm_p2="P2"
+pnm_p3="P3"
+pnm_p4="P4"
+pnm_p5="P5"
+pnm_p6="P6"
+pnm_p7="P7"
+
+# Common image dimensions
+dim_1="1"
+dim_8="8"
+dim_16="16"
+dim_32="32"
+dim_64="64"
+dim_128="128"
+dim_256="256"
+dim_512="512"
+dim_1024="1024"
+dim_2048="2048"
+dim_4096="4096"
+
+# Color depths
+depth_1="1"
+depth_8="8"
+depth_16="16"
+depth_24="24"
+depth_32="32"
+
+# Common byte values
+zero="\x00"
+max="\xff"
+one="\x01"
