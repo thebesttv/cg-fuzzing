@@ -9,11 +9,11 @@ RUN apt-get update && \
 # Create output directory
 RUN mkdir -p /out
 
-# Download and extract gzip 1.14 (same version as bc.dockerfile)
+# Download and extract gzip 1.14 from GitHub mirror (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/gzip/gzip-1.14.tar.gz && \
-    tar -xzf gzip-1.14.tar.gz && \
-    rm gzip-1.14.tar.gz
+RUN wget https://github.com/sailfishos-mirror/gzip/archive/refs/tags/v1.14.tar.gz && \
+    tar -xzf v1.14.tar.gz && \
+    rm v1.14.tar.gz
 
 WORKDIR /src/gzip-1.14
 
@@ -33,9 +33,9 @@ RUN cp gzip /out/gzip
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf gzip-1.14 && \
-    wget https://ftp.gnu.org/gnu/gzip/gzip-1.14.tar.gz && \
-    tar -xzf gzip-1.14.tar.gz && \
-    rm gzip-1.14.tar.gz
+    wget https://github.com/sailfishos-mirror/gzip/archive/refs/tags/v1.14.tar.gz && \
+    tar -xzf v1.14.tar.gz && \
+    rm v1.14.tar.gz
 
 WORKDIR /src/gzip-1.14
 

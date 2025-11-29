@@ -9,13 +9,13 @@ RUN apt-get update && \
 # Create output directory
 RUN mkdir -p /out
 
-# Download and extract bzip2 1.0.8 (same version as bc.dockerfile)
+# Download and extract bzip2 1.0.8 from GitHub mirror (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz && \
+RUN wget https://github.com/libarchive/bzip2/archive/refs/tags/bzip2-1.0.8.tar.gz && \
     tar -xzf bzip2-1.0.8.tar.gz && \
     rm bzip2-1.0.8.tar.gz
 
-WORKDIR /src/bzip2-1.0.8
+WORKDIR /src/bzip2-bzip2-1.0.8
 
 # Build with afl-clang-lto for fuzzing (main target binary)
 # Use static linking
@@ -32,12 +32,12 @@ RUN cp bzip2 /out/bzip2
 
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
-RUN rm -rf bzip2-1.0.8 && \
-    wget https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz && \
+RUN rm -rf bzip2-bzip2-1.0.8 && \
+    wget https://github.com/libarchive/bzip2/archive/refs/tags/bzip2-1.0.8.tar.gz && \
     tar -xzf bzip2-1.0.8.tar.gz && \
     rm bzip2-1.0.8.tar.gz
 
-WORKDIR /src/bzip2-1.0.8
+WORKDIR /src/bzip2-bzip2-1.0.8
 
 RUN make clean || true && \
     AFL_LLVM_CMPLOG=1 make -j$(nproc) \

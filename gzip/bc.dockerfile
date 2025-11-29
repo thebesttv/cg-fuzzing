@@ -11,11 +11,11 @@ RUN pipx install wllvm
 ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
-# Download and extract gzip 1.14
+# Download and extract gzip 1.14 from GitHub mirror
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/gzip/gzip-1.14.tar.gz && \
-    tar -xzf gzip-1.14.tar.gz && \
-    rm gzip-1.14.tar.gz
+RUN wget https://github.com/sailfishos-mirror/gzip/archive/refs/tags/v1.14.tar.gz && \
+    tar -xzf v1.14.tar.gz && \
+    rm v1.14.tar.gz
 
 WORKDIR /home/SVF-tools/gzip-1.14
 
