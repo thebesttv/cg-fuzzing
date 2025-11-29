@@ -1,0 +1,3 @@
+%option noyywrap
+%%
+[a-z]+
