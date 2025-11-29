@@ -1,0 +1,89 @@
+# grep dictionary for AFL++ fuzzing
+# Based on regular expression syntax and grep options
+
+# Basic regex metacharacters
+"."
+"*"
+"+"
+"?"
+"^"
+"$"
+"|"
+"\\"
+
+# Character classes
+"[a-z]"
+"[A-Z]"
+"[0-9]"
+"[^a-z]"
+"[:alnum:]"
+"[:alpha:]"
+"[:blank:]"
+"[:cntrl:]"
+"[:digit:]"
+"[:graph:]"
+"[:lower:]"
+"[:print:]"
+"[:punct:]"
+"[:space:]"
+"[:upper:]"
+"[:xdigit:]"
+
+# Grouping
+"\\("
+"\\)"
+"("
+")"
+"\\|"
+
+# Backreferences
+"\\1"
+"\\2"
+"\\3"
+"\\b"
+"\\B"
+"\\w"
+"\\W"
+"\\s"
+"\\S"
+"\\<"
+"\\>"
+
+# Quantifiers
+"\\{0,\\}"
+"\\{1,\\}"
+"\\{0,1\\}"
+"{0,}"
+"{1,}"
+"{0,1}"
+"{1,5}"
+
+# Extended regex
+"^$"
+".*"
+".+"
+".?"
+"\\d"
+"\\D"
+
+# Anchors
+"\\`"
+"\\'"
+
+# Common patterns
+"^[a-z]+$"
+"[0-9]+"
+"\\w+"
+"(foo|bar)"
+"^\\s*$"
+".*\\.txt$"
+
+# Escape sequences
+"\\n"
+"\\t"
+"\\r"
+
+# POSIX classes in brackets
+"[[:alpha:]]"
+"[[:digit:]]"
+"[[:space:]]"

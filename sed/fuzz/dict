@@ -1,0 +1,102 @@
+# sed dictionary for AFL++ fuzzing
+# Based on sed command syntax
+
+# Basic commands
+"p"
+"d"
+"q"
+"n"
+"N"
+"a"
+"i"
+"c"
+"s"
+"y"
+"g"
+"h"
+"H"
+"x"
+"l"
+"="
+
+# Address patterns
+"$"
+"1"
+"0"
+"//"
+",,"
+
+# Substitution flags
+"/g"
+"/p"
+"/w"
+"/I"
+"/M"
+"/1"
+"/2"
+
+# Regex patterns
+".*"
+"^"
+"$"
+"\\("
+"\\)"
+"\\1"
+"\\2"
+"\\n"
+"\\t"
+"[a-z]"
+"[A-Z]"
+"[0-9]"
+"[:alnum:]"
+"[:alpha:]"
+"[:digit:]"
+"[:space:]"
+"[:upper:]"
+"[:lower:]"
+
+# Control flow
+"{"
+"}"
+"b"
+"t"
+"T"
+":"
+
+# Extended regex (with -E)
+"+"
+"?"
+"|"
+"("
+")"
+
+# Special characters
+"\\"
+"/"
+"&"
+"#"
+
+# Line endings
+"\n"
+"\r"
+
+# Common patterns
+"s/a/b/"
+"s/a/b/g"
+"/pattern/d"
+"1,10p"
+"$d"
+"/^$/d"
+
+# Multi-line
+"N;s/\\n/ /"
+
+# Hold space
+"H;g"
+"h;n;p;g;p"
+
+# Branch and labels
+":loop"
+"b loop"
+"t end"
+":end"
