@@ -12,7 +12,7 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract gzip 1.14 from kernel.org GNU mirror
-# Note: GitHub mirrors only contain raw git source without pre-generated configure
+# Note: GitHub mirrors only contain raw git source without pre-generated configure scripts
 WORKDIR /home/SVF-tools
 RUN wget https://mirrors.kernel.org/gnu/gzip/gzip-1.14.tar.gz && \
     tar -xzf gzip-1.14.tar.gz && \
