@@ -1,0 +1,68 @@
+# cpio fuzzing dictionary
+# Archive format patterns and magic bytes
+
+# cpio magic bytes
+"070701"
+"070702"
+"070707"
+"\xc7\x71"
+
+# Common header fields
+"\x00\x00\x00\x00"
+"\x00\x00\x00\x01"
+"\x00\x00\x81\xa4"
+"\x00\x00\x01\xed"
+
+# File modes
+"100644"
+"100755"
+"040755"
+"120777"
+
+# Device numbers
+"00000000"
+"00000001"
+
+# nlink
+"00000001"
+"00000002"
+
+# mtime patterns
+"00000000"
+"FFFFFFFF"
+
+# filesize
+"00000000"
+"00000001"
+"0000000A"
+"00000064"
+
+# namesize
+"0000000B"
+"00000005"
+"00000001"
+
+# checksum
+"00000000"
+
+# Special filenames
+"TRAILER!!!"
+"."
+".."
+"/"
+"test"
+"file.txt"
+
+# Path traversal attempts
+"../"
+"../../"
+"../../../"
+"./test"
+
+# Newline and null
+"\n"
+"\x00"
+
+# Long strings
+"AAAAAAAAAAAAAAAA"
+"BBBBBBBBBBBBBBBB"
