@@ -9,10 +9,9 @@ RUN apt-get update && \
 # Create output directory
 RUN mkdir -p /out
 
-# Download and extract gzip 1.14 from kernel.org GNU mirror (same version as bc.dockerfile)
-# Note: GitHub mirrors only contain raw git source without pre-generated configure scripts
+# Download and extract gzip 1.14 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://mirrors.kernel.org/gnu/gzip/gzip-1.14.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gzip/gzip-1.14.tar.gz && \
     tar -xzf gzip-1.14.tar.gz && \
     rm gzip-1.14.tar.gz
 
@@ -34,7 +33,7 @@ RUN cp gzip /out/gzip
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf gzip-1.14 && \
-    wget https://mirrors.kernel.org/gnu/gzip/gzip-1.14.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gzip/gzip-1.14.tar.gz && \
     tar -xzf gzip-1.14.tar.gz && \
     rm gzip-1.14.tar.gz
 

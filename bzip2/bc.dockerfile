@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract bzip2 1.0.8 from official GitLab repository
 WORKDIR /home/SVF-tools
-RUN wget https://gitlab.com/bzip2/bzip2/-/archive/bzip2-1.0.8/bzip2-bzip2-1.0.8.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://gitlab.com/bzip2/bzip2/-/archive/bzip2-1.0.8/bzip2-bzip2-1.0.8.tar.gz && \
     tar -xzf bzip2-bzip2-1.0.8.tar.gz && \
     rm bzip2-bzip2-1.0.8.tar.gz
 
