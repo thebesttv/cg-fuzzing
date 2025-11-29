@@ -1,6 +1,6 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies (including openssl for static linking)
+# Install build dependencies (libssl-dev needed for configure even when openssl is disabled)
 RUN apt-get update && \
     apt-get install -y wget libssl-dev && \
     apt-get clean && \
@@ -17,8 +17,8 @@ RUN wget https://github.com/rhash/RHash/archive/refs/tags/v1.4.5.tar.gz && \
 
 WORKDIR /src/RHash-1.4.5
 
-# Configure and build RHash with afl-clang-lto for fuzzing
-RUN ./configure --cc=afl-clang-lto --extra-cflags="-O2" --extra-ldflags="-static -Wl,--allow-multiple-definition" --disable-lib-shared --enable-static
+# Configure and build RHash with afl-clang-lto for fuzzing (match bc.dockerfile)
+RUN ./configure --cc=afl-clang-lto --extra-cflags="-O2" --extra-ldflags="-static -Wl,--allow-multiple-definition" --disable-lib-shared --enable-static --disable-openssl --disable-openssl-runtime
 
 RUN make -j$(nproc)
 RUN cp rhash /out/rhash
@@ -32,7 +32,7 @@ RUN rm -rf RHash-1.4.5 && \
 
 WORKDIR /src/RHash-1.4.5
 
-RUN AFL_LLVM_CMPLOG=1 ./configure --cc=afl-clang-lto --extra-cflags="-O2" --extra-ldflags="-static -Wl,--allow-multiple-definition" --disable-lib-shared --enable-static
+RUN AFL_LLVM_CMPLOG=1 ./configure --cc=afl-clang-lto --extra-cflags="-O2" --extra-ldflags="-static -Wl,--allow-multiple-definition" --disable-lib-shared --enable-static --disable-openssl --disable-openssl-runtime
 
 RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp rhash /out/rhash.cmplog
