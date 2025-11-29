@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download inih r62 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/benhoyt/inih/archive/refs/tags/r62.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/benhoyt/inih/archive/refs/tags/r62.tar.gz && \
     tar -xzf r62.tar.gz && \
     rm r62.tar.gz
 
@@ -48,7 +48,7 @@ RUN cp ini_fuzz /out/ini_fuzz
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf inih-r62 && \
-    wget https://github.com/benhoyt/inih/archive/refs/tags/r62.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/benhoyt/inih/archive/refs/tags/r62.tar.gz && \
     tar -xzf r62.tar.gz && \
     rm r62.tar.gz
 

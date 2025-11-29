@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract SQLite version-3.51.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/sqlite/sqlite/archive/refs/tags/version-3.51.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/sqlite/sqlite/archive/refs/tags/version-3.51.0.tar.gz && \
     tar -xzf version-3.51.0.tar.gz && \
     rm version-3.51.0.tar.gz
 

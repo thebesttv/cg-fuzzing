@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libyaml 0.2.5
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/yaml/libyaml/releases/download/0.2.5/yaml-0.2.5.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/yaml/libyaml/releases/download/0.2.5/yaml-0.2.5.tar.gz && \
     tar -xzf yaml-0.2.5.tar.gz && \
     rm yaml-0.2.5.tar.gz
 

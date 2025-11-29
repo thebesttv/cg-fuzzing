@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download duktape 2.7.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/svaarala/duktape/releases/download/v2.7.0/duktape-2.7.0.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/svaarala/duktape/releases/download/v2.7.0/duktape-2.7.0.tar.xz && \
     tar -xf duktape-2.7.0.tar.xz && \
     rm duktape-2.7.0.tar.xz
 
@@ -32,7 +32,7 @@ RUN cp duk /out/duk
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf duktape-2.7.0 && \
-    wget https://github.com/svaarala/duktape/releases/download/v2.7.0/duktape-2.7.0.tar.xz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/svaarala/duktape/releases/download/v2.7.0/duktape-2.7.0.tar.xz && \
     tar -xf duktape-2.7.0.tar.xz && \
     rm duktape-2.7.0.tar.xz
 

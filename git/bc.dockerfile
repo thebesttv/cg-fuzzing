@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract git v2.52.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/git/git/archive/refs/tags/v2.52.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/git/git/archive/refs/tags/v2.52.0.tar.gz && \
     tar -xzf v2.52.0.tar.gz && \
     rm v2.52.0.tar.gz
 

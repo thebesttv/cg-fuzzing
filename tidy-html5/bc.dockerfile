@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract tidy-html5 5.8.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/htacg/tidy-html5/archive/refs/tags/5.8.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/htacg/tidy-html5/archive/refs/tags/5.8.0.tar.gz && \
     tar -xzf 5.8.0.tar.gz && \
     rm 5.8.0.tar.gz
 

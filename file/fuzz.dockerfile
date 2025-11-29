@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract file 5.46 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://astron.com/pub/file/file-5.46.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://astron.com/pub/file/file-5.46.tar.gz && \
     tar -xzf file-5.46.tar.gz && \
     rm file-5.46.tar.gz
 
@@ -36,7 +36,7 @@ RUN cp -r magic/magic.mgc /out/magic.mgc
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf file-5.46 && \
-    wget https://astron.com/pub/file/file-5.46.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://astron.com/pub/file/file-5.46.tar.gz && \
     tar -xzf file-5.46.tar.gz && \
     rm file-5.46.tar.gz
 

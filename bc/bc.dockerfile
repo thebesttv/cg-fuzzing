@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract GNU bc 1.08.2
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/bc/bc-1.08.2.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/bc/bc-1.08.2.tar.gz && \
     tar -xzf bc-1.08.2.tar.gz && \
     rm bc-1.08.2.tar.gz
 
