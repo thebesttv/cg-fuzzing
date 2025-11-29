@@ -1,0 +1,11 @@
+# Fuzzy test
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+
+#, fuzzy
+msgid "Save"
+msgstr "Guarder"
+
+msgid "Cancel"
+msgstr "Cancelar"

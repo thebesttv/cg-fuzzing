@@ -1,0 +1,12 @@
+# Format strings test
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+
+#, c-format
+msgid "File: %s"
+msgstr "Archivo: %s"
+
+#, c-format
+msgid "Count: %d of %d"
+msgstr "Cuenta: %d de %d"
