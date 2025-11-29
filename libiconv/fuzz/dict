@@ -1,0 +1,62 @@
+# libiconv fuzzing dictionary
+# Common encoding names and patterns
+
+# Encoding names
+"UTF-8"
+"UTF-16"
+"UTF-16BE"
+"UTF-16LE"
+"UTF-32"
+"UTF-32BE"
+"UTF-32LE"
+"ASCII"
+"ISO-8859-1"
+"ISO-8859-15"
+"LATIN1"
+"CP1252"
+"WINDOWS-1252"
+"KOI8-R"
+"KOI8-U"
+"GB2312"
+"GBK"
+"GB18030"
+"BIG5"
+"BIG5-HKSCS"
+"EUC-JP"
+"EUC-KR"
+"SHIFT_JIS"
+"SJIS"
+"CP932"
+
+# Common conversions
+"//TRANSLIT"
+"//IGNORE"
+
+# Special characters
+"\xef\xbb\xbf"
+"\xfe\xff"
+"\xff\xfe"
+"\x00\x00\xfe\xff"
+"\xff\xfe\x00\x00"
+
+# UTF-8 sequences
+"\xc0\x80"
+"\xe0\x80\x80"
+"\xf0\x80\x80\x80"
+"\xc2\xa0"
+"\xe2\x80\x8b"
+"\xef\xbf\xbd"
+
+# Control characters
+"\x00"
+"\x01"
+"\x1b"
+"\x7f"
+
+# Test patterns
+"Hello, World!"
+"你好世界"
+"日本語"
+"한국어"
+"Привет"
+"مرحبا"
