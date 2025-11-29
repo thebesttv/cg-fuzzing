@@ -1,0 +1,5 @@
+section {
+    enabled = yes;
+    timeout = 10s;
+    limit = 1k;
+}
