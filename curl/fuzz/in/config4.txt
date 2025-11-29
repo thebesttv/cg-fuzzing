@@ -1,0 +1,4 @@
+url = "http://localhost/"
+-X = "POST"
+-H = "Content-Type: application/json"
+-d = "{\"key\":\"value\"}"
