@@ -93,7 +93,7 @@ else
 
     # Trap Ctrl+C (SIGINT) to kill all background processes
     pids=()
-    trap 'echo "Stopping all fuzzers..."; kill ${pids[@]} 2>/dev/null; wait; exit' SIGINT SIGTERM
+    trap 'echo "Stopping all fuzzers..."; kill "${pids[@]}" 2>/dev/null; wait; exit' SIGINT SIGTERM
 
     # 1. Start Master (Main)
     # Master handles CMPLOG (if available) and deterministic checks

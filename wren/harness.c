@@ -4,6 +4,9 @@
 #include <string.h>
 #include "wren.h"
 
+/* Maximum file size to prevent memory exhaustion (100KB) */
+#define MAX_FILE_SIZE 102400
+
 static void writeFn(WrenVM* vm, const char* text) {
     printf("%s", text);
 }
@@ -29,7 +32,7 @@ int main(int argc, char* argv[]) {
     long size = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
-    if (size <= 0 || size > 100000) {
+    if (size <= 0 || size > MAX_FILE_SIZE) {
         fclose(fp);
         return 0;
     }
