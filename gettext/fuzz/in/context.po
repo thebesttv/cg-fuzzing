@@ -1,0 +1,12 @@
+# Context test
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgctxt "menu"
+msgid "Open"
+msgstr "Abrir"
+
+msgctxt "button"
+msgid "Open"
+msgstr "Abrir archivo"
