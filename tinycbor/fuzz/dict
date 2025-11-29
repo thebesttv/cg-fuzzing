@@ -1,0 +1,103 @@
+# CBOR dictionary for AFL++ fuzzing
+# Based on RFC 7049 (CBOR) encoding
+
+# CBOR major types (high 3 bits of initial byte)
+"\x00"  # unsigned integer (0)
+"\x20"  # negative integer (1)
+"\x40"  # byte string (2)
+"\x60"  # text string (3)
+"\x80"  # array (4)
+"\xa0"  # map (5)
+"\xc0"  # tag (6)
+"\xe0"  # simple/float (7)
+
+# Small integers (0-23)
+"\x01"
+"\x02"
+"\x17"
+
+# One-byte integers
+"\x18\x18"
+"\x18\x64"
+"\x18\xff"
+
+# Two-byte integers
+"\x19\x01\x00"
+"\x19\xff\xff"
+
+# Four-byte integers
+"\x1a\x00\x01\x00\x00"
+"\x1a\xff\xff\xff\xff"
+
+# Eight-byte integers
+"\x1b\x00\x00\x00\x00\x00\x00\x00\x01"
+
+# Negative integers
+"\x21"  # -2
+"\x37"  # -24
+"\x38\x18"  # -25
+"\x39\x01\x00"  # -257
+
+# Empty containers
+"\x40"  # empty byte string
+"\x60"  # empty text string
+"\x80"  # empty array
+"\xa0"  # empty map
+
+# Short strings
+"\x41X"  # 1-byte byte string
+"\x61X"  # 1-byte text string
+"\x44test"  # 4-byte byte string
+"\x64test"  # 4-byte text string
+
+# Indefinite length markers
+"\x5f"  # indefinite byte string
+"\x7f"  # indefinite text string
+"\x9f"  # indefinite array
+"\xbf"  # indefinite map
+"\xff"  # break
+
+# Arrays with content
+"\x81"  # array of 1 element
+"\x82"  # array of 2 elements
+"\x83"  # array of 3 elements
+"\x84"  # array of 4 elements
+"\x98\x19"  # array of 25 elements
+
+# Maps with content
+"\xa1"  # map of 1 pair
+"\xa2"  # map of 2 pairs
+
+# Simple values
+"\xf4"  # false
+"\xf5"  # true
+"\xf6"  # null
+"\xf7"  # undefined
+
+# Floats
+"\xf9"  # half-precision float
+"\xfa"  # single-precision float
+"\xfb"  # double-precision float
+"\xf9\x00\x00"  # 0.0
+"\xf9\x3c\x00"  # 1.0
+"\xf9\x7c\x00"  # Infinity
+"\xf9\x7e\x00"  # NaN
+
+# Common tags
+"\xc0"  # tag 0 (date/time string)
+"\xc1"  # tag 1 (epoch-based date/time)
+"\xc2"  # tag 2 (positive bignum)
+"\xc3"  # tag 3 (negative bignum)
+"\xd8\x18"  # tag 24 (encoded CBOR data item)
+"\xd8\x19"  # tag 25
+"\xd8\x20"  # tag 32 (URI)
+"\xd9\x01\x00"  # tag 256
+"\xda\x01\x00\x00\x00"  # tag 16777216
+
+# Self-describe CBOR
+"\xd9\xd9\xf7"  # tag 55799
+
+# Nested structures
+"\x81\x81\x01"  # [[1]]
+"\x82\x01\x02"  # [1, 2]
+"\xa1\x01\x02"  # {1: 2}

@@ -1,0 +1,79 @@
+# INI parser dictionary for AFL++ fuzzing
+
+# Section markers
+"["
+"]"
+
+# Key-value separators
+"="
+":"
+
+# Comments
+";"
+"#"
+
+# Common section names
+"[section]"
+"[Section]"
+"[default]"
+"[settings]"
+"[config]"
+"[general]"
+
+# Common keys
+"key"
+"value"
+"name"
+"type"
+"path"
+"file"
+"host"
+"port"
+"user"
+"password"
+"enabled"
+"disabled"
+"debug"
+
+# Common values
+"true"
+"false"
+"yes"
+"no"
+"on"
+"off"
+"0"
+"1"
+"null"
+"none"
+
+# Whitespace
+" "
+"\t"
+"\n"
+"\r\n"
+
+# Special characters
+"\\"
+"\""
+"'"
+
+# Numbers
+"123"
+"456.789"
+"-1"
+"+100"
+"0x1F"
+
+# Escape sequences
+"\\n"
+"\\t"
+"\\r"
+
+# Edge cases
+"key="
+"=value"
+"key=value"
+"[empty]"
+"[]"
+"[a]"
