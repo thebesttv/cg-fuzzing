@@ -1,0 +1,41 @@
+# hello fuzzing dictionary
+# Command line options and common patterns
+
+# Options
+"-g"
+"--greeting"
+"-t"
+"--traditional"
+"-h"
+"--help"
+"-v"
+"--version"
+
+# Greeting patterns
+"Hello"
+"World"
+"Hello, World!"
+"Bonjour"
+"Hola"
+"Guten Tag"
+"你好"
+"こんにちは"
+
+# Special characters
+"\n"
+"\t"
+"\r"
+" "
+","
+"!"
+"?"
+"."
+
+# Long strings
+"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+
+# Empty and edge cases
+""
+"A"
+"AB"
