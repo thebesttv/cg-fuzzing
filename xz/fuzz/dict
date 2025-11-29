@@ -1,0 +1,70 @@
+# XZ/LZMA format tokens and keywords
+# Based on xz file format specification
+
+# Magic bytes (hex encoded)
+"\xfd\x37\x7a\x58\x5a\x00"
+
+# Stream header flags
+"\x00\x00"
+"\x00\x01"
+"\x00\x04"
+
+# Check types
+"none"
+"crc32"
+"crc64"
+"sha256"
+
+# Filter IDs
+"lzma2"
+"delta"
+"x86"
+"powerpc"
+"ia64"
+"arm"
+"armthumb"
+"sparc"
+
+# Block header flags
+"\x00"
+"\x01"
+"\x02"
+"\x03"
+
+# Common LZMA properties
+"lc"
+"lp"
+"pb"
+"dict"
+"mf"
+"mode"
+"nice"
+"depth"
+
+# Compression levels
+"-0"
+"-1"
+"-2"
+"-3"
+"-4"
+"-5"
+"-6"
+"-7"
+"-8"
+"-9"
+"-e"
+
+# Format options
+"--format=xz"
+"--format=lzma"
+"--format=raw"
+"--format=auto"
+
+# Other options
+"--keep"
+"--force"
+"--stdout"
+"--decompress"
+"--compress"
+"--test"
+"--list"
