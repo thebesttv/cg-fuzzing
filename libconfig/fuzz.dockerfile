@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libconfig v1.7.3 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://hyperrealm.github.io/libconfig/dist/libconfig-1.7.3.tar.gz && \
+RUN wget https://github.com/hyperrealm/libconfig/releases/download/v1.7.3/libconfig-1.7.3.tar.gz && \
     tar -xzf libconfig-1.7.3.tar.gz && \
     rm libconfig-1.7.3.tar.gz
 
@@ -34,7 +34,7 @@ RUN echo '#include <stdio.h>\n#include <libconfig.h>\nint main(int argc, char **
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf libconfig-1.7.3 && \
-    wget https://hyperrealm.github.io/libconfig/dist/libconfig-1.7.3.tar.gz && \
+    wget https://github.com/hyperrealm/libconfig/releases/download/v1.7.3/libconfig-1.7.3.tar.gz && \
     tar -xzf libconfig-1.7.3.tar.gz && \
     rm libconfig-1.7.3.tar.gz
 

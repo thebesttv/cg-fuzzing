@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libconfig v1.7.3
 WORKDIR /home/SVF-tools
-RUN wget https://hyperrealm.github.io/libconfig/dist/libconfig-1.7.3.tar.gz && \
+RUN wget https://github.com/hyperrealm/libconfig/releases/download/v1.7.3/libconfig-1.7.3.tar.gz && \
     tar -xzf libconfig-1.7.3.tar.gz && \
     rm libconfig-1.7.3.tar.gz
 
@@ -39,7 +39,7 @@ RUN make -j$(nproc)
 # Create bc directory and extract bitcode files
 RUN mkdir -p ~/bc && \
     extract-bc lib/.libs/libconfig.a && \
-    mv lib/.libs/libconfig.a.bc ~/bc/libconfig.bc
+    mv lib/.libs/libconfig.bca ~/bc/libconfig.bca
 
 # Verify that bc files were created
 RUN ls -la ~/bc/
