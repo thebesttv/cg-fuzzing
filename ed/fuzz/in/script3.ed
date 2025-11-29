@@ -1,0 +1,6 @@
+a
+test
+.
+s/test/replaced/
+p
+q
