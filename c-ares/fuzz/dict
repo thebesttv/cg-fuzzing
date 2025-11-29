@@ -1,0 +1,69 @@
+# c-ares/adig dictionary for AFL++ fuzzing
+# Based on DNS hostname and record type patterns
+
+# Common TLDs
+".com"
+".net"
+".org"
+".io"
+".gov"
+".edu"
+".co"
+
+# DNS record types
+"A"
+"AAAA"
+"MX"
+"NS"
+"TXT"
+"CNAME"
+"SOA"
+"PTR"
+"SRV"
+"CAA"
+"HTTPS"
+"SVCB"
+"NAPTR"
+"TLSA"
+
+# DNS keywords and options
+"-t"
+"-c"
+"-s"
+"-f"
+"-p"
+
+# DNS classes
+"IN"
+"CH"
+"HS"
+"ANY"
+
+# Common hostnames/domains
+"localhost"
+"example"
+"google"
+"dns"
+"www"
+"mail"
+"ftp"
+
+# Special patterns
+"_"
+"-"
+"."
+":"
+"@"
+
+# Numeric patterns
+"127.0.0.1"
+"::1"
+"8.8.8.8"
+"1.1.1.1"
+
+# Port patterns
+":53"
+":5353"
+
+# IDN patterns
+"xn--"

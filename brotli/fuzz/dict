@@ -1,0 +1,60 @@
+# Brotli compression dictionary for AFL++
+# Based on brotli format specification
+
+# Magic bytes / header
+"\x1b"
+"\x1f"
+
+# Window size bits (valid range 10-24)
+"window_bits"
+
+# Quality levels
+"quality"
+
+# Stream flags
+"islast"
+"isempty"
+"islastempty"
+
+# Meta-block types
+"MNIBBLES"
+"MSKIPBYTES"
+"MSKIPLEN"
+"MLEN"
+
+# Literal context modes
+"LSB6"
+"MSB6"
+"UTF8"
+"SIGNED"
+
+# Distance context modes
+"DIST"
+"NDIST"
+
+# Prefix codes
+"NBLTYPES"
+"NTREES"
+"NPOSTFIX"
+"NDIRECT"
+
+# Common byte patterns in compressed data
+"\x00"
+"\xff"
+"\x0a"
+"\x0d"
+"\x20"
+"\x09"
+
+# Brotli specific markers
+"BROTLI"
+"br"
+".br"
+
+# Common patterns for testing
+"abc"
+"test"
+"hello"
+"world"
+"aaaa"
+"zzzz"
