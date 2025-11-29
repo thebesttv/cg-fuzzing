@@ -55,7 +55,7 @@ RUN mkdir build && cd build && \
         -DCARES_BUILD_TOOLS=ON \
         -DCMAKE_BUILD_TYPE=Release
 
-RUN AFL_LLVM_CMPLOG=1 cd build && make -j$(nproc)
+RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
 # Install CMPLOG binary
 RUN cp build/bin/adig /out/adig.cmplog

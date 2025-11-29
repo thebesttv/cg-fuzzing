@@ -51,7 +51,7 @@ RUN mkdir build && cd build && \
         -DBUILD_SHARED_LIBS=OFF \
         -DCMAKE_BUILD_TYPE=Release
 
-RUN AFL_LLVM_CMPLOG=1 cd build && make -j$(nproc)
+RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
 # Install CMPLOG binary
 RUN cp build/brotli /out/brotli.cmplog
