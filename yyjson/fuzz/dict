@@ -1,0 +1,93 @@
+# JSON dictionary for AFL++ fuzzing
+
+# Structural characters
+"{"
+"}"
+"["
+"]"
+":"
+","
+
+# Literals
+"null"
+"true"
+"false"
+
+# Numbers
+"0"
+"1"
+"-1"
+"0.0"
+"1.0"
+"-0"
+"1e10"
+"1E10"
+"1e+10"
+"1e-10"
+"1.5e10"
+"0.001"
+"-123.456"
+"9999999999"
+
+# Strings
+"\"\""
+"\"a\""
+"\"test\""
+"\"hello\""
+"\"key\""
+"\"value\""
+"\"name\""
+"\"data\""
+
+# Escape sequences
+"\\\""
+"\\\\"
+"\\/"
+"\\b"
+"\\f"
+"\\n"
+"\\r"
+"\\t"
+"\\u0000"
+"\\u001F"
+"\\uFFFF"
+
+# Simple structures
+"{}"
+"[]"
+"[1,2,3]"
+"{\"a\":1}"
+
+# Nested structures
+"[[]]"
+"{{}}"
+"[{}]"
+"{\"a\":[]}"
+"[{\"a\":1}]"
+
+# Arrays
+"[null]"
+"[true]"
+"[false]"
+"[1]"
+"[\"a\"]"
+"[1,2]"
+"[1,\"a\"]"
+
+# Objects
+"{\"a\":null}"
+"{\"a\":true}"
+"{\"a\":false}"
+"{\"a\":1}"
+"{\"a\":\"b\"}"
+"{\"a\":1,\"b\":2}"
+
+# Whitespace
+" "
+"\t"
+"\n"
+"\r"
+
+# Edge cases
+"[[[[[[[[[[]]]]]]]]]"
+"{\"a\":{\"b\":{\"c\":1}}}"
