@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract oniguruma 6.9.10
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/kkos/oniguruma/releases/download/v6.9.10/onig-6.9.10.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/kkos/oniguruma/releases/download/v6.9.10/onig-6.9.10.tar.gz && \
     tar -xzf onig-6.9.10.tar.gz && \
     rm onig-6.9.10.tar.gz
 

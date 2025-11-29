@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download mruby 3.4.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/mruby/mruby/archive/refs/tags/3.4.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/mruby/mruby/archive/refs/tags/3.4.0.tar.gz && \
     tar -xzf 3.4.0.tar.gz && \
     rm 3.4.0.tar.gz
 
@@ -29,7 +29,7 @@ RUN cp build/host/bin/mruby /out/mruby
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf mruby-3.4.0 && \
-    wget https://github.com/mruby/mruby/archive/refs/tags/3.4.0.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/mruby/mruby/archive/refs/tags/3.4.0.tar.gz && \
     tar -xzf 3.4.0.tar.gz && \
     rm 3.4.0.tar.gz
 

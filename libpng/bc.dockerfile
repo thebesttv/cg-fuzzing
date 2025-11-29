@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libpng 1.6.47 (stable release)
 WORKDIR /home/SVF-tools
-RUN wget https://download.sourceforge.net/libpng/libpng-1.6.47.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://download.sourceforge.net/libpng/libpng-1.6.47.tar.gz && \
     tar -xzf libpng-1.6.47.tar.gz && \
     rm libpng-1.6.47.tar.gz
 

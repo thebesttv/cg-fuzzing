@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract tinycbor v0.6.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/intel/tinycbor/archive/refs/tags/v0.6.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/intel/tinycbor/archive/refs/tags/v0.6.1.tar.gz && \
     tar -xzf v0.6.1.tar.gz && \
     rm v0.6.1.tar.gz
 
@@ -31,7 +31,7 @@ RUN cp bin/cbordump /out/cbordump
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf tinycbor-0.6.1 && \
-    wget https://github.com/intel/tinycbor/archive/refs/tags/v0.6.1.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/intel/tinycbor/archive/refs/tags/v0.6.1.tar.gz && \
     tar -xzf v0.6.1.tar.gz && \
     rm v0.6.1.tar.gz
 

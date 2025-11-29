@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract mjson v1.2.7
 WORKDIR /src
-RUN wget https://github.com/cesanta/mjson/archive/refs/tags/1.2.7.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/cesanta/mjson/archive/refs/tags/1.2.7.tar.gz && \
     tar -xzf 1.2.7.tar.gz && \
     rm 1.2.7.tar.gz
 
@@ -69,7 +69,7 @@ RUN cp mjson_fuzz /out/mjson_fuzz
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf mjson-1.2.7 && \
-    wget https://github.com/cesanta/mjson/archive/refs/tags/1.2.7.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/cesanta/mjson/archive/refs/tags/1.2.7.tar.gz && \
     tar -xzf 1.2.7.tar.gz && \
     rm 1.2.7.tar.gz
 

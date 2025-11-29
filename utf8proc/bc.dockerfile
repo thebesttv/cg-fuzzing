@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract utf8proc v2.11.2
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/JuliaStrings/utf8proc/archive/refs/tags/v2.11.2.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/JuliaStrings/utf8proc/archive/refs/tags/v2.11.2.tar.gz && \
     tar -xzf v2.11.2.tar.gz && \
     rm v2.11.2.tar.gz
 

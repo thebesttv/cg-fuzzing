@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract jansson 2.14.1
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/akheron/jansson/releases/download/v2.14.1/jansson-2.14.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/akheron/jansson/releases/download/v2.14.1/jansson-2.14.1.tar.gz && \
     tar -xzf jansson-2.14.1.tar.gz && \
     rm jansson-2.14.1.tar.gz
 

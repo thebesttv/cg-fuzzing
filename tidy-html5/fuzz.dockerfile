@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract tidy-html5 5.8.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/htacg/tidy-html5/archive/refs/tags/5.8.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/htacg/tidy-html5/archive/refs/tags/5.8.0.tar.gz && \
     tar -xzf 5.8.0.tar.gz && \
     rm 5.8.0.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp build/tidy /out/tidy
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf tidy-html5-5.8.0 && \
-    wget https://github.com/htacg/tidy-html5/archive/refs/tags/5.8.0.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/htacg/tidy-html5/archive/refs/tags/5.8.0.tar.gz && \
     tar -xzf 5.8.0.tar.gz && \
     rm 5.8.0.tar.gz
 

@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract grep 3.12
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/grep/grep-3.12.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/grep/grep-3.12.tar.gz && \
     tar -xzf grep-3.12.tar.gz && \
     rm grep-3.12.tar.gz
 

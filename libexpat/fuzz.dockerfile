@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libexpat 2.7.3 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/libexpat/libexpat/releases/download/R_2_7_3/expat-2.7.3.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/libexpat/libexpat/releases/download/R_2_7_3/expat-2.7.3.tar.gz && \
     tar -xzf expat-2.7.3.tar.gz && \
     rm expat-2.7.3.tar.gz
 
@@ -34,7 +34,7 @@ RUN cp xmlwf/xmlwf /out/xmlwf
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf expat-2.7.3 && \
-    wget https://github.com/libexpat/libexpat/releases/download/R_2_7_3/expat-2.7.3.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/libexpat/libexpat/releases/download/R_2_7_3/expat-2.7.3.tar.gz && \
     tar -xzf expat-2.7.3.tar.gz && \
     rm expat-2.7.3.tar.gz
 

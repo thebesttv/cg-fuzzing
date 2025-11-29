@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract cJSON 1.7.19
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/DaveGamble/cJSON/archive/refs/tags/v1.7.19.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/DaveGamble/cJSON/archive/refs/tags/v1.7.19.tar.gz && \
     tar -xzf v1.7.19.tar.gz && \
     rm v1.7.19.tar.gz
 

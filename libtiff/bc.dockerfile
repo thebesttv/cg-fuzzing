@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libtiff v4.7.0
 WORKDIR /home/SVF-tools
-RUN wget https://download.osgeo.org/libtiff/tiff-4.7.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://download.osgeo.org/libtiff/tiff-4.7.0.tar.gz && \
     tar -xzf tiff-4.7.0.tar.gz && \
     rm tiff-4.7.0.tar.gz
 

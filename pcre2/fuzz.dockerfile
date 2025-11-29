@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract pcre2 10.47 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.47/pcre2-10.47.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.47/pcre2-10.47.tar.gz && \
     tar -xzf pcre2-10.47.tar.gz && \
     rm pcre2-10.47.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp pcre2grep /out/pcre2grep
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf pcre2-10.47 && \
-    wget https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.47/pcre2-10.47.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.47/pcre2-10.47.tar.gz && \
     tar -xzf pcre2-10.47.tar.gz && \
     rm pcre2-10.47.tar.gz
 

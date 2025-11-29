@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libarchive 3.8.3
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/libarchive/libarchive/releases/download/v3.8.3/libarchive-3.8.3.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/libarchive/libarchive/releases/download/v3.8.3/libarchive-3.8.3.tar.gz && \
     tar -xzf libarchive-3.8.3.tar.gz && \
     rm libarchive-3.8.3.tar.gz
 

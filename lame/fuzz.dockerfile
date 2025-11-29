@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y wget && apt-get clean
 RUN mkdir -p /out
 
 WORKDIR /src
-RUN wget https://downloads.sourceforge.net/lame/lame-3.100.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://downloads.sourceforge.net/lame/lame-3.100.tar.gz && \
     tar -xzf lame-3.100.tar.gz && rm lame-3.100.tar.gz
 
 WORKDIR /src/lame-3.100
@@ -16,7 +16,7 @@ RUN make -j$(nproc)
 RUN cp frontend/lame /out/lame
 
 WORKDIR /src
-RUN rm -rf lame-3.100 && wget https://downloads.sourceforge.net/lame/lame-3.100.tar.gz && \
+RUN rm -rf lame-3.100 && wget --tries=3 --retry-connrefused --waitretry=5 https://downloads.sourceforge.net/lame/lame-3.100.tar.gz && \
     tar -xzf lame-3.100.tar.gz && rm lame-3.100.tar.gz
 
 WORKDIR /src/lame-3.100

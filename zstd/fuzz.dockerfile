@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract zstd v1.5.7 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz && \
     tar -xzf zstd-1.5.7.tar.gz && \
     rm zstd-1.5.7.tar.gz
 
@@ -31,7 +31,7 @@ RUN cp programs/zstd /out/zstd
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf zstd-1.5.7 && \
-    wget https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz && \
     tar -xzf zstd-1.5.7.tar.gz && \
     rm zstd-1.5.7.tar.gz
 

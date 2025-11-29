@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract http-parser v2.9.4
 WORKDIR /src
-RUN wget https://github.com/nodejs/http-parser/archive/refs/tags/v2.9.4.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/nodejs/http-parser/archive/refs/tags/v2.9.4.tar.gz && \
     tar -xzf v2.9.4.tar.gz && \
     rm v2.9.4.tar.gz
 
@@ -84,7 +84,7 @@ RUN cp http_parser_fuzz /out/http_parser_fuzz
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf http-parser-2.9.4 && \
-    wget https://github.com/nodejs/http-parser/archive/refs/tags/v2.9.4.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/nodejs/http-parser/archive/refs/tags/v2.9.4.tar.gz && \
     tar -xzf v2.9.4.tar.gz && \
     rm v2.9.4.tar.gz
 

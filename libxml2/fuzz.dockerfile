@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libxml2 v2.15.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.1.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.1.tar.xz && \
     tar -xJf libxml2-2.15.1.tar.xz && \
     rm libxml2-2.15.1.tar.xz
 
@@ -41,7 +41,7 @@ RUN cp build/xmllint /out/xmllint
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf libxml2-2.15.1 && \
-    wget https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.1.tar.xz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.1.tar.xz && \
     tar -xJf libxml2-2.15.1.tar.xz && \
     rm libxml2-2.15.1.tar.xz
 

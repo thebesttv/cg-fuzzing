@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract gettext v0.23.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/gettext/gettext-0.23.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gettext/gettext-0.23.1.tar.gz && \
     tar -xzf gettext-0.23.1.tar.gz && \
     rm gettext-0.23.1.tar.gz
 
@@ -34,7 +34,7 @@ RUN cp gettext-tools/src/msgfmt /out/msgfmt
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf gettext-0.23.1 && \
-    wget https://ftp.gnu.org/gnu/gettext/gettext-0.23.1.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gettext/gettext-0.23.1.tar.gz && \
     tar -xzf gettext-0.23.1.tar.gz && \
     rm gettext-0.23.1.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract cmark 0.31.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/commonmark/cmark/archive/refs/tags/0.31.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/commonmark/cmark/archive/refs/tags/0.31.1.tar.gz && \
     tar -xzf 0.31.1.tar.gz && \
     rm 0.31.1.tar.gz
 
@@ -36,7 +36,7 @@ RUN cp build/src/cmark /out/cmark
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf cmark-0.31.1 && \
-    wget https://github.com/commonmark/cmark/archive/refs/tags/0.31.1.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/commonmark/cmark/archive/refs/tags/0.31.1.tar.gz && \
     tar -xzf 0.31.1.tar.gz && \
     rm 0.31.1.tar.gz
 

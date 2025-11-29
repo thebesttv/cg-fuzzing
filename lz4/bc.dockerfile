@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract lz4 v1.10.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/lz4/lz4/releases/download/v1.10.0/lz4-1.10.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/lz4/lz4/releases/download/v1.10.0/lz4-1.10.0.tar.gz && \
     tar -xzf lz4-1.10.0.tar.gz && \
     rm lz4-1.10.0.tar.gz
 

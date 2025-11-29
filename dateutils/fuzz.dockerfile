@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract dateutils v0.4.11 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/hroptatyr/dateutils/releases/download/v0.4.11/dateutils-0.4.11.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/hroptatyr/dateutils/releases/download/v0.4.11/dateutils-0.4.11.tar.xz && \
     tar -xJf dateutils-0.4.11.tar.xz && \
     rm dateutils-0.4.11.tar.xz
 
@@ -32,7 +32,7 @@ RUN cp src/dconv /out/dconv
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf dateutils-0.4.11 && \
-    wget https://github.com/hroptatyr/dateutils/releases/download/v0.4.11/dateutils-0.4.11.tar.xz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/hroptatyr/dateutils/releases/download/v0.4.11/dateutils-0.4.11.tar.xz && \
     tar -xJf dateutils-0.4.11.tar.xz && \
     rm dateutils-0.4.11.tar.xz
 

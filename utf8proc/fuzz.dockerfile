@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract utf8proc v2.11.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/JuliaStrings/utf8proc/archive/refs/tags/v2.11.2.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/JuliaStrings/utf8proc/archive/refs/tags/v2.11.2.tar.gz && \
     tar -xzf v2.11.2.tar.gz && \
     rm v2.11.2.tar.gz
 
@@ -36,7 +36,7 @@ RUN cp utf8proc_fuzz /out/utf8proc_fuzz
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf utf8proc-2.11.2 && \
-    wget https://github.com/JuliaStrings/utf8proc/archive/refs/tags/v2.11.2.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/JuliaStrings/utf8proc/archive/refs/tags/v2.11.2.tar.gz && \
     tar -xzf v2.11.2.tar.gz && \
     rm v2.11.2.tar.gz
 
