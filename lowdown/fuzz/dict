@@ -1,0 +1,88 @@
+# lowdown dictionary for AFL++
+# Markdown syntax tokens
+
+# Headers
+"#"
+"##"
+"###"
+"####"
+"#####"
+"######"
+"==="
+"---"
+
+# Emphasis
+"*"
+"**"
+"***"
+"_"
+"__"
+"___"
+"~~"
+
+# Lists
+"- "
+"+ "
+"* "
+"1. "
+"2. "
+"   "
+"\t"
+
+# Blockquotes
+"> "
+">> "
+
+# Code
+"`"
+"```"
+"~~~"
+
+# Links and images
+"["
+"]"
+"("
+")"
+"!"
+"<"
+">"
+"http://"
+"https://"
+
+# Tables
+"|"
+"|-"
+"|:"
+":-"
+":-:"
+"-:"
+
+# Special
+"\\"
+"&"
+";"
+"#x"
+"&#"
+":"
+
+# Footnotes
+"[^"
+"^]"
+
+# Task lists
+"[ ]"
+"[x]"
+
+# Metadata
+"---\n"
+"...\n"
+"title:"
+"author:"
+"date:"
+
+# HTML entities
+"&amp;"
+"&lt;"
+"&gt;"
+"&quot;"
+"&nbsp;"

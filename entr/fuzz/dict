@@ -1,0 +1,60 @@
+# entr dictionary for AFL++
+# entr reads file paths from stdin and watches for changes
+
+# Command options
+"-c"
+"-d"
+"-n"
+"-p"
+"-r"
+"-s"
+"-z"
+"/_"
+
+# Path separators
+"/"
+"./"
+"../"
+"~/"
+
+# File extensions
+".c"
+".h"
+".py"
+".sh"
+".md"
+".txt"
+".json"
+".yml"
+
+# Special characters in paths
+" "
+"\\"
+"\n"
+"\t"
+"'"
+"\""
+"`"
+"$"
+"*"
+"?"
+"["
+"]"
+
+# Common paths
+"/tmp/"
+"/dev/"
+"/proc/"
+"/etc/"
+
+# Path patterns
+"*"
+"**"
+"*.c"
+"*.txt"
+
+# Special strings
+""
+"."
+".."
+"~"

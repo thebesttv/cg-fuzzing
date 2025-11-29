@@ -1,0 +1,77 @@
+# jo dictionary for AFL++
+# jo generates JSON output from command line arguments
+# These are common JSON tokens and jo-specific syntax
+
+# JSON tokens
+"{"
+"}"
+"["
+"]"
+":"
+","
+"true"
+"false"
+"null"
+
+# String delimiters
+"\""
+"'"
+
+# Numbers
+"0"
+"1"
+"-1"
+"0.0"
+"1.5"
+"-1.5"
+"1e10"
+"1E-10"
+
+# jo array syntax
+"@"
+"[]"
+
+# jo object syntax
+"="
+"name="
+"key="
+"value="
+
+# Escape sequences
+"\\\\"
+"\\n"
+"\\r"
+"\\t"
+"\\u0000"
+"\\u00ff"
+
+# Empty values
+""
+" "
+
+# Special characters
+"/"
+"\\"
+"$"
+"#"
+"!"
+"&"
+"|"
+";"
+"("
+")"
+
+# jo specific patterns
+"-a"
+"-p"
+"-e"
+"-d"
+"-B"
+"-n"
+"-v"
+"--"
+
+# Nested structures
+"a[0]="
+"a[b]="
+"x.y.z="
