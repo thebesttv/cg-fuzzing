@@ -1,0 +1,3 @@
+anchor: &anchor_name
+  key: value
+alias: *anchor_name
