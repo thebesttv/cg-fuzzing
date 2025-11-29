@@ -1,0 +1,78 @@
+# TRE/agrep dictionary for AFL++ fuzzing
+# Based on regular expression syntax
+
+# Regex metacharacters
+"."
+"*"
+"+"
+"?"
+"^"
+"$"
+"|"
+"\\"
+"["
+"]"
+"("
+")"
+"{"
+"}"
+
+# Character classes
+"[a-z]"
+"[A-Z]"
+"[0-9]"
+"[^a-z]"
+"[[:alpha:]]"
+"[[:digit:]]"
+"[[:alnum:]]"
+"[[:space:]]"
+"[[:upper:]]"
+"[[:lower:]]"
+"[[:punct:]]"
+
+# Escape sequences
+"\\d"
+"\\w"
+"\\s"
+"\\D"
+"\\W"
+"\\S"
+"\\n"
+"\\t"
+"\\r"
+
+# Quantifiers
+"{1}"
+"{1,}"
+"{1,3}"
+"{0,1}"
+"+?"
+"*?"
+
+# Anchors
+"\\b"
+"\\B"
+
+# Groups
+"(?:)"
+"(?=)"
+"(?!)"
+
+# Common patterns
+"abc"
+"test"
+"hello"
+"[a-z]+"
+"^hello"
+"world$"
+"a.*b"
+"(a|b)"
+
+# Approximate matching (TRE-specific)
+"~1"
+"~2"
+"~3"
+
+# agrep-specific patterns
+"abc{~1}"
+"hello{~2}"
