@@ -1,0 +1,1 @@
+LTR text RTL טקסט mixed
