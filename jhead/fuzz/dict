@@ -1,0 +1,97 @@
+#
+# AFL dictionary for JPEG/EXIF (jhead)
+# Based on AFL++ jpeg.dict and EXIF specification
+#
+
+# JPEG markers
+header_jfif="JFIF\x00"
+header_jfxx="JFXX\x00"
+header_exif="Exif\x00\x00"
+
+# SOI and EOI
+section_soi="\xff\xd8"
+section_eoi="\xff\xd9"
+
+# APP markers (including EXIF)
+section_app0="\xff\xe0"
+section_app1="\xff\xe1"
+section_app2="\xff\xe2"
+section_app12="\xff\xec"
+section_app13="\xff\xed"
+section_app14="\xff\xee"
+
+# Frame markers
+section_sof0="\xff\xc0"
+section_sof1="\xff\xc1"
+section_sof2="\xff\xc2"
+
+# Huffman/quantization
+section_dht="\xff\xc4"
+section_dqt="\xff\xdb"
+section_dri="\xff\xdd"
+section_sos="\xff\xda"
+section_rst0="\xff\xd0"
+section_com="\xff\xfe"
+
+# TIFF/EXIF byte order markers
+tiff_le="II\x2a\x00"
+tiff_be="MM\x00\x2a"
+
+# Common EXIF tags
+tag_make="\x01\x0f"
+tag_model="\x01\x10"
+tag_orientation="\x01\x12"
+tag_datetime="\x01\x32"
+tag_artist="\x03\x15"
+tag_copyright="\x82\x98"
+
+# EXIF IFD tags
+tag_exposuretime="\x82\x9a"
+tag_fnumber="\x82\x9d"
+tag_iso="\x88\x27"
+tag_datetimeoriginal="\x90\x03"
+tag_datetimedigitized="\x90\x04"
+
+# GPS IFD tags
+tag_gpslatituderef="\x00\x01"
+tag_gpslatitude="\x00\x02"
+tag_gpslongituderef="\x00\x03"
+tag_gpslongitude="\x00\x04"
+
+# Common strings for EXIF
+"Canon"
+"Nikon"
+"Sony"
+"Apple"
+"FUJIFILM"
+"Olympus"
+"Panasonic"
+
+# Date/time format
+"2023:01:01 12:00:00"
+"0000:00:00 00:00:00"
+
+# jhead specific
+"-purejpg"
+"-autorot"
+"-norot"
+"-exonly"
+"-dt"
+"-ts"
+"-dsft"
+"-n"
+"-nf"
+"-rgt"
+"-q"
+"-V"
+"-de"
+"-du"
+"-dc"
+"-di"
+"-dx"
+"-c"
+"-cl"
+"-cs"
+"-ft"
+"-mkexif"
+"-cmd"
