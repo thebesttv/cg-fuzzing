@@ -1,0 +1,45 @@
+FROM svftools/svf:latest
+
+# Install wllvm using pipx
+RUN apt-get update && \
+    apt-get install -y pipx && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pipx install wllvm
+
+ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
+ENV LLVM_COMPILER=clang
+
+# Download and extract datamash 1.9
+WORKDIR /home/SVF-tools
+RUN wget https://ftp.gnu.org/gnu/datamash/datamash-1.9.tar.gz && \
+    tar -xzf datamash-1.9.tar.gz && \
+    rm datamash-1.9.tar.gz
+
+WORKDIR /home/SVF-tools/datamash-1.9
+
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y file && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Configure with static linking and WLLVM
+RUN CC=wllvm \
+    CFLAGS="-g -O0" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
+    FORCE_UNSAFE_CONFIGURE=1 \
+    ./configure --disable-shared
+
+# Build datamash
+RUN make -j$(nproc)
+
+# Create bc directory and extract bitcode files
+# The binary is located in the root build directory as 'datamash'
+RUN mkdir -p ~/bc && \
+    extract-bc datamash && \
+    mv datamash.bc ~/bc/
+
+# Verify that bc files were created
+RUN ls -la ~/bc/
