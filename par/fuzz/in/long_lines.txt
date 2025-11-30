@@ -1,0 +1,2 @@
+This is a very long line that exceeds the typical terminal width and should be wrapped by par to fit within the specified column width which is usually around 72 characters by default.
+Another long line that should also be handled properly by the par program when reformatting the text.
