@@ -1,0 +1,89 @@
+# squashfs dictionary for AFL++ fuzzing
+# Based on squashfs file format magic numbers and structures
+
+# Squashfs magic numbers
+"hsqs"
+"sqsh"
+"shsq"
+"qshs"
+
+# Squashfs version bytes
+"\x00\x04"
+"\x01\x04"
+"\x02\x04"
+"\x03\x04"
+"\x00\x00"
+
+# Compression types
+"gzip"
+"lzma"
+"lzo"
+"xz"
+"lz4"
+"zstd"
+
+# Common block sizes
+"\x00\x00\x01\x00"
+"\x00\x00\x02\x00"
+"\x00\x00\x04\x00"
+"\x00\x00\x08\x00"
+"\x00\x00\x10\x00"
+"\x00\x00\x20\x00"
+
+# Fragment and block flags
+"\x00\x00\x00\x00"
+"\xff\xff\xff\xff"
+"\x00\x00\x00\x01"
+"\x00\x00\x00\x02"
+"\x00\x00\x00\x04"
+"\x00\x00\x00\x08"
+
+# Common numbers
+"0"
+"1"
+"2"
+"4"
+"8"
+"16"
+"32"
+"64"
+"128"
+"256"
+"512"
+"1024"
+"2048"
+"4096"
+
+# Inode types
+"\x01\x00"
+"\x02\x00"
+"\x03\x00"
+"\x04\x00"
+"\x05\x00"
+"\x06\x00"
+"\x07\x00"
+"\x08\x00"
+"\x09\x00"
+"\x0a\x00"
+"\x0b\x00"
+"\x0c\x00"
+"\x0d\x00"
+"\x0e\x00"
+
+# Common permission modes
+"\xed\x01"
+"\xff\x01"
+"\xb6\x01"
+"\xa4\x01"
+"\x80\x00"
+
+# Fragment table entries
+"\x00\x00\x00\x00\x00\x00\x00\x00"
+
+# ID table entries
+"\x00\x00\x00\x00"
+"\xe8\x03\x00\x00"
+
+# Common timestamps (Unix epoch range)
+"\x00\x00\x00\x00"
+"\xff\xff\xff\x7f"
