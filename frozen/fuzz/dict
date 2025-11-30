@@ -1,0 +1,85 @@
+# frozen JSON dictionary for AFL++ fuzzing
+# Based on JSON syntax
+
+# JSON structural characters
+"{"
+"}"
+"["
+"]"
+","
+":"
+
+# JSON literals
+"true"
+"false"
+"null"
+
+# String escapes
+"\""
+"\\"
+"\\/"
+"\\b"
+"\\f"
+"\\n"
+"\\r"
+"\\t"
+"\\u"
+"\\u0000"
+"\\u00ff"
+"\\uffff"
+
+# Numbers
+"0"
+"1"
+"-1"
+"0.0"
+"1.0"
+"-1.0"
+"1e10"
+"1E10"
+"1e+10"
+"1e-10"
+"1.5e10"
+"-1.5e-10"
+
+# Common keys
+"name"
+"value"
+"id"
+"type"
+"data"
+"items"
+"count"
+"size"
+"length"
+"index"
+"key"
+"error"
+"message"
+"status"
+"code"
+"result"
+"success"
+"failure"
+
+# Empty values
+"{}"
+"[]"
+"\"\""
+
+# Whitespace
+" "
+"\t"
+"\n"
+"\r"
+"  "
+"\t\n"
+
+# Unicode BOM
+"\xef\xbb\xbf"
+
+# Common patterns
+"\"name\""
+"\"value\""
+"{\"name\":"
+"[{\"id\":"
