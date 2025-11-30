@@ -1,0 +1,11 @@
+%language=C
+%readonly-tables
+%enum
+%struct-type
+struct keyword { const char *name; int id; };
+%%
+apple, 1
+banana, 2
+cherry, 3
+date, 4
+%%

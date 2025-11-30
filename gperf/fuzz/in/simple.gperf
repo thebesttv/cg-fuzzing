@@ -1,0 +1,8 @@
+%{
+struct keyword { char *name; int value; };
+%}
+%%
+hello
+world
+test
+%%

@@ -1,0 +1,17 @@
+%%
+if
+else
+while
+for
+do
+switch
+case
+break
+continue
+return
+int
+char
+void
+struct
+typedef
+%%
