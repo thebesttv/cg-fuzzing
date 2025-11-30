@@ -1,0 +1,66 @@
+# Hoedown Markdown dictionary for AFL++ fuzzing
+# Headers
+"# "
+"## "
+"### "
+"#### "
+"##### "
+"###### "
+# Emphasis
+"*"
+"**"
+"***"
+"_"
+"__"
+"~~"
+# Code
+"`"
+"```"
+"~~~"
+"    "
+# Links and images
+"["
+"]"
+"("
+")"
+"![" 
+# Lists
+"- "
+"* "
+"+ "
+"1. "
+"2. "
+# Blockquotes
+"> "
+# Horizontal rules
+"---"
+"***"
+"___"
+# Tables (extension)
+"|"
+"|-"
+"|:"
+# HTML entities
+"&amp;"
+"&lt;"
+"&gt;"
+"&quot;"
+"&#"
+# HTML tags
+"<br>"
+"<hr>"
+"<div>"
+"</div>"
+"<span>"
+"</span>"
+# URLs
+"http://"
+"https://"
+"mailto:"
+# Whitespace
+"\n"
+"\r"
+"\t"
+"  "
+# Escape
+"\\"
