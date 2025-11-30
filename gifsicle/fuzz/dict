@@ -1,0 +1,57 @@
+# GIF87a and GIF89a magic bytes
+"GIF87a"
+"GIF89a"
+
+# GIF block types
+"\x21\xf9"
+"\x21\xfe"
+"\x21\xff"
+"\x21\x01"
+"\x2c"
+"\x3b"
+
+# Common GIF values
+"\x00\x00"
+"\x01\x00"
+"\x00\x01"
+"\xff\x00"
+"\x00\xff"
+
+# Extension labels
+"NETSCAPE2.0"
+"GIF89a"
+
+# Common dimensions
+"\x10\x00\x10\x00"
+"\x20\x00\x20\x00"
+"\x40\x00\x40\x00"
+
+# Disposal methods
+"\x04"
+"\x08"
+"\x0c"
+"\x10"
+"\x14"
+
+# Transparency flags
+"\x01"
+"\x00"
+
+# Gifsicle options
+"--optimize"
+"--colors"
+"--delay"
+"--loop"
+"--crop"
+"--resize"
+"--rotate"
+"--flip"
+"--scale"
+"--lossy"
+"--no-comments"
+"--no-names"
+"--no-extensions"
+"--interlace"
+"--background"
+"--disposal"
+"--transparent"
