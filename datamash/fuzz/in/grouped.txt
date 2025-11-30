@@ -1,0 +1,3 @@
+group1	100
+group1	200
+group2	150
