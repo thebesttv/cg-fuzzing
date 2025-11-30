@@ -1,0 +1,120 @@
+# libsndfile dictionary for AFL++ fuzzing
+# Based on audio file format magic numbers and common headers
+
+# WAV file header
+"RIFF"
+"WAVE"
+"fmt "
+"data"
+"LIST"
+"INFO"
+"fact"
+"cue "
+"plst"
+"smpl"
+
+# AIFF file header
+"FORM"
+"AIFF"
+"AIFC"
+"COMM"
+"SSND"
+"MARK"
+"INST"
+"APPL"
+"NAME"
+"AUTH"
+"(c) "
+"ANNO"
+
+# AU/SND file header
+".snd"
+"\x00\x64\x73\x2e"
+
+# CAF file header
+"caff"
+"desc"
+"pakt"
+"kuki"
+"chan"
+"free"
+
+# FLAC file header (even though disabled, good to have)
+"fLaC"
+
+# SF file header (IRCAM)
+"\x64\xa3\x00\x00"
+"\x64\xa3\x01\x00"
+"\x64\xa3\x02\x00"
+"\x64\xa3\x03\x00"
+
+# VOC file header
+"Creative Voice File\x1a"
+
+# PVF file header
+"PVF1"
+"PVF2"
+
+# HTK file header
+"\x00\x00"
+
+# MAT4/MAT5 headers
+"MATLAB 4"
+"MATLAB 5"
+
+# SD2 file header
+"Sd2f"
+
+# Common audio format identifiers
+"PCM"
+"FLOAT"
+"DOUBLE"
+"ALAW"
+"ULAW"
+"IMA_ADPCM"
+"MS_ADPCM"
+"GSM610"
+"G721_32"
+"G723_24"
+"G723_40"
+"DWVW_12"
+"DWVW_16"
+"DWVW_24"
+"DPCM_8"
+"DPCM_16"
+"VORBIS"
+"ALAC"
+
+# Common sample rates
+"8000"
+"11025"
+"16000"
+"22050"
+"32000"
+"44100"
+"48000"
+"88200"
+"96000"
+"176400"
+"192000"
+
+# Common bit depths
+"8"
+"16"
+"24"
+"32"
+"64"
+
+# Common channel counts
+"1"
+"2"
+"4"
+"6"
+"8"
+
+# Number strings
+"0"
+"-1"
+"0.0"
+"1.0"
+"-1.0"
