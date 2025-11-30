@@ -1,0 +1,4 @@
+TEST DEFINITIONS ::=
+BEGIN
+SimpleType ::= INTEGER
+END
