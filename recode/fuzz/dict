@@ -1,0 +1,48 @@
+# Recode dictionary for AFL++ fuzzing
+# Character set names
+"ASCII"
+"UTF-8"
+"UTF-16"
+"ISO-8859-1"
+"ISO-8859-2"
+"ISO-8859-15"
+"ISO_8859-1"
+"CP1252"
+"CP437"
+"CP850"
+"KOI8-R"
+"EUC-JP"
+"Shift_JIS"
+"GB2312"
+"Big5"
+"Latin-1"
+"Latin-2"
+# Encoding conversion syntax
+".."
+"/"
+","
+":"
+# Common options and modifiers
+"/CR"
+"/LF"
+"/CR-LF"
+"/d1"
+"/d2"
+# Special characters
+"\n"
+"\r"
+"\t"
+"\\x"
+"\\u"
+# HTML/XML entities
+"&amp;"
+"&lt;"
+"&gt;"
+"&quot;"
+"&#"
+# Base64
+"base64"
+"Base64"
+# Quoted-printable
+"QP"
+"quoted-printable"
