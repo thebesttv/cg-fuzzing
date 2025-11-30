@@ -1,0 +1,72 @@
+# mg editor command dictionary for AFL++ fuzzing
+# Based on mg/emacs command syntax
+
+# Basic editing commands
+"backward-char"
+"forward-char"
+"backward-word"
+"forward-word"
+"previous-line"
+"next-line"
+"beginning-of-line"
+"end-of-line"
+"beginning-of-buffer"
+"end-of-buffer"
+
+# Buffer operations
+"find-file"
+"save-buffer"
+"write-file"
+"insert-file"
+"switch-to-buffer"
+"kill-buffer"
+"list-buffers"
+
+# Window operations
+"split-window-vertically"
+"split-window-horizontally"
+"delete-window"
+"delete-other-windows"
+"other-window"
+
+# Editing
+"kill-line"
+"kill-word"
+"backward-kill-word"
+"yank"
+"set-mark-command"
+"kill-region"
+"copy-region-as-kill"
+
+# Search
+"isearch-forward"
+"isearch-backward"
+"query-replace"
+"replace-string"
+
+# Modes
+"auto-fill-mode"
+"overwrite-mode"
+"no-tab-mode"
+
+# Special
+"execute-extended-command"
+"eval-expression"
+"keyboard-quit"
+"suspend-emacs"
+"save-buffers-kill-emacs"
+
+# Key bindings
+"global-set-key"
+"local-set-key"
+
+# Delimiters
+"("
+")"
+"\""
+"'"
+" "
+"\n"
+"\t"
+";"
+":"
