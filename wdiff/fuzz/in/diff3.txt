@@ -1,0 +1,5 @@
+--- a/simple.txt
++++ b/simple.txt
+@@ -1 +1 @@
+-old text
++new text
