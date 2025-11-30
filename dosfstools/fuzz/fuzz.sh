@@ -65,7 +65,6 @@ fi
 
 # Base AFL arguments
 # -m none: No memory limit
-# -n: Skip initial calibration (for fsck.fat which needs a device)
 AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none"
 
 # --- Fuzzing Logic ---
