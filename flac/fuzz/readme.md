@@ -34,7 +34,7 @@ docker run -it --rm flac-fuzz ./fuzz.sh -j 4
 ## Fuzzing Strategy
 
 - **Target**: flac CLI binary (decode mode with `-d -c -f` options)
-- **Instrumentation**: afl-clang-lto (prevents hash collisions)
+- **Instrumentation**: afl-clang-fast (AFL++ instrumentation)
 - **CMPLOG**: Enabled for better coverage of comparison operations
 - **Input**: FLAC, WAV, AIFF, and raw audio files
 - **Static linking**: For better performance and reproducibility
