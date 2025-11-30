@@ -1,0 +1,77 @@
+#
+# AFL dictionary for potrace (PBM/PGM/PPM/BMP formats)
+#
+
+# PBM format
+"P1"
+"P4"
+
+# PGM format  
+"P2"
+"P5"
+
+# PPM format
+"P3"
+"P6"
+
+# BMP format
+"BM"
+
+# Common header elements
+"# comment"
+"\x0a"
+"\x0d\x0a"
+
+# Dimensions
+"1 1"
+"8 8"
+"16 16"
+"32 32"
+"64 64"
+"100 100"
+"255 255"
+"256 256"
+
+# Max value
+"1"
+"255"
+"65535"
+
+# Potrace command line options
+"-s"
+"-e"
+"-p"
+"-g"
+"-b"
+"-o"
+"-z"
+"-t"
+"-a"
+"-n"
+"-O"
+"-u"
+"-k"
+"-i"
+"-r"
+"-x"
+"-C"
+"-W"
+"-L"
+"-B"
+"-M"
+"-A"
+"-P"
+"--svg"
+"--eps"
+"--pdf"
+"--pgm"
+"--backend"
+"--blacklevel"
+"--invert"
+"--opaque"
+"--resolution"
+"--rotate"
+"--tight"
+"--flat"
+"--group"
+"--unit"
