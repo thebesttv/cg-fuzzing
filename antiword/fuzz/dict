@@ -1,0 +1,50 @@
+# antiword dictionary for AFL++ fuzzing
+# MS Word document format tokens
+
+# OLE compound file magic
+"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+
+# Common Word file headers
+"Word.Document"
+"Microsoft Word"
+"MSWordDoc"
+
+# Document structure
+"\x00\x00\x00\x00"
+"\xff\xff\xff\xff"
+"\xfe\xff"
+
+# Common property names
+"Title"
+"Author"
+"Subject"
+"Keywords"
+"Comments"
+"Template"
+"LastAuthor"
+"RevNumber"
+"EditTime"
+"LastPrinted"
+"CreateTime"
+"LastSaved"
+"TotalEditing"
+"NumPages"
+"NumWords"
+"NumChars"
+"AppName"
+"Security"
+
+# Section markers
+"\x00\x01"
+"\x00\x02"
+"\x00\x03"
+"\x00\x04"
+
+# Text formatting
+"\x00\x00\x00\x00\x00\x00\x00\x00"
+"\x01\x00\x00\x00"
+"\x02\x00\x00\x00"
+
+# Unicode markers
+"\xff\xfe"
+"\xfe\xff"

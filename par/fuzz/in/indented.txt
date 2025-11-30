@@ -1,0 +1,3 @@
+    This paragraph is indented.
+    Each line should maintain its indentation
+    when reformatted by par.

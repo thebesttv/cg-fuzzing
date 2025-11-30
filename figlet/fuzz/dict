@@ -1,0 +1,74 @@
+# figlet dictionary for AFL++ fuzzing
+# ASCII art and text patterns
+
+# Common text inputs
+"Hello"
+"World"
+"Test"
+"FIGLET"
+"abcdefghijklmnopqrstuvwxyz"
+"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+"0123456789"
+
+# Special characters
+"!"
+"@"
+"#"
+"$"
+"%"
+"^"
+"&"
+"*"
+"("
+")"
+"-"
+"_"
+"+"
+"="
+"["
+"]"
+"{"
+"}"
+"|"
+"\\"
+":"
+";"
+"'"
+"\""
+","
+"."
+"<"
+">"
+"?"
+"/"
+"~"
+"`"
+
+# Whitespace
+" "
+"\t"
+"\n"
+"\r"
+
+# Font-related
+"standard"
+"banner"
+"big"
+"block"
+"bubble"
+"digital"
+"lean"
+"mini"
+"script"
+"shadow"
+"slant"
+"small"
+
+# Long strings
+"The quick brown fox jumps over the lazy dog"
+"Lorem ipsum dolor sit amet"
+
+# Unicode-like
+"€"
+"£"
+"¥"

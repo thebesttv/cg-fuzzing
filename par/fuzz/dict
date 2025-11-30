@@ -1,0 +1,62 @@
+# par dictionary for AFL++ fuzzing
+# Text formatting tokens and special characters
+
+# Common words
+"the"
+"and"
+"for"
+"with"
+"from"
+"this"
+"that"
+"have"
+"will"
+
+# Punctuation
+"."
+","
+";"
+":"
+"!"
+"?"
+"-"
+"'"
+"\""
+
+# Whitespace patterns
+" "
+"  "
+"   "
+"\t"
+"\n"
+
+# Special formatting
+"---"
+"..."
+"--"
+"***"
+
+# Long lines
+"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor"
+
+# Short fragments
+"a"
+"I"
+"A"
+
+# Numbers
+"0"
+"1"
+"10"
+"100"
+"1000"
+
+# Environment variable format
+"PARINIT="
+"w72"
+"r1"
+"h0"
+"p0"
+"s0"
+"T4"
+"B=.,"

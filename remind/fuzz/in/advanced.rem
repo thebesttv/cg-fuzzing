@@ -1,0 +1,6 @@
+REM Jan 1 AT 12:00 DURATION 1:00 MSG New Year celebration
+REM Mon Wed Fri MSG Exercise day
+SET var 10
+IF var > 5
+REM MSG Variable is greater than 5
+ENDIF

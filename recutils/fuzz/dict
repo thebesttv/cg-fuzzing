@@ -1,0 +1,66 @@
+# recutils dictionary for AFL++ fuzzing
+# rec file format tokens
+
+# Field descriptors
+"%rec:"
+"%key:"
+"%mandatory:"
+"%unique:"
+"%type:"
+"%sort:"
+"%doc:"
+"%typedef:"
+"%auto:"
+"%allowed:"
+"%size:"
+"%prohibit:"
+
+# Type keywords
+"int"
+"real"
+"line"
+"regexp"
+"date"
+"uuid"
+"email"
+"bool"
+"range"
+"enum"
+
+# Operators for selection expressions
+"="
+"!="
+"<"
+">"
+"<="
+">="
+"~"
+"&&"
+"||"
+"!"
+
+# Common field names
+"Name:"
+"Id:"
+"Title:"
+"Description:"
+"Date:"
+"Email:"
+"Phone:"
+"Address:"
+"Status:"
+"Type:"
+"Value:"
+"Count:"
+
+# Special characters
+"\n"
+":"
+"#"
+"+"
+
+# Boolean values
+"true"
+"false"
+"yes"
+"no"

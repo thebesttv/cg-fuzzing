@@ -1,0 +1,13 @@
+%rec: Item
+%key: Id
+%type: Id int
+%type: Price real
+%mandatory: Name
+
+Id: 1
+Name: Widget
+Price: 19.99
+
+Id: 2
+Name: Gadget
+Price: 29.99
