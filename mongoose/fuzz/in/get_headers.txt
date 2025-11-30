@@ -1,0 +1,7 @@
+GET /path/to/resource?query=value HTTP/1.1
+Host: example.com
+User-Agent: Mozilla/5.0
+Accept: text/html,application/json
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
