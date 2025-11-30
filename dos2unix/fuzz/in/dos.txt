@@ -1,0 +1,3 @@
+Hello World
+This is a DOS file
+With CRLF line endings
