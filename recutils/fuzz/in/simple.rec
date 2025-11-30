@@ -1,0 +1,9 @@
+%rec: Person
+
+Name: John Doe
+Email: john@example.com
+Age: 30
+
+Name: Jane Smith
+Email: jane@example.com
+Age: 25
