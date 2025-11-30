@@ -1,0 +1,100 @@
+# mxml (Mini-XML) dictionary for AFL++ fuzzing
+# Based on XML syntax
+
+# XML declaration
+"<?xml"
+"version"
+"encoding"
+"standalone"
+"?>"
+
+# Common encodings
+"UTF-8"
+"UTF-16"
+"ISO-8859-1"
+"ASCII"
+
+# XML tags
+"<"
+"</"
+">"
+"/>"
+"<!"
+
+# Comments
+"<!--"
+"-->"
+
+# CDATA
+"<![CDATA["
+"]]>"
+
+# DOCTYPE
+"<!DOCTYPE"
+"<!ENTITY"
+"<!ELEMENT"
+"<!ATTLIST"
+"SYSTEM"
+"PUBLIC"
+
+# Processing instructions
+"<?"
+"?>"
+
+# Namespace
+"xmlns"
+"xmlns:"
+
+# Attributes
+"="
+"\""
+"'"
+
+# Common attribute values
+"yes"
+"no"
+"true"
+"false"
+
+# Entities
+"&lt;"
+"&gt;"
+"&amp;"
+"&apos;"
+"&quot;"
+"&#"
+"&#x"
+
+# Numeric character references
+"&#10;"
+"&#13;"
+"&#32;"
+"&#60;"
+"&#62;"
+"&#38;"
+"&#65;"
+"&#0;"
+
+# Common elements
+"root"
+"element"
+"item"
+"node"
+"data"
+"value"
+"name"
+"type"
+"id"
+"version"
+
+# Whitespace
+" "
+"\t"
+"\n"
+"\r"
+
+# Sample XML structures
+"<root>"
+"</root>"
+"<item/>"
+"<?xml version=\"1.0\"?>"
