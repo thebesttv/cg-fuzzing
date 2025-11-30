@@ -1,0 +1,4 @@
+# Set options
+set show-changes = yes
+set show-id = yes
+set tab-size = 4

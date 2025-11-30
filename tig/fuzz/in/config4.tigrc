@@ -1,0 +1,3 @@
+# Bind keys
+bind generic g move-first-line
+bind main G move-last-line

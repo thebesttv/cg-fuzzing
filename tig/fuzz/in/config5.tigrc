@@ -1,0 +1,6 @@
+# Complex config
+set line-graphics = utf-8
+set show-changes = yes
+set horizontal-scroll = 50%
+color diff-header default magenta
+bind main C !git cherry-pick %(commit)
