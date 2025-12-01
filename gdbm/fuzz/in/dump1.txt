@@ -1,0 +1,8 @@
+# GDBM dump file
+version=1.0
+format=standard
+count=2
+# End of header
+hello,world
+foo,bar
+# End of data
