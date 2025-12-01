@@ -1,0 +1,12 @@
+VERSION=3
+format=print
+type=btree
+dupsort
+HEADER=END
+ k1
+ v1
+ k1
+ v2
+ k2
+ v3
+DATA=END
