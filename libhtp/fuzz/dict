@@ -1,0 +1,146 @@
+# HTTP fuzzing dictionary for libhtp
+# Based on HTTP/1.1 protocol keywords
+
+# HTTP Methods
+"GET"
+"POST"
+"PUT"
+"DELETE"
+"HEAD"
+"OPTIONS"
+"PATCH"
+"CONNECT"
+"TRACE"
+
+# HTTP Versions
+"HTTP/1.0"
+"HTTP/1.1"
+"HTTP/2"
+"HTTP/0.9"
+
+# Common Headers
+"Host:"
+"User-Agent:"
+"Accept:"
+"Accept-Language:"
+"Accept-Encoding:"
+"Accept-Charset:"
+"Authorization:"
+"Cache-Control:"
+"Connection:"
+"Content-Length:"
+"Content-Type:"
+"Cookie:"
+"Date:"
+"Expect:"
+"From:"
+"If-Match:"
+"If-Modified-Since:"
+"If-None-Match:"
+"If-Range:"
+"If-Unmodified-Since:"
+"Max-Forwards:"
+"Pragma:"
+"Proxy-Authorization:"
+"Range:"
+"Referer:"
+"TE:"
+"Transfer-Encoding:"
+"Upgrade:"
+"Via:"
+"Warning:"
+"X-Forwarded-For:"
+"X-Requested-With:"
+
+# Response Headers
+"Age:"
+"Allow:"
+"ETag:"
+"Expires:"
+"Last-Modified:"
+"Location:"
+"Proxy-Authenticate:"
+"Retry-After:"
+"Server:"
+"Set-Cookie:"
+"Vary:"
+"WWW-Authenticate:"
+
+# Content Types
+"application/json"
+"application/xml"
+"application/x-www-form-urlencoded"
+"multipart/form-data"
+"text/html"
+"text/plain"
+"text/xml"
+
+# Encodings
+"gzip"
+"deflate"
+"identity"
+"chunked"
+"compress"
+"br"
+
+# Connection values
+"keep-alive"
+"close"
+"upgrade"
+
+# Cache-Control values
+"no-cache"
+"no-store"
+"max-age=0"
+"must-revalidate"
+"private"
+"public"
+
+# Status codes
+"200 OK"
+"201 Created"
+"204 No Content"
+"301 Moved Permanently"
+"302 Found"
+"304 Not Modified"
+"400 Bad Request"
+"401 Unauthorized"
+"403 Forbidden"
+"404 Not Found"
+"500 Internal Server Error"
+"502 Bad Gateway"
+"503 Service Unavailable"
+
+# Special characters
+"\r\n"
+"\r\n\r\n"
+": "
+"="
+"&"
+"?"
+"/"
+"#"
+"%"
+"+"
+";"
+","
+"*"
+
+# Boundary markers
+"--"
+"boundary="
+
+# URL encoding
+"%20"
+"%00"
+"%0d%0a"
+"%3d"
+"%26"
+"%3f"
+
+# Numbers
+"0"
+"1"
+"-1"
+"2147483647"
+"4294967295"
