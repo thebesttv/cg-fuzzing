@@ -1,0 +1,3 @@
+GET /path?name=value HTTP/1.1
+Host: localhost
+Cookie: session=test
