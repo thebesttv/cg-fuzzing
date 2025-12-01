@@ -80,12 +80,12 @@ if [ "${PARALLEL}" -eq 1 ]; then
         CMPLOG_ARGS="-c ${CMPLOG_BIN}"
     fi
 
-    # pv reads from stdin or file, for fuzzing we use --help with various args
-    # The @@ will be replaced with the fuzz input file containing command line args
+    # pv monitors data transfer, fuzz the data it processes
+    # We use -q (quiet) to suppress progress output, and -d to discard output
     afl-fuzz \
         ${AFL_ARGS} \
         ${CMPLOG_ARGS} \
-        -- "${TARGET_BIN}" --help < @@
+        -- "${TARGET_BIN}" -q @@
 
 else
     # === Parallel Mode (Headless) ===
@@ -109,7 +109,7 @@ else
         ${AFL_ARGS} \
         ${CMPLOG_ARGS} \
         -M main \
-        -- "${TARGET_BIN}" --help < @@ >/dev/null 2>&1 &
+        -- "${TARGET_BIN}" -q @@ >/dev/null 2>&1 &
 
     pids+=($!)
 
@@ -123,7 +123,7 @@ else
         afl-fuzz \
             ${AFL_ARGS} \
             -S "slave${i}" \
-            -- "${TARGET_BIN}" --help < @@ >/dev/null 2>&1 &
+            -- "${TARGET_BIN}" -q @@ >/dev/null 2>&1 &
 
         pids+=($!)
     done

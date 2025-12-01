@@ -12,17 +12,15 @@ This directory contains resources for fuzzing pv (Pipe Viewer) using AFL++.
 ## External Resources
 
 The dictionary file (`dict`) was created for this project based on:
-- pv command line options (-p, -t, -e, -r, etc.)
-- Long options (--progress, --timer, etc.)
-- Format specifiers (%p, %t, %e, etc.)
-- Size suffixes (k, K, m, M, g, G)
+- Common byte patterns (null bytes, newlines, etc.)
+- Text patterns
+- Special characters
 
 The initial input corpus contains:
-- `progress.txt` - Simple progress flag
-- `combo.txt` - Common flag combination
-- `ratelimit.txt` - Rate limiting options
-- `named.txt` - Named transfer with force
-- `format.txt` - Custom format string
+- `simple.bin` - Simple text data
+- `binary.bin` - Binary data with various byte values
+- `lines.txt` - Multi-line text
+- `zeros.bin` - Null byte data
 
 ## Usage
 
@@ -46,7 +44,7 @@ docker run -it --rm pv-fuzz ./fuzz.sh -j 4
 - **Target**: pv binary (Pipe Viewer)
 - **Instrumentation**: afl-clang-lto (prevents hash collisions)
 - **CMPLOG**: Enabled for better coverage of comparison operations
-- **Input**: Command line argument combinations via stdin
+- **Input**: Binary/text data files passed as file argument with -q flag
 - **Static linking**: For better performance and reproducibility
 
 ## Version
