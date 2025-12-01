@@ -1,0 +1,6 @@
+package "groups"
+version "1.0"
+
+defgroup "mode" groupdesc="Operating mode"
+groupoption "mode-a" a "Mode A" group="mode"
+groupoption "mode-b" b "Mode B" group="mode"
