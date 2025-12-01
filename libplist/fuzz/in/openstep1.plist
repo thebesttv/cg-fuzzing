@@ -1,0 +1,5 @@
+{
+    Name = Test;
+    Value = 123;
+    Array = (a, b, c);
+}
