@@ -1,0 +1,3 @@
+package "minimal"
+version "0.1"
+option "flag" f "A flag" flag on

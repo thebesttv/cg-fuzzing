@@ -1,0 +1,17 @@
+package "advanced"
+version "2.0"
+purpose "Advanced test"
+description "Tests various features"
+
+section "Input/Output"
+option "input" i "Input file" string typestr="FILE" required
+option "output" o "Output file" string typestr="FILE" optional
+
+section "Options"
+option "count" n "Number of items" int default="10" optional
+option "size" s "Size in bytes" long default="1024"
+option "ratio" r "Ratio value" double default="0.5"
+
+section "Flags"
+option "verbose" v "Be verbose" flag off
+option "quiet" q "Be quiet" flag off
