@@ -1,0 +1,45 @@
+# Blosc compression fuzzing dictionary
+# Based on blosc chunk format
+
+# Magic numbers
+"\x02\x01\x01\x01"
+"\x02"
+"\x01"
+
+# Block sizes
+"\x00\x00\x01\x00"
+"\x00\x00\x02\x00"
+"\x00\x00\x04\x00"
+"\x00\x00\x08\x00"
+"\x00\x00\x10\x00"
+"\x00\x00\x20\x00"
+
+# Compression levels
+"\x00"
+"\x01"
+"\x05"
+"\x09"
+
+# Shuffle flags
+"\x00"
+"\x01"
+"\x02"
+
+# Compressor codes
+"\x00"
+"\x01"
+"\x02"
+"\x03"
+"\x04"
+
+# Type sizes
+"\x01"
+"\x02"
+"\x04"
+"\x08"
+
+# Common patterns
+"\x00\x00\x00\x00"
+"\xff\xff\xff\xff"
+"\x00"
+"\xff"
