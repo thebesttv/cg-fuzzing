@@ -1,0 +1,88 @@
+# ZIP file format magic and signatures
+
+# Local file header signature
+"PK\x03\x04"
+
+# Central directory header signature
+"PK\x01\x02"
+
+# End of central directory signature
+"PK\x05\x06"
+
+# ZIP64 end of central directory
+"PK\x06\x06"
+"PK\x06\x07"
+
+# Data descriptor signature
+"PK\x07\x08"
+
+# Archive extra data record
+"PK\x06\x08"
+
+# Compression methods
+"\x00\x00"
+"\x08\x00"
+"\x09\x00"
+"\x0c\x00"
+"\x0e\x00"
+
+# Common version values
+"\x14\x00"
+"\x0a\x00"
+"\x2d\x00"
+
+# General purpose bit flags
+"\x00\x00"
+"\x08\x00"
+"\x01\x00"
+"\x02\x00"
+"\x00\x08"
+
+# Common sizes
+"\x00\x00\x00\x00"
+"\xff\xff\xff\xff"
+"\x00\x01"
+"\x00\x02"
+"\x00\x04"
+
+# CRC placeholder
+"\x00\x00\x00\x00"
+
+# File attributes
+"\x00\x00\x00\x00"
+"\x20\x00\x00\x00"
+
+# Date/time
+"\x00\x00"
+"\x21\x00"
+
+# Extra field headers
+"\x01\x00"
+"\x09\x00"
+"\x0a\x00"
+"\x75\x78"
+"\x55\x54"
+
+# Common filenames
+"test.txt"
+"file.bin"
+".."
+"../"
+"/"
+"\\"
+
+# Null terminators
+"\x00"
+
+# End of central directory record values
+"\x00\x00"
+"\x01\x00"
+"\x02\x00"
+"\xff\xff"
+
+# Edge cases
+"\xff\xff\xff\xff\xff\xff\xff\xff"
+"\x00\x00\x00\x00\x00\x00\x00\x00"
+
+# Comment marker
+"\x00\x00"
