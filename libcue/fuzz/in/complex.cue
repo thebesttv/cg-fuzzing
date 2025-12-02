@@ -1,0 +1,13 @@
+REM GENRE Rock
+REM DATE 2020
+PERFORMER "Test Artist"
+TITLE "Test Album"
+FILE "track01.wav" WAVE
+  TRACK 01 AUDIO
+    TITLE "Song One"
+    PERFORMER "Test Artist"
+    INDEX 00 00:00:00
+    INDEX 01 00:02:00
+  TRACK 02 AUDIO
+    TITLE "Song Two"
+    INDEX 01 05:30:00
