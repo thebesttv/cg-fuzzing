@@ -1,0 +1,7 @@
+VERSION=3
+format=print
+type=btree
+HEADER=END
+ key1
+ value1
+DATA=END

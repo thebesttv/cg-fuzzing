@@ -1,0 +1,7 @@
+# GDBM dump file
+version=1.0
+format=standard
+count=1
+# End of header
+k1,v1
+# End of data
