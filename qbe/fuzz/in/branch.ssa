@@ -1,0 +1,10 @@
+export function w $abs(w %x) {
+@start
+    %cond =w csltw %x, 0
+    jnz %cond, @neg, @pos
+@neg
+    %r1 =w sub 0, %x
+    ret %r1
+@pos
+    ret %x
+}
