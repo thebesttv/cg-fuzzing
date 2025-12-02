@@ -1,0 +1,34 @@
+# LZFSE compression dictionary for fuzzing
+# Based on LZFSE format specifications
+
+# LZFSE magic bytes
+"bvxn"
+"bvx2"
+"bvx-"
+"bvx$"
+
+# Common size values
+"\x00\x00\x00\x00"
+"\x01\x00\x00\x00"
+"\x10\x00\x00\x00"
+"\x00\x01\x00\x00"
+"\x00\x10\x00\x00"
+"\x00\x00\x01\x00"
+"\x00\x00\x10\x00"
+
+# Byte patterns
+"\xff\xff\xff\xff"
+"\x00"
+"\xff"
+"\x7f"
+"\x80"
+
+# Small sizes
+"\x01"
+"\x02"
+"\x04"
+"\x08"
+"\x10"
+"\x20"
+"\x40"
+"\x80"
