@@ -1,0 +1,61 @@
+# CUE sheet dictionary for fuzzing
+# Based on CUE sheet format specifications
+
+# Main keywords
+"FILE"
+"TRACK"
+"INDEX"
+"PREGAP"
+"POSTGAP"
+"TITLE"
+"PERFORMER"
+"SONGWRITER"
+"CATALOG"
+"CDTEXTFILE"
+"FLAGS"
+"ISRC"
+"REM"
+
+# Track types
+"AUDIO"
+"CDG"
+"MODE1/2048"
+"MODE1/2352"
+"MODE2/2048"
+"MODE2/2324"
+"MODE2/2336"
+"MODE2/2352"
+"CDI/2336"
+"CDI/2352"
+
+# File types
+"BINARY"
+"MOTOROLA"
+"AIFF"
+"WAVE"
+"MP3"
+
+# Flags
+"DCP"
+"4CH"
+"PRE"
+"SCMS"
+
+# Common formats
+"00:00:00"
+"01:00:00"
+"00:01:00"
+"00:00:01"
+"99:99:99"
+
+# Quoted strings
+"\"\""
+"\"Track 01\""
+"\"Unknown Artist\""
+"\"Unknown Album\""
+
+# Common numeric values
+"01"
+"02"
+"00"
+"99"

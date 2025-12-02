@@ -1,0 +1,34 @@
+# ncompress (LZW) dictionary for fuzzing
+# Based on compress file format specifications
+
+# Magic bytes for .Z files
+"\x1f\x9d"
+
+# Max bits values (3rd byte)
+"\x90"
+"\x91"
+"\x8f"
+"\x9f"
+
+# Common header patterns
+"\x1f\x9d\x90"
+"\x1f\x9d\x91"
+"\x1f\x9d\x8f"
+
+# Common size values
+"\x00\x00\x00\x00"
+"\x01\x00\x00\x00"
+"\xff\xff\xff\xff"
+
+# Byte patterns
+"\x00"
+"\xff"
+"\x7f"
+"\x80"
+"\x01"
+"\x02"
+"\x04"
+"\x08"
+"\x10"
+"\x20"
+"\x40"

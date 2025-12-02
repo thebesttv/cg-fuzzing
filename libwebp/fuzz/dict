@@ -1,0 +1,39 @@
+# WebP dictionary for fuzzing
+# Based on WebP file format specifications
+
+# WebP file signature
+"RIFF"
+"WEBP"
+
+# WebP chunk types
+"VP8 "
+"VP8L"
+"VP8X"
+"ANIM"
+"ANMF"
+"ALPH"
+"ICCP"
+"EXIF"
+"XMP "
+
+# VP8L signature
+"\x2f"
+
+# Common values
+"\x00\x00\x00\x00"
+"\xff\xff\xff\xff"
+"\x01\x00\x00\x00"
+"\x00\x01\x00\x00"
+"\x00\x00\x01\x00"
+"\x00\x00\x00\x01"
+
+# Small dimension values
+"\x10\x00"
+"\x20\x00"
+"\x40\x00"
+"\x80\x00"
+"\x00\x01"
+"\x00\x02"
+
+# VP8 bitstream markers
+"\x9d\x01\x2a"
