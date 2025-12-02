@@ -1,0 +1,100 @@
+# LHA/LZH file format signatures and markers
+
+# Common LHA method IDs (5 bytes each)
+"-lh0-"
+"-lh1-"
+"-lh2-"
+"-lh3-"
+"-lh4-"
+"-lh5-"
+"-lh6-"
+"-lh7-"
+"-lhd-"
+"-lzs-"
+"-lz4-"
+"-lz5-"
+
+# Old format markers
+"-lz-"
+"-pm0-"
+"-pm1-"
+"-pm2-"
+
+# Header structure bytes
+"\x00"
+"\x01"
+"\x02"
+"\x15"
+"\x16"
+"\x20"
+
+# Header level indicators
+"\x00"
+"\x01"
+"\x02"
+
+# Common sizes
+"\x00\x00"
+"\x01\x00"
+"\x02\x00"
+"\xff\x7f"
+"\xff\xff"
+
+# Extended header types
+"\x00"
+"\x01"
+"\x02"
+"\x3f"
+"\x40"
+"\x41"
+"\x42"
+"\x50"
+"\x51"
+"\x52"
+"\x53"
+"\x54"
+
+# CRC markers
+"\x00\x00"
+
+# Attribute bytes
+"\x00"
+"\x01"
+"\x02"
+"\x04"
+"\x10"
+"\x20"
+
+# OS type indicators
+"M"
+"U"
+"W"
+
+# Path separators
+"\xff"
+"/"
+"\\"
+
+# Null terminators
+"\x00"
+
+# Date/time bytes
+"\x00\x00\x00\x00"
+
+# Common filename patterns
+".lzh"
+".lha"
+".txt"
+".doc"
+".exe"
+".com"
+
+# Edge cases
+"\x00\x00\x00\x00\x00\x00\x00\x00"
+"\xff\xff\xff\xff\xff\xff\xff\xff"
+
+# Compression specific
+"\x00\x01"
+"\x01\x00"
+"\x00\x02"
+"\x02\x00"

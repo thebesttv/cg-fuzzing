@@ -1,0 +1,151 @@
+# Markdown headers
+"# "
+"## "
+"### "
+"#### "
+"##### "
+"###### "
+
+# Emphasis
+"*"
+"**"
+"_"
+"__"
+"~~"
+"***"
+"___"
+
+# Links and images
+"["
+"]"
+"("
+")"
+"[]()"
+"[text](url)"
+"![]()"
+"![alt](url)"
+"[text][ref]"
+
+# Code
+"`"
+"``"
+"```"
+"~~~"
+"```c"
+"```python"
+"```javascript"
+
+# Lists
+"- "
+"* "
+"+ "
+"1. "
+"2. "
+"   - "
+"   * "
+
+# Blockquotes
+"> "
+">> "
+">>> "
+
+# Horizontal rules
+"---"
+"***"
+"___"
+"- - -"
+"* * *"
+
+# Tables (GFM)
+"|"
+"| "
+" |"
+"| --- |"
+"|---|"
+":---"
+"---:"
+":---:"
+
+# Task lists (GFM)
+"- [ ] "
+"- [x] "
+"* [ ] "
+"* [x] "
+
+# Autolinks (GFM)
+"<"
+">"
+"<http://>"
+"<https://>"
+"www."
+".com"
+".org"
+
+# HTML
+"<br>"
+"<br/>"
+"<hr>"
+"<div>"
+"</div>"
+"<span>"
+"</span>"
+"<p>"
+"</p>"
+"<!-- -->"
+"&amp;"
+"&lt;"
+"&gt;"
+"&#"
+"&#x"
+
+# Escapes
+"\\"
+"\\*"
+"\\["
+"\\]"
+"\\`"
+"\\#"
+
+# Line breaks
+"\n"
+"\r\n"
+"  \n"
+
+# Special characters
+"\t"
+"&nbsp;"
+"\x00"
+"\xff"
+
+# Extended syntax
+"^"
+"~"
+"="
+"++"
+"--"
+
+# Footnotes
+"[^"
+"[^1]"
+"[^note]"
+
+# Definition lists
+": "
+"\n: "
+
+# Math (if supported)
+"$"
+"$$"
+"\\("
+"\\)"
+"\\["
+"\\]"
+
+# Strikethrough (GFM)
+"~~text~~"
+
+# Mentions and references (GFM)
+"@"
+"#"
+"@user"
+"#123"

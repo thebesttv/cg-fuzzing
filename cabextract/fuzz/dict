@@ -1,0 +1,94 @@
+# CAB file format magic and signatures
+"MSCF"
+"\x4d\x53\x43\x46"
+
+# Common CAB header fields
+"\x00\x00\x00\x00"
+"\x03\x01"
+"\x01\x00"
+"\x02\x00"
+
+# Compression types
+"\x00\x00"
+"\x01\x00"
+"\x02\x00"
+"\x03\x00"
+"\x15\x00"
+
+# Common lengths
+"\x00"
+"\x01"
+"\x02"
+"\x04"
+"\x08"
+"\x10"
+"\x20"
+"\x40"
+"\x80"
+"\xff"
+
+# Null terminators
+"\x00"
+
+# Common folder/file indicators
+"folder"
+"file"
+".cab"
+".exe"
+".dll"
+".sys"
+
+# LZX compression markers
+"LZX"
+"\x43\x4b"
+
+# MSZIP markers
+"\x43\x4b"
+"CK"
+
+# Quantum markers
+"QTM"
+
+# Checksum markers
+"\x00\x00\x00\x00"
+"\xff\xff\xff\xff"
+
+# Size markers (various)
+"\x00\x01"
+"\x00\x02"
+"\x00\x04"
+"\x00\x08"
+"\xff\xff"
+"\xff\x7f"
+
+# Date/time fields
+"\x00\x00"
+"\x21\x00"
+"\x00\x21"
+
+# Attribute flags
+"\x01"
+"\x02"
+"\x04"
+"\x10"
+"\x20"
+"\x80"
+
+# Common Windows paths
+"\\"
+"/"
+"WINDOWS"
+"System32"
+"inf"
+"driver"
+
+# Multi-cab markers
+"\x01"
+"\x02"
+"disk"
+"next"
+"prev"
+
+# Edge cases
+"\x00\x00\x00\x00\x00\x00\x00\x00"
+"\xff\xff\xff\xff\xff\xff\xff\xff"
