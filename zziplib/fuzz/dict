@@ -1,0 +1,39 @@
+# Dictionary for zziplib fuzzing
+# ZIP file format and compression patterns
+
+# ZIP magic numbers
+"\x50\x4b\x03\x04"
+"\x50\x4b\x05\x06"
+"\x50\x4b\x01\x02"
+"PK"
+
+# Compression methods
+"\x00\x00"
+"\x08\x00"
+
+# ZIP version numbers
+"\x0a\x00"
+"\x14\x00"
+"\x2d\x00"
+
+# Central directory signature
+"\x50\x4b\x01\x02"
+
+# End of central directory
+"\x50\x4b\x05\x06"
+
+# Data descriptor signature
+"\x50\x4b\x07\x08"
+
+# Common CRC-32 values
+"\x00\x00\x00\x00"
+"\xff\xff\xff\xff"
+
+# File header flags
+"\x00\x00"
+"\x08\x00"
+"\x09\x00"
+
+# Typical sizes
+"\x00\x00\x00\x01"
+"\x01\x00\x00\x00"
