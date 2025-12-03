@@ -1,0 +1,38 @@
+# Dictionary for xdelta3 fuzzing
+# VCDIFF format and xdelta3-specific patterns
+
+# VCDIFF magic numbers
+"\xd6\xc3\xc4\x00"
+"VCDIFF"
+
+# Window indicator flags
+"\x00"
+"\x01"
+"\x02"
+"\x04"
+
+# Instruction codes
+"ADD"
+"RUN"
+"COPY"
+
+# Common sizes
+"\x00\x00\x00\x01"
+"\x00\x00\x01\x00"
+"\x00\x01\x00\x00"
+"\x01\x00\x00\x00"
+
+# Variable-length integers (VLI)
+"\x00"
+"\x7f"
+"\x80\x01"
+"\xff\x01"
+
+# Compression indicators
+"\x00"
+"\x01"
+"\x02"
+
+# Common byte sequences
+"\x00\x00\x00\x00"
+"\xff\xff\xff\xff"
