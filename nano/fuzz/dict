@@ -1,0 +1,77 @@
+# Nano text editor dictionary
+# Based on nano syntax and commands
+
+# Control sequences
+"^X"
+"^O"
+"^W"
+"^K"
+"^U"
+"^J"
+"^T"
+"^C"
+"^R"
+"^G"
+"^/"
+"^_"
+"^\\"
+"^V"
+"^Y"
+
+# Alt sequences
+"M-U"
+"M-E"
+"M-6"
+"M-A"
+"M-}"
+"M-{"
+"M-)"
+"M-("
+"M-]"
+"M-["
+
+# Special keys
+"\x1b[A"
+"\x1b[B"
+"\x1b[C"
+"\x1b[D"
+"\x1b[H"
+"\x1b[F"
+
+# Common text patterns
+"\n"
+"\t"
+"    "
+"\r\n"
+
+# File operations
+"test.txt"
+"/tmp/file"
+"~/.nanorc"
+
+# Search patterns
+"search"
+"replace"
+"\\n"
+"\\t"
+".*"
+"[a-z]"
+
+# Config keywords
+"set"
+"unset"
+"bind"
+"unbind"
+"syntax"
+"color"
+"include"
+
+# Common words
+"include"
+"define"
+"function"
+"return"
+"if"
+"else"
+"while"
+"for"
