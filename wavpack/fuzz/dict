@@ -1,0 +1,25 @@
+# Dictionary for wavpack fuzzing
+# WavPack file format patterns
+
+# WavPack magic
+"wvpk"
+"\x77\x76\x70\x6b"
+
+# RIFF/WAVE magic
+"RIFF"
+"WAVE"
+"fmt "
+"data"
+
+# Common sizes
+"\x00\x00\x00\x01"
+"\x01\x00\x00\x00"
+
+# Audio sample rates (little-endian)
+"\x44\xac\x00\x00"
+"\x80\xbb\x00\x00"
+
+# Bits per sample
+"\x10\x00"
+"\x18\x00"
+"\x20\x00"
