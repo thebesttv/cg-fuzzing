@@ -1,0 +1,14 @@
+# Dictionary for lzip fuzzing
+# lzip file format patterns
+
+# lzip magic
+"LZIP"
+"\x4c\x5a\x49\x50"
+
+# LZMA patterns
+"\x00\x00"
+"\xff\xff"
+
+# Common sizes
+"\x00\x00\x00\x01"
+"\x01\x00\x00\x00"
