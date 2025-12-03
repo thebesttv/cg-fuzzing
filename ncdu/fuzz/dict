@@ -1,0 +1,55 @@
+# ncdu dictionary
+# Based on ncdu commands and options
+
+# Commands
+"d"
+"n"
+"s"
+"c"
+"g"
+"a"
+"i"
+"r"
+"b"
+"e"
+"q"
+
+# Options
+"-x"
+"-e"
+"-r"
+"-o"
+"-f"
+"-0"
+"-1"
+"-2"
+"-q"
+"-v"
+"-h"
+"--si"
+"--exclude"
+
+# Paths
+"."
+".."
+"/"
+"/tmp"
+"/home"
+"/var"
+"~"
+
+# Export format keywords
+"NAME"
+"DIR"
+"FILE"
+"LINK"
+"ASIZE"
+"DSIZE"
+"DEV"
+"INO"
+
+# Common filenames
+"data"
+"test"
+"file.txt"
+"dir/"
