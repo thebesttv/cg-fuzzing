@@ -24,8 +24,8 @@ WORKDIR /home/SVF-tools/gperf-3.1
 # -Wno-register to suppress C++17 register keyword error
 RUN CC=wllvm \
     CXX=wllvm++ \
-    CFLAGS="-g -O0" \
-    CXXFLAGS="-g -O0 -Wno-register" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
+    CXXFLAGS="-g -O0 -Xclang -disable-llvm-passes -Wno-register" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure
 

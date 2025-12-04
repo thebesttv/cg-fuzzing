@@ -29,7 +29,7 @@ RUN apt-get update && \
 RUN mkdir build && cd build && \
     CC=wllvm \
     cmake .. \
-    -DCMAKE_C_FLAGS="-g -O0" \
+    -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
     -DBUILD_SHARED_LIBS=OFF
 
@@ -38,7 +38,7 @@ RUN cd build && make -j$(nproc)
 # Build a simple test harness that parses CUE files
 SHELL ["/bin/bash", "-c"]
 RUN echo -e '#include <stdio.h>\n#include <stdlib.h>\n#include "libcue.h"\nint main(int argc, char *argv[]) {\n    if (argc < 2) { fprintf(stderr, "Usage: %s <file>\\n", argv[0]); return 1; }\n    FILE *f = fopen(argv[1], "r");\n    if (!f) { perror("fopen"); return 1; }\n    Cd *cd = cue_parse_file(f);\n    fclose(f);\n    if (cd) { cd_delete(cd); printf("OK\\n"); }\n    else { printf("FAIL\\n"); }\n    return 0;\n}' > cue_parse.c
-RUN wllvm -g -O0 -I. cue_parse.c -Lbuild -lcue \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -I. cue_parse.c -Lbuild -lcue \
     -static -Wl,--allow-multiple-definition -o cue_parse
 
 # Create bc directory and extract bitcode files

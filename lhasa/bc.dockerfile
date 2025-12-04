@@ -21,7 +21,7 @@ WORKDIR /home/SVF-tools/lhasa-0.4.0
 
 # 3. Build with WLLVM using autotools
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared
 

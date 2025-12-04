@@ -28,7 +28,7 @@ RUN apt-get update && \
 # Configure with static linking and WLLVM
 # Disable shared libraries and enable static curl
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared --enable-static --with-openssl --without-libpsl
 

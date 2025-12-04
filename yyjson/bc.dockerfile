@@ -23,7 +23,7 @@ WORKDIR /home/SVF-tools/yyjson-0.12.0
 RUN mkdir build && cd build && \
     CC=wllvm \
     cmake .. \
-    -DCMAKE_C_FLAGS="-g -O0" \
+    -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
     -DBUILD_SHARED_LIBS=OFF \
     -DYYJSON_BUILD_TESTS=OFF
@@ -34,7 +34,7 @@ RUN cd build && make -j$(nproc)
 COPY yyjson/harness.c harness.c
 
 # Build the harness
-RUN wllvm -g -O0 -I src \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -I src \
     -static -Wl,--allow-multiple-definition \
     harness.c build/libyyjson.a -o yyjson_parse
 

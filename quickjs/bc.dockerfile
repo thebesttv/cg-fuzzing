@@ -31,7 +31,7 @@ RUN apt-get update && \
 # Need _GNU_SOURCE for environ and sighandler_t
 # Build only qjs target to avoid bignum/example issues
 RUN make CC=wllvm \
-    CFLAGS="-g -O0 -D_GNU_SOURCE -DCONFIG_VERSION=\\\"2024-01-13\\\"" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes -D_GNU_SOURCE -DCONFIG_VERSION=\\\"2024-01-13\\\"" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     CONFIG_LTO= \
     CONFIG_BIGNUM= \

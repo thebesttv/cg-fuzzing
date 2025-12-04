@@ -21,9 +21,9 @@ WORKDIR /home/SVF-tools/pdjson-master
 
 # Build with static linking and WLLVM
 # Build the pretty tool which reads and reformats JSON
-RUN wllvm -c -g -O0 -std=c99 pdjson.c -o pdjson.o && \
-    wllvm -c -g -O0 -std=c99 tests/pretty.c -o tests/pretty.o && \
-    wllvm -g -O0 -static -Wl,--allow-multiple-definition -o pretty tests/pretty.o pdjson.o
+RUN wllvm -c -g -O0 -Xclang -disable-llvm-passes -std=c99 pdjson.c -o pdjson.o && \
+    wllvm -c -g -O0 -Xclang -disable-llvm-passes -std=c99 tests/pretty.c -o tests/pretty.o && \
+    wllvm -g -O0 -Xclang -disable-llvm-passes -static -Wl,--allow-multiple-definition -o pretty tests/pretty.o pdjson.o
 
 # Create bc directory and extract bitcode files
 RUN mkdir -p ~/bc && \

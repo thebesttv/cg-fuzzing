@@ -29,7 +29,7 @@ RUN apt-get update && \
 # Disable USE_READLINE for simpler static linking
 RUN sed -i 's/#define USE_READLINE/\/\/ #define USE_READLINE/' platform.h && \
     make CC=wllvm \
-    CFLAGS="-Wall -g -O0 -std=gnu11 -pedantic -DUNIX_HOST -DVER=\\\"3.2.2\\\" -DTAG=\\\"v3.2.2\\\"" \
+    CFLAGS="-Wall -g -O0 -Xclang -disable-llvm-passes -std=gnu11 -pedantic -DUNIX_HOST -DVER=\\\"3.2.2\\\" -DTAG=\\\"v3.2.2\\\"" \
     LIBS="-lm -static -Wl,--allow-multiple-definition" \
     -j$(nproc)
 

@@ -27,12 +27,12 @@ RUN apt-get update && \
 
 # Build par with WLLVM
 # par uses a protoMakefile - we'll build manually
-RUN wllvm -c -g -O0 buffer.c && \
-    wllvm -c -g -O0 charset.c && \
-    wllvm -c -g -O0 errmsg.c && \
-    wllvm -c -g -O0 reformat.c && \
-    wllvm -c -g -O0 par.c && \
-    wllvm -g -O0 -static -Wl,--allow-multiple-definition \
+RUN wllvm -c -g -O0 -Xclang -disable-llvm-passes buffer.c && \
+    wllvm -c -g -O0 -Xclang -disable-llvm-passes charset.c && \
+    wllvm -c -g -O0 -Xclang -disable-llvm-passes errmsg.c && \
+    wllvm -c -g -O0 -Xclang -disable-llvm-passes reformat.c && \
+    wllvm -c -g -O0 -Xclang -disable-llvm-passes par.c && \
+    wllvm -g -O0 -Xclang -disable-llvm-passes -static -Wl,--allow-multiple-definition \
         buffer.o charset.o errmsg.o reformat.o par.o -o par
 
 # Create bc directory and extract bitcode files

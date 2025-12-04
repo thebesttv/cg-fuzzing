@@ -22,7 +22,7 @@ WORKDIR /home/SVF-tools/potrace-1.16
 # Configure and build with WLLVM for bitcode extraction
 # potrace uses autotools
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared
 

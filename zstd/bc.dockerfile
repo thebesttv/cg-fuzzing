@@ -28,7 +28,7 @@ RUN apt-get update && \
 # Build zstd with WLLVM (static linking)
 # zstd uses make-based build system by default
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     make -j$(nproc) zstd-release
 

@@ -29,7 +29,7 @@ RUN apt-get update && \
 # Need to modify for static linking
 RUN make -f Makefile.unix \
     CC=wllvm \
-    CFLAGS="-g -O0 -Wall -Wextra -Wno-unused-parameter" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes -Wall -Wextra -Wno-unused-parameter" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     jbig2dec
 

@@ -29,7 +29,7 @@ RUN apt-get update && \
 RUN mkdir build && cd build && \
     CC=wllvm \
     cmake .. \
-    -DCMAKE_C_FLAGS="-g -O0" \
+    -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
     -DBUILD_SHARED_LIBS=OFF \
     -DBUILD_STATIC_LIBS=ON
@@ -85,7 +85,7 @@ RUN printf '%s\n' '#include "llhttp.h"' \
     '    return 0;' \
     '}' > harness.c
 
-RUN wllvm -g -O0 -I./include -L./build -o llhttp_harness harness.c build/libllhttp.a -static -Wl,--allow-multiple-definition
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -I./include -L./build -o llhttp_harness harness.c build/libllhttp.a -static -Wl,--allow-multiple-definition
 
 # Create bc directory and extract bitcode files
 RUN mkdir -p ~/bc && \

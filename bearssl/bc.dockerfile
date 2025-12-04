@@ -28,9 +28,9 @@ RUN apt-get update && \
 # Build BearSSL with WLLVM
 # BearSSL uses a simple Makefile. Build only static lib and brssl tool
 # Add -fPIC to avoid relocation issues
-RUN make CC=wllvm CFLAGS="-g -O0 -fPIC" LDFLAGS="-static -Wl,--allow-multiple-definition" lib -j$(nproc)
-RUN make CC=wllvm CFLAGS="-g -O0 -fPIC" LDFLAGS="-static -Wl,--allow-multiple-definition" tools -j$(nproc) || true
-RUN make CC=wllvm CFLAGS="-g -O0 -fPIC" LDFLAGS="-static -Wl,--allow-multiple-definition" build/brssl -j$(nproc)
+RUN make CC=wllvm CFLAGS="-g -O0 -Xclang -disable-llvm-passes -fPIC" LDFLAGS="-static -Wl,--allow-multiple-definition" lib -j$(nproc)
+RUN make CC=wllvm CFLAGS="-g -O0 -Xclang -disable-llvm-passes -fPIC" LDFLAGS="-static -Wl,--allow-multiple-definition" tools -j$(nproc) || true
+RUN make CC=wllvm CFLAGS="-g -O0 -Xclang -disable-llvm-passes -fPIC" LDFLAGS="-static -Wl,--allow-multiple-definition" build/brssl -j$(nproc)
 
 # Create bc directory and extract bitcode files
 # BearSSL provides: brssl (CLI tool for SSL operations)

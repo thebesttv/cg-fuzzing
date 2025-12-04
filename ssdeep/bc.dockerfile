@@ -22,8 +22,8 @@ WORKDIR /home/SVF-tools/ssdeep-2.14.1
 # Configure with static linking and WLLVM
 RUN CC=wllvm \
     CXX=wllvm++ \
-    CFLAGS="-g -O0" \
-    CXXFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
+    CXXFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure
 

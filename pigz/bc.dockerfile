@@ -24,7 +24,7 @@ WORKDIR /home/SVF-tools/pigz-2.8
 RUN make clean || true && \
     make -j$(nproc) \
     CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition"
 
 # Create bc directory and extract bitcode files

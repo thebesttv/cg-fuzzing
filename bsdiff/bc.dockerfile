@@ -36,7 +36,7 @@ RUN ./autogen.sh
 
 # Configure and build bsdiff with WLLVM
 RUN CC=wllvm \
-    CFLAGS="-g -O0 -DBSDIFF_EXECUTABLE -DBSPATCH_EXECUTABLE" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes -DBSDIFF_EXECUTABLE -DBSPATCH_EXECUTABLE" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure
 

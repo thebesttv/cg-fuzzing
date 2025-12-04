@@ -29,7 +29,7 @@ RUN apt-get update && \
 RUN mkdir build && cd build && \
     CC=wllvm \
     cmake .. \
-    -DCMAKE_C_FLAGS="-g -O0" \
+    -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
     -DBUILD_SHARED_LIBS=OFF \
     -DENABLE_CJSON_TEST=OFF \
@@ -38,7 +38,7 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Build the afl harness manually
-RUN wllvm -g -O0 -I. -Lbuild fuzzing/afl.c -o afl_harness -lcjson \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -I. -Lbuild fuzzing/afl.c -o afl_harness -lcjson \
     -static -Wl,--allow-multiple-definition
 
 # Create bc directory and extract bitcode files

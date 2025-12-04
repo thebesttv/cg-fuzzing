@@ -28,7 +28,7 @@ RUN apt-get update && \
 # Build unsquashfs with WLLVM and static linking
 # Squashfs-tools uses a simple Makefile
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     make -j$(nproc) unsquashfs
 

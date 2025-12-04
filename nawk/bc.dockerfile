@@ -22,7 +22,7 @@ WORKDIR /home/SVF-tools/awk-20240728
 # Build with WLLVM
 # nawk uses a simple Makefile - override CC and HOSTCC
 RUN make CC=wllvm HOSTCC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition"
 
 # Create bc directory and extract bitcode files

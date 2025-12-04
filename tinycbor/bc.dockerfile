@@ -22,7 +22,7 @@ WORKDIR /home/SVF-tools/tinycbor-0.6.1
 # Build tinycbor with WLLVM and static linking
 # Using make with CC=wllvm
 RUN make CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     BUILD_SHARED=0 \
     BUILD_STATIC=1 \

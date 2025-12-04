@@ -23,7 +23,7 @@ WORKDIR /home/SVF-tools/capstone-5.0.3
 RUN mkdir build && cd build && \
     CC=wllvm CXX=wllvm++ \
     cmake .. \
-        -DCMAKE_C_FLAGS="-g -O0" \
+        -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
         -DBUILD_SHARED_LIBS=OFF \
         -DCAPSTONE_BUILD_STATIC=ON \

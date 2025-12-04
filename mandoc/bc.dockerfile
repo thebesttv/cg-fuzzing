@@ -21,7 +21,7 @@ WORKDIR /home/SVF-tools/mandoc-1.14.6
 
 # Configure mandoc with WLLVM
 # mandoc uses its own configure script, set CC in configure.local
-RUN printf 'CC=wllvm\nCFLAGS="-g -O0"\nLDFLAGS="-static -Wl,--allow-multiple-definition"\nSTATIC=-static\n' > configure.local
+RUN printf 'CC=wllvm\nCFLAGS="-g -O0 -Xclang -disable-llvm-passes"\nLDFLAGS="-static -Wl,--allow-multiple-definition"\nSTATIC=-static\n' > configure.local
 
 RUN ./configure
 

@@ -24,7 +24,7 @@ COPY mpack/fuzz_mpack.c .
 
 # Compile the fuzzing harness with WLLVM and mpack library
 # mpack is a single-file library, we can compile it directly
-RUN wllvm -g -O0 -DMPACK_READER=1 -DMPACK_EXTENSIONS=1 \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -DMPACK_READER=1 -DMPACK_EXTENSIONS=1 \
     -static -Wl,--allow-multiple-definition \
     -o fuzz_mpack fuzz_mpack.c src/mpack/mpack.c -lm
 

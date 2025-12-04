@@ -38,7 +38,7 @@ RUN cd /tmp && \
 # Build zziplib with WLLVM using CMake
 RUN mkdir build && cd build && \
     CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     cmake .. \
         -DCMAKE_BUILD_TYPE=Debug \

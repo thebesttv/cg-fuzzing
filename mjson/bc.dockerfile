@@ -60,7 +60,7 @@ RUN echo '#include <stdio.h>' > fuzz_harness.c && \
 
 # Build mjson with WLLVM (single file library)
 RUN wllvm \
-    -g -O0 \
+    -g -O0 -Xclang -disable-llvm-passes \
     -I. \
     -static -Wl,--allow-multiple-definition \
     -o mjson_fuzz \

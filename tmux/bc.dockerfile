@@ -33,7 +33,7 @@ RUN apt-get update && \
 # Configure and build tmux with WLLVM
 # Note: tmux needs libevent and ncurses, so we'll link statically where possible
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --enable-static
 

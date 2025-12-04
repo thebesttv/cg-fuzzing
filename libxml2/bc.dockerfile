@@ -30,10 +30,10 @@ RUN apt-get update && \
 RUN mkdir build && cd build && \
     CC=wllvm \
     CXX=wllvm++ \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     cmake .. \
-        -DCMAKE_C_FLAGS="-g -O0" \
+        -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
         -DBUILD_SHARED_LIBS=OFF \
         -DLIBXML2_WITH_PYTHON=OFF \
