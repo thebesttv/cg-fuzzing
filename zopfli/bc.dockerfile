@@ -28,7 +28,7 @@ RUN apt-get update && \
 # Build zopfli with WLLVM
 # zopfli uses a simple Makefile, override CC and flags
 RUN make CC=wllvm \
-    CFLAGS="-g -O0 -W -Wall -Wextra -ansi -pedantic -lm -Wno-unused-function" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes -W -Wall -Wextra -ansi -pedantic -lm -Wno-unused-function" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     zopfli
 

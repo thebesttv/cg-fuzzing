@@ -28,7 +28,7 @@ RUN apt-get update && \
 # Build antiword with WLLVM (Makefile-based project)
 # antiword uses a simple Makefile
 RUN make CC=wllvm \
-    CFLAGS="-g -O0 -DNDEBUG" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes -DNDEBUG" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     -j$(nproc)
 

@@ -28,12 +28,12 @@ RUN apt-get update && \
 
 # Build libcyaml with WLLVM
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     make -j$(nproc)
 
 # Build numerical example (reads YAML files)
 RUN cd examples/numerical && \
-    wllvm -g -O0 -I../../include -static -Wl,--allow-multiple-definition \
+    wllvm -g -O0 -Xclang -disable-llvm-passes -I../../include -static -Wl,--allow-multiple-definition \
         -o numerical main.c ../../build/release/libcyaml.a -lyaml
 
 # Create bc directory and extract bitcode files

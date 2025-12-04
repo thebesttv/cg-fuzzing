@@ -22,10 +22,10 @@ WORKDIR /home/SVF-tools/miniz-3.1.0
 # Build with CMake to generate export header and library
 RUN mkdir build && cd build && \
     CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     cmake .. \
         -DCMAKE_C_COMPILER=wllvm \
-        -DCMAKE_C_FLAGS="-g -O0" \
+        -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
         -DBUILD_SHARED_LIBS=OFF && \
     make -j$(nproc)
@@ -79,7 +79,7 @@ RUN echo '#include <stdio.h>' > fuzz_harness.c && \
 
 # Build the harness with the library
 RUN wllvm \
-    -g -O0 \
+    -g -O0 -Xclang -disable-llvm-passes \
     -I. -Ibuild \
     -static -Wl,--allow-multiple-definition \
     -o miniz_fuzz \

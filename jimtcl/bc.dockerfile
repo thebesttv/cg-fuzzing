@@ -29,7 +29,7 @@ RUN apt-get update && \
 # jimtcl uses its own configure script (not autotools)
 # Disable SSL/TLS to avoid static linking issues with OpenSSL
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-ssl
 

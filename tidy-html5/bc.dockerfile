@@ -23,7 +23,7 @@ WORKDIR /home/SVF-tools/tidy-html5-5.8.0
 RUN rm -rf build && mkdir build && cd build && \
     CC=wllvm \
     cmake .. \
-        -DCMAKE_C_FLAGS="-g -O0" \
+        -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
         -DBUILD_SHARED_LIB=OFF
 

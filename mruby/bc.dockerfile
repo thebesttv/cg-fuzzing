@@ -28,7 +28,7 @@ RUN apt-get update && \
 # Build mruby with WLLVM
 # mruby uses its own build system based on Ruby Rake
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     rake
 

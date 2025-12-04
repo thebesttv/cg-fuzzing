@@ -27,7 +27,7 @@ RUN apt-get update && \
 
 # Configure with static linking and WLLVM
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared --enable-static
 
@@ -36,7 +36,7 @@ RUN make -j$(nproc)
 
 # Build lzopack example manually - need to add include paths properly
 RUN cd examples && \
-    wllvm -g -O0 -I. -I../include -I.. -static -Wl,--allow-multiple-definition \
+    wllvm -g -O0 -Xclang -disable-llvm-passes -I. -I../include -I.. -static -Wl,--allow-multiple-definition \
         -o lzopack lzopack.c ../src/.libs/liblzo2.a
 
 # Create bc directory and extract bitcode files

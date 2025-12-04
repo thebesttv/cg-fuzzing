@@ -27,7 +27,7 @@ RUN apt-get update && \
 
 # Configure and build with WLLVM (using autotools)
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared --enable-static
 
@@ -37,7 +37,7 @@ RUN make -j$(nproc)
 # Build the sample test utility (simple) manually with static linking
 RUN mkdir -p ~/bc && \
     cd sample && \
-    wllvm -g -O0 -I../src -o simple simple.c ../src/.libs/libonig.a -static -Wl,--allow-multiple-definition && \
+    wllvm -g -O0 -Xclang -disable-llvm-passes -I../src -o simple simple.c ../src/.libs/libonig.a -static -Wl,--allow-multiple-definition && \
     extract-bc simple && \
     mv simple.bc ~/bc/
 

@@ -21,7 +21,7 @@ WORKDIR /home/SVF-tools/unrtf-0.21.10
 
 # Configure and build with WLLVM for bitcode extraction
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared
 

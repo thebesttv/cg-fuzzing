@@ -23,7 +23,7 @@ WORKDIR /home/SVF-tools/entr-5.6
 RUN ./configure
 
 # Build entr with WLLVM and static linking
-RUN make CC=wllvm CFLAGS="-g -O0" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
+RUN make CC=wllvm CFLAGS="-g -O0 -Xclang -disable-llvm-passes" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
 
 # Create bc directory and extract bitcode files
 RUN mkdir -p ~/bc && \

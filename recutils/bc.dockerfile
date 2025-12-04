@@ -28,7 +28,7 @@ RUN apt-get update && \
 # Configure with static linking and WLLVM
 # Add -Wno-error=implicit-function-declaration to handle older code
 RUN CC=wllvm \
-    CFLAGS="-g -O0 -Wno-error=implicit-function-declaration" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes -Wno-error=implicit-function-declaration" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     FORCE_UNSAFE_CONFIGURE=1 \
     ./configure --disable-shared

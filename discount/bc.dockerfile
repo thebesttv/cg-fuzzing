@@ -28,7 +28,7 @@ RUN apt-get update && \
 # Configure and build discount with WLLVM
 # discount uses its own configure script
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure.sh
 

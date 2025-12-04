@@ -27,7 +27,7 @@ RUN apt-get update && \
 
 # Build duktape CLI (duk) with WLLVM
 # duktape provides a simple command line tool in examples/cmdline
-RUN wllvm -g -O0 -std=c99 \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -std=c99 \
     -I./src \
     -o duk \
     ./src/duktape.c \

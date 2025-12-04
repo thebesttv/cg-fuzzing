@@ -23,12 +23,12 @@ WORKDIR /home/SVF-tools/giflib-5.2.2
 # giflib uses a simple Makefile - build only static library and tools
 RUN make clean 2>/dev/null || true && \
     make CC=wllvm \
-    CFLAGS="-std=gnu99 -Wall -g -O0" \
+    CFLAGS="-std=gnu99 -Wall -g -O0 -Xclang -disable-llvm-passes" \
     libgif.a
 
 # Build the tools statically
 RUN make CC=wllvm \
-    CFLAGS="-std=gnu99 -Wall -g -O0" \
+    CFLAGS="-std=gnu99 -Wall -g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     gif2rgb gifbuild giftool giftext gifclrmp giffix
 

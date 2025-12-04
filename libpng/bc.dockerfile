@@ -27,7 +27,7 @@ RUN apt-get update && \
 
 # Configure with static linking and WLLVM
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared --enable-static
 
@@ -36,7 +36,7 @@ RUN make -j$(nproc)
 
 # Build png2pnm (the CLI tool for fuzzing)
 WORKDIR /home/SVF-tools/libpng-1.6.47/contrib/pngminus
-RUN wllvm -g -O0 -I../.. -L../../.libs png2pnm.c -o png2pnm -lpng16 -lz -lm \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -I../.. -L../../.libs png2pnm.c -o png2pnm -lpng16 -lz -lm \
     -static -Wl,--allow-multiple-definition
 
 # Create bc directory and extract bitcode files

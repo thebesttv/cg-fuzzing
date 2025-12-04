@@ -21,9 +21,9 @@ WORKDIR /home/SVF-tools/tinyexpr-master
 
 # Build with static linking and WLLVM
 # Build repl as the target binary
-RUN wllvm -c -g -O0 -Wall tinyexpr.c -o tinyexpr.o && \
-    wllvm -c -g -O0 -Wall repl.c -o repl.o && \
-    wllvm -g -O0 -static -Wl,--allow-multiple-definition -o repl repl.o tinyexpr.o -lm
+RUN wllvm -c -g -O0 -Xclang -disable-llvm-passes -Wall tinyexpr.c -o tinyexpr.o && \
+    wllvm -c -g -O0 -Xclang -disable-llvm-passes -Wall repl.c -o repl.o && \
+    wllvm -g -O0 -Xclang -disable-llvm-passes -static -Wl,--allow-multiple-definition -o repl repl.o tinyexpr.o -lm
 
 # Create bc directory and extract bitcode files
 RUN mkdir -p ~/bc && \

@@ -27,7 +27,7 @@ RUN apt-get update && \
 
 # Build with wllvm and static linking
 RUN CC=wllvm \
-    CFLAGS="-g -O0 -ansi -pedantic -Wall -Wextra -Wno-unused-parameter" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes -ansi -pedantic -Wall -Wextra -Wno-unused-parameter" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     make hoedown
 

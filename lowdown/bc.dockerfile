@@ -23,7 +23,7 @@ WORKDIR /home/SVF-tools/lowdown-VERSION_1_1_0
 RUN ./configure
 
 # Build lowdown binary only (not shared library) with WLLVM and static linking
-RUN make lowdown CC=wllvm CFLAGS="-g -O0" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
+RUN make lowdown CC=wllvm CFLAGS="-g -O0 -Xclang -disable-llvm-passes" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
 
 # Create bc directory and extract bitcode files
 RUN mkdir -p ~/bc && \

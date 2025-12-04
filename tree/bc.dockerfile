@@ -27,7 +27,7 @@ RUN apt-get update && \
 
 # Build with WLLVM (tree uses a simple Makefile)
 # Pass CC through make command line
-RUN make CC=wllvm LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
+RUN make CC=wllvm CFLAGS="-g -O0 -Xclang -disable-llvm-passes" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
 
 # Create bc directory and extract bitcode files
 RUN mkdir -p ~/bc && \

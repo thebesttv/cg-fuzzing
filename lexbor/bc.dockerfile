@@ -30,7 +30,7 @@ RUN apt-get update && \
 RUN mkdir build && cd build && \
     CC=wllvm CXX=wllvm++ \
     cmake .. \
-        -DCMAKE_C_FLAGS="-g -O0" \
+        -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
         -DLEXBOR_BUILD_STATIC=OFF \
         -DLEXBOR_BUILD_SHARED=ON \
         -DLEXBOR_BUILD_EXAMPLES=ON \

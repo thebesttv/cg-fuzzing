@@ -21,7 +21,7 @@ WORKDIR /home/SVF-tools/wren-0.4.0/projects/make
 
 # Build wren with WLLVM
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     make config=debug_64bit wren
 
 # Copy the harness
@@ -30,7 +30,7 @@ COPY wren/harness.c /home/SVF-tools/wren-0.4.0/harness.c
 WORKDIR /home/SVF-tools/wren-0.4.0
 
 # Build the harness
-RUN wllvm -g -O0 -I src/include \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -I src/include \
     -static -Wl,--allow-multiple-definition \
     harness.c lib/libwren_d.a -lm -o wren_parse
 

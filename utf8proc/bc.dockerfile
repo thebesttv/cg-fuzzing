@@ -21,13 +21,13 @@ WORKDIR /home/SVF-tools/utf8proc-2.11.2
 
 # Build utf8proc library as static with WLLVM
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     make libutf8proc.a
 
 # Build the fuzzer binary (uses fuzz_main.c + fuzzer.c for standalone AFL fuzzing)
 RUN wllvm \
-    -g -O0 \
+    -g -O0 -Xclang -disable-llvm-passes \
     -I. \
     -static -Wl,--allow-multiple-definition \
     -o utf8proc_fuzz \

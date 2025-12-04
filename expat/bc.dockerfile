@@ -27,7 +27,7 @@ RUN apt-get update && \
 
 # 4. Configure and build expat with WLLVM (Autotools project)
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared --without-docbook
 

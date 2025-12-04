@@ -28,7 +28,7 @@ RUN apt-get update && \
 # Build argon2 with WLLVM - only build the CLI binary, not shared library
 # The shared library build fails with static linking
 RUN make CC=wllvm \
-    CFLAGS="-g -O0 -pthread -Iinclude -Isrc" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes -pthread -Iinclude -Isrc" \
     LDFLAGS="-static -Wl,--allow-multiple-definition -pthread" \
     argon2 \
     -j$(nproc)

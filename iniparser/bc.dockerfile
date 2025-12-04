@@ -23,14 +23,14 @@ WORKDIR /home/SVF-tools/iniparser-4.2.6
 RUN mkdir build && cd build && \
     CC=wllvm \
     cmake .. \
-    -DCMAKE_C_FLAGS="-g -O0" \
+    -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
     -DBUILD_SHARED_LIBS=OFF
 
 RUN cd build && make -j$(nproc)
 
 # Build the parse example manually
-RUN wllvm -g -O0 -I src \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -I src \
     -static -Wl,--allow-multiple-definition \
     example/parse.c build/libiniparser.a -o parse
 

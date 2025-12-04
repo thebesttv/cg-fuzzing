@@ -22,7 +22,7 @@ WORKDIR /home/SVF-tools/flac-1.5.0
 # Configure with static linking and WLLVM
 RUN CC=wllvm \
     CXX=wllvm++ \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     CXXFLAGS="-g -O0" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared --enable-static --disable-ogg

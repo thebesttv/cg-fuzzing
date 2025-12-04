@@ -25,7 +25,7 @@ WORKDIR /home/SVF-tools/tcc-0.9.27
 # Use --cc= to specify the compiler
 RUN ./configure --prefix=/usr/local --disable-bcheck \
     --cc=wllvm \
-    --extra-cflags="-g -O0" \
+    --extra-cflags="-g -O0 -Xclang -disable-llvm-passes" \
     --extra-ldflags="-static -Wl,--allow-multiple-definition"
 
 # Build TCC - just the main binary, not the full install

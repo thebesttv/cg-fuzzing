@@ -28,7 +28,7 @@ RUN apt-get update && \
 # Build chibicc with WLLVM and static linking
 # chibicc uses a simple Makefile
 RUN make CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     -j$(nproc)
 

@@ -24,14 +24,14 @@ COPY mxml/fuzz_mxml.c .
 
 # Configure and build mxml with WLLVM
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared
 
 RUN make -j$(nproc)
 
 # Compile the fuzzing harness with the library
-RUN wllvm -g -O0 -I. -static -Wl,--allow-multiple-definition \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -I. -static -Wl,--allow-multiple-definition \
     -o fuzz_mxml fuzz_mxml.c libmxml4.a -lm -lpthread
 
 # Create bc directory and extract bitcode files

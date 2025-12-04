@@ -22,7 +22,7 @@ WORKDIR /home/SVF-tools/odt2txt-0.5
 # 3. Build with WLLVM using Makefile
 # odt2txt uses a simple Makefile
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-Wl,--allow-multiple-definition" \
     make
 

@@ -22,7 +22,7 @@ WORKDIR /home/SVF-tools/csvquote-0.1.5
 # Build with static linking and WLLVM
 # csvquote has a simple Makefile
 RUN make CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition"
 
 # Create bc directory and extract bitcode files

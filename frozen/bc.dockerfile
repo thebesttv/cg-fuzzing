@@ -23,7 +23,7 @@ WORKDIR /home/SVF-tools/frozen-1.7
 COPY frozen/fuzz_json.c .
 
 # Compile the fuzzing harness with WLLVM
-RUN wllvm -g -O0 -static -Wl,--allow-multiple-definition -o fuzz_json fuzz_json.c frozen.c -lm
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -static -Wl,--allow-multiple-definition -o fuzz_json fuzz_json.c frozen.c -lm
 
 # Create bc directory and extract bitcode files
 RUN mkdir -p ~/bc && \

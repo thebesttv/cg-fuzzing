@@ -22,7 +22,7 @@ WORKDIR /home/SVF-tools/sqlite-version-3.51.0
 # Configure SQLite with static linking and WLLVM
 # Disable TCL extension and shared libraries
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-tcl --disable-shared --enable-static
 
@@ -63,18 +63,18 @@ RUN printf '%s\n' \
     '}' > fuzz_main.c
 
 # Compile SQLite amalgamation (sqlite3.c contains the entire SQLite library)
-RUN wllvm -g -O0 -c sqlite3.c -o sqlite3.o \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -c sqlite3.c -o sqlite3.o \
     -DSQLITE_OMIT_LOAD_EXTENSION
 
 # Compile the OSS-Fuzz harness (test/ossfuzz.c)
-RUN wllvm -g -O0 -c test/ossfuzz.c -o ossfuzz.o \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -c test/ossfuzz.c -o ossfuzz.o \
     -I.
 
 # Compile the main wrapper
-RUN wllvm -g -O0 -c fuzz_main.c -o fuzz_main.o
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -c fuzz_main.c -o fuzz_main.o
 
 # Link harness with SQLite and main wrapper (static linking)
-RUN wllvm -g -O0 \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes \
     -static -Wl,--allow-multiple-definition \
     fuzz_main.o ossfuzz.o sqlite3.o \
     -lpthread -lm -ldl \

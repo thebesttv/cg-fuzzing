@@ -72,7 +72,7 @@ RUN echo '#include <stdio.h>' > fuzz_harness.c && \
 
 # Build picohttpparser with WLLVM
 RUN wllvm \
-    -g -O0 \
+    -g -O0 -Xclang -disable-llvm-passes \
     -I. \
     -static -Wl,--allow-multiple-definition \
     -o picohttpparser_fuzz \

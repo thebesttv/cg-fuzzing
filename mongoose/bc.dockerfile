@@ -98,7 +98,7 @@ RUN echo '#include <stdio.h>' > fuzz_harness.c && \
 # Build mongoose with WLLVM
 # Mongoose is a single-file library, compile directly with the harness
 RUN wllvm \
-    -g -O0 \
+    -g -O0 -Xclang -disable-llvm-passes \
     -DMG_ENABLE_LINES=1 \
     -I. \
     -static -Wl,--allow-multiple-definition \

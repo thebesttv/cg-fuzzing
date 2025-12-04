@@ -34,7 +34,7 @@ RUN NOCONFIGURE=1 ./autogen.sh
 # Configure with static linking and WLLVM
 # Disable Cython bindings as we only need the C library and CLI tool
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared --enable-static --without-cython
 

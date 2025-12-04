@@ -28,13 +28,13 @@ RUN apt-get update && \
 # Build civetweb with WLLVM
 # Build main library and server
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     make WITH_ALL=1 lib
 
 # Build the server binary
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     make WITH_ALL=1
 
