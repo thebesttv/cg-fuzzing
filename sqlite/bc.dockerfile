@@ -29,7 +29,7 @@ RUN apt-get update && \
 # Disable TCL extension and shared libraries to avoid conflicts with static linking
 # Note: --allow-multiple-definition is required for static linking with glibc
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-tcl --disable-shared --enable-static
 

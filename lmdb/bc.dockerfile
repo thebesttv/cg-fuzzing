@@ -23,7 +23,7 @@ WORKDIR /home/SVF-tools/lmdb-LMDB_0.9.31/libraries/liblmdb
 # Static linking with mdb_load as target
 # Need to explicitly set CC on make command line to override Makefile default
 RUN make CC=wllvm \
-    CFLAGS="-g -O0 -pthread" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes -pthread" \
     LDFLAGS="-static -Wl,--allow-multiple-definition -pthread" \
     mdb_load mdb_dump mdb_stat mdb_copy -j$(nproc)
 

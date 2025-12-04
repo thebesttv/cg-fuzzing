@@ -21,7 +21,7 @@ WORKDIR /home/SVF-tools/mpc-0.9.0
 
 # Build maths example with WLLVM and static linking
 # Using CC=wllvm and custom CFLAGS
-RUN wllvm -g -O0 -ansi -pedantic -Wall \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -ansi -pedantic -Wall \
     -static -Wl,--allow-multiple-definition \
     examples/maths.c mpc.c -lm -o maths
 

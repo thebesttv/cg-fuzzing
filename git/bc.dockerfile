@@ -35,7 +35,7 @@ RUN apt-get update && \
 # Git uses a simple Makefile - we disable optional features for simpler static linking
 RUN make -j$(nproc) \
     CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     NO_OPENSSL=1 \
     NO_CURL=1 \

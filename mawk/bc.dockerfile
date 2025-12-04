@@ -21,7 +21,7 @@ WORKDIR /home/SVF-tools/mawk-1.3.4-20240905
 
 # Configure mawk with WLLVM and static linking
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure
 

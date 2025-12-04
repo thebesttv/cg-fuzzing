@@ -47,7 +47,7 @@ RUN printf '%s\n' \
     '}' > ini_fuzz.c
 
 # Build the harness with WLLVM
-RUN wllvm -g -O0 -o ini_fuzz ini_fuzz.c ini.c \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -o ini_fuzz ini_fuzz.c ini.c \
     -static -Wl,--allow-multiple-definition
 
 # Create bc directory and extract bitcode files

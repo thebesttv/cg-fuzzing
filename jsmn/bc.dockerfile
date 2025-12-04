@@ -22,7 +22,7 @@ WORKDIR /home/SVF-tools/jsmn-1.1.0
 # Build jsondump example as a standalone static binary
 # jsmn is header-only, so we compile jsondump.c with jsmn.h included
 RUN wllvm \
-    -g -O0 \
+    -g -O0 -Xclang -disable-llvm-passes \
     -DJSMN_PARENT_LINKS \
     -I. \
     -static -Wl,--allow-multiple-definition \

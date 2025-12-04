@@ -27,7 +27,7 @@ RUN apt-get update && \
 
 # Configure and build with WLLVM (using autotools)
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared --enable-static \
     --without-xml2 --without-expat --without-openssl \

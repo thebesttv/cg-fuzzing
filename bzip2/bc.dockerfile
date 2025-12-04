@@ -30,7 +30,7 @@ RUN apt-get update && \
 RUN make clean || true && \
     make -j$(nproc) \
     CC=wllvm \
-    CFLAGS="-g -O0 -Wall -Winline -D_FILE_OFFSET_BITS=64" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes -Wall -Winline -D_FILE_OFFSET_BITS=64" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     bzip2 bzip2recover
 

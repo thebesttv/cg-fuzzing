@@ -21,7 +21,7 @@ WORKDIR /home/SVF-tools/dateutils-0.4.11
 
 # Build dateutils with WLLVM (autotools project)
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared
 

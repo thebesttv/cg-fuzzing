@@ -21,7 +21,7 @@ WORKDIR /home/SVF-tools/dos2unix-7.5.2
 
 # Build with static linking and WLLVM
 RUN make CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ENABLE_NLS=
 

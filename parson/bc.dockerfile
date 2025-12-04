@@ -25,10 +25,10 @@ COPY parson/fuzz/harness.c harness.c
 
 # Build parson library and harness with WLLVM
 # Parson is a single-file library, so we compile directly
-RUN wllvm -g -O0 -c parson.c -o parson.o
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -c parson.c -o parson.o
 
 # Build the harness with static linking
-RUN wllvm -g -O0 -I. harness.c parson.o -o parson_harness \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -I. harness.c parson.o -o parson_harness \
     -static -Wl,--allow-multiple-definition
 
 # Create bc directory and extract bitcode files

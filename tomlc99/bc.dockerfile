@@ -28,11 +28,11 @@ RUN apt-get update && \
 # Build tomlc99 library and toml_cat CLI tool with WLLVM
 # The Makefile builds libtoml.a and toml_cat
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     make -j$(nproc)
 
 # Build toml_cat with static linking
-RUN wllvm -g -O0 -o toml_cat_static toml_cat.c libtoml.a \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -o toml_cat_static toml_cat.c libtoml.a \
     -static -Wl,--allow-multiple-definition
 
 # Create bc directory and extract bitcode files

@@ -29,7 +29,7 @@ RUN apt-get update && \
 # mjs is an amalgamated single-file build
 RUN mkdir -p build && \
     wllvm -DMJS_MAIN -I. -Isrc \
-    -g -O0 \
+    -g -O0 -Xclang -disable-llvm-passes \
     mjs.c -lm \
     -static -Wl,--allow-multiple-definition \
     -o build/mjs

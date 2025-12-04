@@ -21,7 +21,7 @@ WORKDIR /home/SVF-tools/libidn-1.42
 
 # Configure with WLLVM and static linking
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared --enable-static
 

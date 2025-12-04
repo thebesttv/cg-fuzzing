@@ -25,7 +25,7 @@ WORKDIR /home/SVF-tools/jhead-3.08
 RUN make clean 2>/dev/null || true && \
     make -j$(nproc) \
     CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition"
 
 # Create bc directory and extract bitcode files

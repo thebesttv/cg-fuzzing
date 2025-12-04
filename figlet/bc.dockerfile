@@ -27,7 +27,7 @@ RUN apt-get update && \
 
 # Build figlet with WLLVM (Makefile-based project)
 RUN make CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     -j$(nproc)
 

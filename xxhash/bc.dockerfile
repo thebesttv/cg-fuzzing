@@ -30,7 +30,7 @@ RUN apt-get update && \
 RUN make clean || true && \
     make -j$(nproc) \
     CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     xxhsum
 

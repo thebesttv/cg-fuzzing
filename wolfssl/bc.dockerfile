@@ -31,7 +31,7 @@ RUN ./autogen.sh
 # Configure with static linking and WLLVM
 # Enable wolfcrypt test tool for bitcode extraction
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     FORCE_UNSAFE_CONFIGURE=1 \
     ./configure --disable-shared --enable-static --enable-crypttests

@@ -28,7 +28,7 @@ RUN apt-get update && \
 # Configure with static linking and WLLVM
 # Use builtin oniguruma and enable all-static for static linking
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --with-oniguruma=builtin --disable-shared --enable-all-static
 

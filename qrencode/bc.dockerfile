@@ -31,7 +31,7 @@ RUN autoreconf -i
 # Configure with static linking and WLLVM, enable tools (qrencode CLI)
 # Use --without-png to avoid linking issues with libpng
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     FORCE_UNSAFE_CONFIGURE=1 \
     ./configure --disable-shared --enable-static --with-tools --without-png

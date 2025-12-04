@@ -29,7 +29,7 @@ RUN apt-get update && \
 # Lua uses a simple Makefile, we need to override CC and MYCFLAGS/MYLDFLAGS
 RUN make -j$(nproc) \
     CC=wllvm \
-    MYCFLAGS="-g -O0" \
+    MYCFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     MYLDFLAGS="-static -Wl,--allow-multiple-definition" \
     linux
 

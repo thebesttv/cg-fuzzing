@@ -24,7 +24,7 @@ RUN ./autogen.sh
 
 # Configure with static linking and WLLVM
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared --enable-static --disable-oggtest --disable-binaries
 
@@ -33,7 +33,7 @@ RUN make -j$(nproc)
 
 # Build speexdec manually with static linking
 RUN cd src && \
-    wllvm -g -O0 -I../include -I.. -DHAVE_CONFIG_H -static -Wl,--allow-multiple-definition \
+    wllvm -g -O0 -Xclang -disable-llvm-passes -I../include -I.. -DHAVE_CONFIG_H -static -Wl,--allow-multiple-definition \
         speexdec.c getopt.c getopt1.c wav_io.c \
         -L../libspeex/.libs -lspeex -logg -lm \
         -o speexdec

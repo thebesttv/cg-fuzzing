@@ -27,7 +27,7 @@ RUN apt-get update && \
 
 # Build with WLLVM - ncompress uses simple Makefile
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     make -j$(nproc)
 

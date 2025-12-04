@@ -40,7 +40,7 @@ RUN echo '/* stb_image harness for fuzzing/analysis */' > stb_image_harness.c &&
 
 # Build the harness with WLLVM and static linking
 RUN wllvm \
-    -g -O0 \
+    -g -O0 -Xclang -disable-llvm-passes \
     -static \
     -Wl,--allow-multiple-definition \
     -o stb_image_harness stb_image_harness.c \

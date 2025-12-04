@@ -20,7 +20,7 @@ RUN wget https://github.com/rhash/RHash/archive/refs/tags/v1.4.5.tar.gz && \
 WORKDIR /home/SVF-tools/RHash-1.4.5
 
 # Configure RHash - disable shared library, use static linking, no openssl
-RUN ./configure --cc=wllvm --extra-cflags="-g -O0" --extra-ldflags="-static -Wl,--allow-multiple-definition" --disable-lib-shared --enable-static --disable-openssl --disable-openssl-runtime
+RUN ./configure --cc=wllvm --extra-cflags="-g -O0 -Xclang -disable-llvm-passes" --extra-ldflags="-static -Wl,--allow-multiple-definition" --disable-lib-shared --enable-static --disable-openssl --disable-openssl-runtime
 
 # Build RHash
 RUN make -j$(nproc)

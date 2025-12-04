@@ -27,7 +27,7 @@ RUN apt-get update && \
 
 # Configure with static linking and WLLVM - library only
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure \
         --disable-shared \
@@ -74,7 +74,7 @@ RUN echo '#include <stdio.h>' > hd_decode.c && \
     echo '}' >> hd_decode.c
 
 # Compile the test program with wllvm
-RUN wllvm -g -O0 -static -Wl,--allow-multiple-definition \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -static -Wl,--allow-multiple-definition \
     -I. -Ilib/includes \
     hd_decode.c lib/.libs/libnghttp2.a \
     -o hd_decode

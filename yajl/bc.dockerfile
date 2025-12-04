@@ -30,7 +30,7 @@ RUN apt-get update && \
 # Link against the static library (yajl_s) instead of shared library
 RUN mkdir build && cd build && \
     CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     cmake .. \
         -DCMAKE_BUILD_TYPE=Debug \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \

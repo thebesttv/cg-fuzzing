@@ -29,11 +29,11 @@ RUN apt-get update && \
 # mujs uses a simple Makefile - build object file first
 RUN make -j$(nproc) \
     CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     build/release/libmujs.o
 
 # Link statically
-RUN wllvm -g -O0 -static -Wl,--allow-multiple-definition \
+RUN wllvm -g -O0 -Xclang -disable-llvm-passes -static -Wl,--allow-multiple-definition \
     -o build/release/mujs main.c build/release/libmujs.o -lm
 
 # Create bc directory and extract bitcode files

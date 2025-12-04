@@ -22,7 +22,7 @@ WORKDIR /home/SVF-tools/optipng-0.7.8
 # Configure and build with WLLVM for bitcode extraction
 # optipng uses a custom configure script, not autotools
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure
 

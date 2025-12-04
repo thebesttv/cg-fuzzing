@@ -29,7 +29,7 @@ RUN apt-get update && \
 RUN mkdir build && cd build && \
     CC=wllvm CXX=wllvm++ \
     cmake .. \
-        -DCMAKE_C_FLAGS="-g -O0" \
+        -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
         -DBUILD_STATIC=ON \
         -DBUILD_SHARED=ON \
         -DBUILD_TESTS=OFF \

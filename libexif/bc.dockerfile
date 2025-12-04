@@ -27,7 +27,7 @@ RUN apt-get update && \
 
 # Build libexif as static library with WLLVM
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared --enable-static
 
@@ -50,7 +50,7 @@ RUN apt-get update && \
 
 # Build exif CLI with static linking and WLLVM
 RUN CC=wllvm \
-    CFLAGS="-g -O0 -I/usr/local/include" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes -I/usr/local/include" \
     LDFLAGS="-static -Wl,--allow-multiple-definition -L/usr/local/lib" \
     PKG_CONFIG_PATH="/usr/local/lib/pkgconfig" \
     POPT_CFLAGS="-I/usr/include" \
