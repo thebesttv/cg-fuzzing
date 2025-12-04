@@ -29,7 +29,7 @@ RUN autoreconf -fi
 RUN CC=wllvm \
     CXX=wllvm++ \
     CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
-    CXXFLAGS="-g -O0" \
+    CXXFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --with-oniguruma=builtin --disable-shared --enable-all-static
 
@@ -78,7 +78,7 @@ RUN wllvm -g -O0 -Xclang -disable-llvm-passes -c tests/jq_fuzz_compile.c \
 RUN wllvm -g -O0 -Xclang -disable-llvm-passes -c fuzz_main.c -o fuzz_main.o
 
 # Link harness with jq library and main wrapper (static linking)
-RUN wllvm++ -g -O0 \
+RUN wllvm++ -g -O0 -Xclang -disable-llvm-passes \
     -static -Wl,--allow-multiple-definition \
     ./fuzz_main.o ./jq_fuzz_compile.o \
     ./.libs/libjq.a ./vendor/oniguruma/src/.libs/libonig.a \

@@ -31,7 +31,7 @@ RUN mkdir cmake_build && cd cmake_build && \
     CC=wllvm CXX=wllvm++ \
     cmake .. \
         -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
-        -DCMAKE_CXX_FLAGS="-g -O0" \
+        -DCMAKE_CXX_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
         -DBUILD_SHARED_LIBS=OFF \
         -Dtiff-docs=OFF \
         -Dtiff-tests=OFF \
