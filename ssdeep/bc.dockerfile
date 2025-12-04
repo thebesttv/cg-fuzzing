@@ -20,11 +20,10 @@ RUN wget "https://github.com/ssdeep-project/ssdeep/releases/download/release-2.1
 WORKDIR /home/SVF-tools/ssdeep-2.14.1
 
 # Configure with static linking and WLLVM
-# Note: Removed -Xclang -disable-llvm-passes from CXXFLAGS as it causes linker errors with C++ std library
 RUN CC=wllvm \
     CXX=wllvm++ \
     CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
-    CXXFLAGS="-g -O0" \
+    CXXFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure
 

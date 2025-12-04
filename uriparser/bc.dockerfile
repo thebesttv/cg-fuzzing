@@ -26,13 +26,12 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Build with WLLVM and static linking
-# Note: Removed -Xclang -disable-llvm-passes from CMAKE_CXX_FLAGS as it causes linker errors with C++ std library
 RUN mkdir build && cd build && \
     CC=wllvm \
     CXX=wllvm++ \
     cmake .. \
         -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
-        -DCMAKE_CXX_FLAGS="-g -O0" \
+        -DCMAKE_CXX_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
         -DBUILD_SHARED_LIBS=OFF \
         -DURIPARSER_BUILD_TESTS=OFF \

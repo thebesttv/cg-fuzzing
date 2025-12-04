@@ -27,10 +27,9 @@ RUN apt-get update && \
 
 # Configure and build re2c with WLLVM
 # re2c is a C++ project
-# Note: Removed -Xclang -disable-llvm-passes from CXXFLAGS as it causes linker errors with C++ std library
 RUN CC=wllvm CXX=wllvm++ \
     CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
-    CXXFLAGS="-g -O0" \
+    CXXFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared
 
