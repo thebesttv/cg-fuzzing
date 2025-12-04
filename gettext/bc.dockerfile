@@ -26,10 +26,11 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Configure with static linking and WLLVM
+# Note: Removed -Xclang -disable-llvm-passes from CXXFLAGS as it causes linker errors with C++ std library
 RUN CC=wllvm \
     CXX=wllvm++ \
     CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
-    CXXFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
+    CXXFLAGS="-g -O0" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     FORCE_UNSAFE_CONFIGURE=1 \
     ./configure --disable-shared --disable-java --disable-native-java --without-emacs

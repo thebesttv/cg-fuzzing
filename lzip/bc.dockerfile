@@ -26,16 +26,17 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Configure with static linking and WLLVM
+# Note: Removed -Xclang -disable-llvm-passes from CXXFLAGS as it causes linker errors with C++ std library
 RUN CC=wllvm CXX=wllvm++ \
     CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
-    CXXFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
+    CXXFLAGS="-g -O0" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     FORCE_UNSAFE_CONFIGURE=1 \
     ./configure
 
 # Build lzip - override CXX and CXXFLAGS in make command
 # lzip's configure doesn't respect CXXFLAGS, so we need to pass them to make
-RUN make CXX=wllvm++ CXXFLAGS="-g -O0 -Xclang -disable-llvm-passes" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
+RUN make CXX=wllvm++ CXXFLAGS="-g -O0" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
 
 # Create bc directory and extract bitcode files
 RUN mkdir -p ~/bc && \

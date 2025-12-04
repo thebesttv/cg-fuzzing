@@ -22,10 +22,11 @@ WORKDIR /home/SVF-tools/gperf-3.1
 # Configure with static linking and WLLVM
 # gperf is C++ so we need CXX=wllvm++ 
 # -Wno-register to suppress C++17 register keyword error
+# Note: Removed -Xclang -disable-llvm-passes from CXXFLAGS as it causes linker errors with C++ std library
 RUN CC=wllvm \
     CXX=wllvm++ \
     CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
-    CXXFLAGS="-g -O0 -Xclang -disable-llvm-passes -Wno-register" \
+    CXXFLAGS="-g -O0 -Wno-register" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure
 

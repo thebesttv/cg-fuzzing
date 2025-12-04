@@ -20,10 +20,11 @@ RUN wget https://github.com/xiph/flac/releases/download/1.5.0/flac-1.5.0.tar.xz 
 WORKDIR /home/SVF-tools/flac-1.5.0
 
 # Configure with static linking and WLLVM
+# Note: Removed -Xclang -disable-llvm-passes from CXXFLAGS as it causes linker errors with C++ std library
 RUN CC=wllvm \
     CXX=wllvm++ \
     CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
-    CXXFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
+    CXXFLAGS="-g -O0" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared --enable-static --disable-ogg
 
