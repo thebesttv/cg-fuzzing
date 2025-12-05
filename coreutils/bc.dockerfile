@@ -41,7 +41,7 @@ RUN ./bootstrap --skip-po --gnulib-srcdir=gnulib
 # Disable stdbuf to avoid conflict between static linking and shared library
 # Note: --allow-multiple-definition is required for static linking with glibc
 RUN CC=wllvm \
-    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
+    CFLAGS="-g -O0" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     FORCE_UNSAFE_CONFIGURE=1 \
     ./configure --disable-nls --enable-no-install-program=stdbuf
