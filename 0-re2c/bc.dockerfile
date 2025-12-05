@@ -29,7 +29,7 @@ RUN apt-get update && \
 # re2c is a C++ project
 RUN CC=wllvm CXX=wllvm++ \
     CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
-    CXXFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
+    CXXFLAGS="-g -O0" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared
 
