@@ -1,0 +1,75 @@
+# SoX/Audio format dictionary for AFL++
+# Based on various audio file formats that SoX supports
+
+# WAV/RIFF headers
+riff="RIFF"
+wave="WAVE"
+fmt_chunk="fmt "
+data_chunk="data"
+fact_chunk="fact"
+list_chunk="LIST"
+
+# AIFF headers
+form="FORM"
+aiff="AIFF"
+aifc="AIFC"
+comm="COMM"
+ssnd="SSND"
+
+# AU/SND (Sun/NeXT) headers
+au_magic="\x2e\x73\x6e\x64"
+au_magic_be="\x64\x6e\x73\x2e"
+
+# FLAC headers (even though disabled, still in dict for reference)
+flac="fLaC"
+
+# Ogg container
+ogg_page="OggS"
+
+# Sample format identifiers (common values)
+pcm_u8="\x01"
+pcm_s16le="\x01\x00"
+pcm_s24le="\x01\x00"
+pcm_s32le="\x01\x00"
+pcm_f32le="\x03\x00"
+pcm_f64le="\x03\x00"
+
+# Common sample rates (in little-endian 32-bit)
+rate_8000="\x40\x1f\x00\x00"
+rate_11025="\x11\x2b\x00\x00"
+rate_16000="\x80\x3e\x00\x00"
+rate_22050="\x22\x56\x00\x00"
+rate_44100="\x44\xac\x00\x00"
+rate_48000="\x80\xbb\x00\x00"
+
+# Channel configurations
+mono="\x01\x00"
+stereo="\x02\x00"
+
+# Bit depths
+depth_8="\x08\x00"
+depth_16="\x10\x00"
+depth_24="\x18\x00"
+depth_32="\x20\x00"
+
+# VOC (Creative Voice) headers
+voc_magic="Creative Voice File"
+voc_block_term="\x00"
+
+# RAW/headerless (no magic, but common patterns)
+silence_8bit="\x80"
+silence_16bit="\x00\x00"
+
+# SMP (Turtle Beach SampleVision)
+smp_magic="SOUND SAMPLE DATA "
+
+# PVF (Portable Voice Format)
+pvf_magic="PVF1\n"
+pvf_magic2="PVF2\n"
+
+# SoX-specific metadata markers
+sox_comment="COMMENT"
+sox_artist="ARTIST"
+sox_title="TITLE"
+sox_album="ALBUM"
+sox_tracknumber="TRACKNUMBER"

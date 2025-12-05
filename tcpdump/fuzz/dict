@@ -1,0 +1,106 @@
+# tcpdump/libpcap dictionary for AFL++
+# Based on network protocol headers and common patterns
+
+# Ethernet frame types
+eth_ipv4="\x08\x00"
+eth_arp="\x08\x06"
+eth_ipv6="\x86\xdd"
+eth_vlan="\x81\x00"
+eth_mpls="\x88\x47"
+
+# IP protocol numbers
+proto_icmp="\x01"
+proto_tcp="\x06"
+proto_udp="\x11"
+proto_ipv6="\x29"
+proto_gre="\x2f"
+proto_esp="\x32"
+proto_ah="\x33"
+proto_icmpv6="\x3a"
+proto_ospf="\x59"
+proto_sctp="\x84"
+
+# TCP flags
+tcp_fin="\x01"
+tcp_syn="\x02"
+tcp_rst="\x04"
+tcp_psh="\x08"
+tcp_ack="\x10"
+tcp_urg="\x20"
+
+# ICMP types
+icmp_echo_reply="\x00"
+icmp_dest_unreach="\x03"
+icmp_echo_request="\x08"
+icmp_time_exceeded="\x0b"
+
+# DNS header flags
+dns_query="\x01\x00"
+dns_response="\x81\x80"
+
+# HTTP methods
+http_get="GET"
+http_post="POST"
+http_put="PUT"
+http_delete="DELETE"
+http_head="HEAD"
+
+# HTTP response codes
+http_200="200"
+http_404="404"
+http_500="500"
+
+# Common ports (in network byte order)
+port_ftp="\x00\x15"
+port_ssh="\x00\x16"
+port_telnet="\x00\x17"
+port_smtp="\x00\x19"
+port_dns="\x00\x35"
+port_http="\x00\x50"
+port_https="\x01\xbb"
+
+# ARP operation codes
+arp_request="\x00\x01"
+arp_reply="\x00\x02"
+
+# VLAN priority values
+vlan_prio_0="\x00\x00"
+vlan_prio_7="\xe0\x00"
+
+# MPLS label stack
+mpls_bottom="\x00\x00\x01"
+
+# GRE flags
+gre_checksum="\x80\x00"
+gre_routing="\x40\x00"
+gre_key="\x20\x00"
+gre_seq="\x10\x00"
+
+# IPv6 next headers
+ipv6_hopbyhop="\x00"
+ipv6_routing="\x2b"
+ipv6_fragment="\x2c"
+ipv6_esp="\x32"
+ipv6_ah="\x33"
+ipv6_icmpv6="\x3a"
+ipv6_none="\x3b"
+ipv6_dstopts="\x3c"
+
+# DHCP magic cookie
+dhcp_magic="\x63\x82\x53\x63"
+
+# RADIUS codes
+radius_access_request="\x01"
+radius_access_accept="\x02"
+radius_access_reject="\x03"
+
+# SNMP versions
+snmp_v1="\x00"
+snmp_v2c="\x01"
+snmp_v3="\x03"
+
+# BGP message types
+bgp_open="\x01"
+bgp_update="\x02"
+bgp_notification="\x03"
+bgp_keepalive="\x04"

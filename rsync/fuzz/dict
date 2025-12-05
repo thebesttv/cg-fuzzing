@@ -1,0 +1,95 @@
+# rsync dictionary for AFL++
+# Based on rsync protocol and common patterns
+
+# rsync protocol strings
+rsync_magic="@RSYNCD: "
+rsync_exit="@RSYNCD: EXIT"
+rsync_ok="@RSYNCD: OK"
+rsync_authreq="@RSYNCD: AUTHREQD "
+rsync_error="@ERROR"
+
+# Protocol version
+protocol_31="31"
+protocol_30="30"
+protocol_29="29"
+
+# Common module names
+module_test="test"
+module_backup="backup"
+module_share="share"
+module_files="files"
+
+# Option flags
+flag_verbose="-v"
+flag_recursive="-r"
+flag_archive="-a"
+flag_compress="-z"
+flag_delete="--delete"
+flag_exclude="--exclude"
+flag_include="--include"
+
+# Special file markers
+file_separator="/"
+file_current="."
+file_parent=".."
+
+# Checksum algorithms
+checksum_md5="md5"
+checksum_md4="md4"
+
+# Compression levels
+compress_1="1"
+compress_6="6"
+compress_9="9"
+
+# File attribute markers
+attr_mode="mode="
+attr_uid="uid="
+attr_gid="gid="
+attr_size="size="
+attr_mtime="mtime="
+
+# rsync transfer protocol markers
+# Delta encoding markers
+block_size="block-size="
+checksum_count="checksum-count="
+
+# Common paths
+path_root="/"
+path_home="/home"
+path_tmp="/tmp"
+path_etc="/etc"
+
+# File extensions
+ext_txt=".txt"
+ext_log=".log"
+ext_conf=".conf"
+ext_tar=".tar"
+ext_gz=".gz"
+
+# Protocol numbers as bytes
+proto_31_byte="\x1f"
+proto_30_byte="\x1e"
+proto_29_byte="\x1d"
+
+# Common status codes
+status_ok="\x00"
+status_error="\x01"
+
+# File types
+type_file="\x00"
+type_dir="\x01"
+type_link="\x02"
+type_device="\x03"
+
+# Permissions (octal)
+perm_644="644"
+perm_755="755"
+perm_777="777"
+perm_600="600"
+
+# Common UIDs/GIDs
+uid_0="0"
+uid_1000="1000"
+gid_0="0"
+gid_1000="1000"

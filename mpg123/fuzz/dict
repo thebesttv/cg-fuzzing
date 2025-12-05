@@ -1,0 +1,69 @@
+# MP3/MPEG audio dictionary for AFL++
+# Based on MP3 frame headers and ID3 tags
+
+# MPEG frame sync patterns
+sync_ff="\xff\xfb"
+sync_ff_v1="\xff\xfa"
+sync_ff_v2="\xff\xe3"
+sync_ff_v25="\xff\xe2"
+
+# ID3v1 tag
+id3v1="TAG"
+
+# ID3v2 tag headers
+id3v2="ID3"
+id3v2_header="\x49\x44\x33\x03\x00\x00"
+id3v2_v4="\x49\x44\x33\x04\x00\x00"
+
+# ID3v2 frame IDs (common)
+frame_title="TIT2"
+frame_artist="TPE1"
+frame_album="TALB"
+frame_year="TYER"
+frame_comment="COMM"
+frame_track="TRCK"
+frame_genre="TCON"
+frame_picture="APIC"
+
+# Layer encoding
+layer_1="\x03"
+layer_2="\x02"
+layer_3="\x01"
+
+# Bitrate indices
+bitrate_32="\x01"
+bitrate_64="\x02"
+bitrate_96="\x03"
+bitrate_128="\x04"
+bitrate_160="\x05"
+bitrate_192="\x06"
+bitrate_224="\x07"
+bitrate_256="\x08"
+bitrate_320="\x09"
+
+# Sample rate
+samplerate_44100="\x00"
+samplerate_48000="\x01"
+samplerate_32000="\x02"
+
+# Channel mode
+stereo="\x00"
+joint_stereo="\x01"
+dual_channel="\x02"
+mono="\x03"
+
+# Xing/Info VBR header
+xing="Xing"
+info="Info"
+
+# LAME tag
+lame="LAME"
+
+# APE tag
+ape_tag="APETAGEX"
+ape_header="\x41\x50\x45\x54\x41\x47\x45\x58"
+
+# Lyrics3 tag
+lyrics3="LYRICS200"
+lyrics3_begin="LYRICSBEGIN"
+lyrics3_end="LYRICS200"
