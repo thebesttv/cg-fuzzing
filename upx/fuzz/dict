@@ -1,0 +1,52 @@
+# upx dictionary - command-line options and executable formats
+# Common options
+"-d"
+"--decompress"
+"-t"
+"--test"
+"-l"
+"--list"
+"-q"
+"--quiet"
+"-v"
+"--verbose"
+"--best"
+"--brute"
+"--ultra-brute"
+"-1"
+"-9"
+"--lzma"
+"--nrv2b"
+"--nrv2d"
+"--nrv2e"
+"-o"
+
+# File format signatures (magic bytes)
+"MZ"
+"ZM"
+"PE"
+"ELF"
+"\x7fELF"
+"\x4d\x5a"
+"\x50\x45"
+
+# Compression levels
+"1"
+"2"
+"3"
+"4"
+"5"
+"6"
+"7"
+"8"
+"9"
+
+# Output
+"/dev/null"
+"-"
+
+# File extensions
+".exe"
+".dll"
+".sys"
+".elf"
