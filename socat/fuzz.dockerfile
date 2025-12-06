@@ -1,0 +1,68 @@
+FROM aflplusplus/aflplusplus:latest
+
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget libssl-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create output directory
+RUN mkdir -p /out
+
+# Download and extract socat v1.7.3.4 (same version as bc.dockerfile)
+WORKDIR /src
+RUN wget http://www.dest-unreach.org/socat/download/socat-1.7.3.4.tar.gz && \
+    tar -xzf socat-1.7.3.4.tar.gz && \
+    rm socat-1.7.3.4.tar.gz
+
+WORKDIR /src/socat-1.7.3.4
+
+# Build socat with afl-clang-lto for fuzzing (main target binary)
+# Use static linking for better portability
+RUN CC=afl-clang-lto \
+    CXX=afl-clang-lto++ \
+    CFLAGS="-O2" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
+    ./configure
+
+RUN make -j$(nproc)
+
+# Install the socat binary
+RUN cp socat /out/socat
+
+# Build CMPLOG version for better fuzzing (comparison logging)
+WORKDIR /src
+RUN rm -rf socat-1.7.3.4 && \
+    wget http://www.dest-unreach.org/socat/download/socat-1.7.3.4.tar.gz && \
+    tar -xzf socat-1.7.3.4.tar.gz && \
+    rm socat-1.7.3.4.tar.gz
+
+WORKDIR /src/socat-1.7.3.4
+
+RUN CC=afl-clang-lto \
+    CXX=afl-clang-lto++ \
+    CFLAGS="-O2" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
+    AFL_LLVM_CMPLOG=1 \
+    ./configure
+
+RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
+
+# Install CMPLOG binary
+RUN cp socat /out/socat.cmplog
+
+# Copy fuzzing resources
+COPY socat/fuzz/dict /out/dict
+COPY socat/fuzz/in /out/in
+COPY socat/fuzz/fuzz.sh /out/fuzz.sh
+COPY socat/fuzz/whatsup.sh /out/whatsup.sh
+
+WORKDIR /out
+
+# Verify binaries are built
+RUN ls -la /out/socat /out/socat.cmplog && \
+    file /out/socat && \
+    /out/socat -V
+
+# Default command shows help
+CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing socat'"]
