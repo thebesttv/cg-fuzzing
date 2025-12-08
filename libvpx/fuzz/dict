@@ -1,0 +1,44 @@
+# VP8/VP9 fuzzing dictionary
+# Based on WebM/VP8/VP9 format specifications
+
+# WebM/Matroska magic numbers
+"\x1A\x45\xDF\xA3"
+"DKIF"
+
+# VP8 frame headers
+"\x9D\x01\x2A"
+"\x10\x00\x00"
+
+# VP9 frame markers
+"\x82\x49\x83\x42"
+"\x49\x83\x42\x00"
+
+# Common codec strings
+"V_VP8"
+"V_VP9"
+"vp80"
+"vp90"
+
+# IVF format
+"DKIF\x00\x00"
+
+# Frame sync codes
+"\x9D\x01\x2A\x00"
+"\x00\x00\x00"
+
+# Size markers
+"\x00\x00\x00\x00"
+"\xFF\xFF\xFF\xFF"
+
+# Color space values
+"Rec601"
+"Rec709"
+"Rec2020"
+"SMPTE170"
+"SMPTE240"
+
+# Profile markers
+"\x00"
+"\x01"
+"\x02"
+"\x03"
