@@ -1,0 +1,72 @@
+# ELF magic header
+"\x7fELF"
+
+# ELF classes
+"\x01"
+"\x02"
+
+# Data encoding
+"\x01"
+"\x02"
+
+# Section names
+".text"
+".data"
+".bss"
+".rodata"
+".symtab"
+".strtab"
+".shstrtab"
+".rel"
+".rela"
+".plt"
+".got"
+".dynamic"
+".dynsym"
+".dynstr"
+".init"
+".fini"
+".debug"
+".comment"
+".note"
+
+# Segment types
+"PT_NULL"
+"PT_LOAD"
+"PT_DYNAMIC"
+"PT_INTERP"
+"PT_NOTE"
+"PT_SHLIB"
+"PT_PHDR"
+"PT_TLS"
+
+# Section types
+"SHT_NULL"
+"SHT_PROGBITS"
+"SHT_SYMTAB"
+"SHT_STRTAB"
+"SHT_RELA"
+"SHT_HASH"
+"SHT_DYNAMIC"
+"SHT_NOTE"
+"SHT_NOBITS"
+"SHT_REL"
+"SHT_DYNSYM"
+
+# Symbol bindings
+"STB_LOCAL"
+"STB_GLOBAL"
+"STB_WEAK"
+
+# Symbol types
+"STT_NOTYPE"
+"STT_OBJECT"
+"STT_FUNC"
+"STT_SECTION"
+"STT_FILE"
+
+# Machine types
+"EM_386"
+"EM_X86_64"
+"EM_ARM"
+"EM_AARCH64"

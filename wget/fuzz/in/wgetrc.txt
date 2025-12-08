@@ -1,0 +1,4 @@
+# Wget configuration
+http_proxy = http://proxy.example.com:8080
+use_proxy = on
+robots = off

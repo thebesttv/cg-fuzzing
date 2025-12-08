@@ -1,0 +1,8 @@
+digraph G {
+    node [shape=box, color=blue];
+    A [label="Start"];
+    B [label="Process"];
+    C [label="End", shape=ellipse];
+    A -> B [label="step1"];
+    B -> C [label="step2"];
+}
