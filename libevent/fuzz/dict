@@ -1,0 +1,45 @@
+# libevent fuzzing dictionary
+# Based on event notification and I/O patterns
+
+# Event types
+"EV_READ"
+"EV_WRITE"
+"EV_SIGNAL"
+"EV_TIMEOUT"
+"EV_PERSIST"
+
+# Common strings
+"localhost"
+"127.0.0.1"
+"0.0.0.0"
+"::"
+
+# Port numbers (as strings)
+"80"
+"443"
+"8080"
+"3000"
+
+# HTTP patterns (for HTTP support)
+"GET"
+"POST"
+"HTTP/1.0"
+"HTTP/1.1"
+"Content-Length"
+"Connection"
+
+# Common separators
+"\r\n"
+"\n"
+": "
+" "
+
+# Numbers
+"0"
+"1"
+"-1"
+"65535"
+
+# Buffer-related
+"\x00"
+"\xFF"
