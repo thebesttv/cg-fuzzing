@@ -1,0 +1,94 @@
+# Graphviz DOT language keywords
+"digraph"
+"graph"
+"subgraph"
+"node"
+"edge"
+"strict"
+
+# Node/edge attributes
+"label"
+"color"
+"fillcolor"
+"fontcolor"
+"fontname"
+"fontsize"
+"shape"
+"style"
+"width"
+"height"
+"pos"
+"dir"
+"arrowhead"
+"arrowtail"
+"weight"
+"penwidth"
+
+# Shapes
+"box"
+"circle"
+"ellipse"
+"polygon"
+"diamond"
+"triangle"
+"record"
+"Mrecord"
+"point"
+"plaintext"
+
+# Styles
+"filled"
+"solid"
+"dashed"
+"dotted"
+"bold"
+"invis"
+
+# Directions
+"forward"
+"back"
+"both"
+"none"
+
+# Colors
+"red"
+"blue"
+"green"
+"yellow"
+"black"
+"white"
+"gray"
+
+# Layout engines
+"dot"
+"neato"
+"fdp"
+"sfdp"
+"twopi"
+"circo"
+
+# Graph attributes
+"rankdir"
+"ranksep"
+"nodesep"
+"splines"
+"overlap"
+"concentrate"
+
+# Rankdir values
+"TB"
+"BT"
+"LR"
+"RL"
+
+# Operators
+"->"
+"--"
+"="
+";"
+","
+":"
+"["
+"]"
+"{"
+"}"

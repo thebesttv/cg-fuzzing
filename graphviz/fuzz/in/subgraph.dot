@@ -1,0 +1,11 @@
+digraph G {
+    subgraph cluster_0 {
+        label="Cluster 0";
+        a -> b;
+    }
+    subgraph cluster_1 {
+        label="Cluster 1";
+        c -> d;
+    }
+    b -> c;
+}
