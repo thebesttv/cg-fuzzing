@@ -1,0 +1,43 @@
+# libuv fuzzing dictionary
+# Based on async I/O and event loop patterns
+
+# UV types
+"UV_RUN_DEFAULT"
+"UV_RUN_ONCE"
+"UV_RUN_NOWAIT"
+
+# Common strings
+"localhost"
+"127.0.0.1"
+"0.0.0.0"
+"::"
+"/tmp"
+"/dev/null"
+
+# Port numbers
+"80"
+"443"
+"8080"
+"3000"
+
+# File operations
+"test.txt"
+"data.bin"
+
+# Common separators
+"\r\n"
+"\n"
+"\0"
+" "
+
+# Numbers
+"0"
+"1"
+"-1"
+"65535"
+"4096"
+
+# Buffer-related
+"\x00"
+"\xFF"
+"\x00\x00\x00\x00"
