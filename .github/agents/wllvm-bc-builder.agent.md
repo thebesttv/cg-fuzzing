@@ -78,7 +78,7 @@ ENV LLVM_COMPILER=clang
 ### 编译配置
 - 使用 `CC=wllvm` 作为 C 编译器
 - 使用 `CXX=wllvm++` 作为 C++ 编译器（如果需要）
-- 推荐 CFLAGS：`-g -O0`（保留调试信息，无优化）
+- 推荐 CFLAGS：`-g -O0 -Xclang -disable-llvm-passes`（保留调试信息，无优化，禁用 LLVM passes）
 
 ## bc.dockerfile 模板
 
@@ -112,7 +112,7 @@ RUN apt-get update && \
 
 # 4. 配置和编译（autotools 项目）
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     FORCE_UNSAFE_CONFIGURE=1 \
     ./configure <配置选项>
@@ -136,7 +136,7 @@ RUN ls -la ~/bc/
 
 ### Autotools 项目 (./configure && make)
 ```dockerfile
-RUN CC=wllvm CFLAGS="-g -O0" LDFLAGS="-static -Wl,--allow-multiple-definition" \
+RUN CC=wllvm CFLAGS="-g -O0 -Xclang -disable-llvm-passes" LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared
 RUN make -j$(nproc)
 ```
@@ -145,7 +145,7 @@ RUN make -j$(nproc)
 ```dockerfile
 RUN mkdir build && cd build && \
     CC=wllvm CXX=wllvm++ \
-    cmake .. -DCMAKE_C_FLAGS="-g -O0" \
+    cmake .. -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
              -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
              -DBUILD_SHARED_LIBS=OFF
 RUN cd build && make -j$(nproc)

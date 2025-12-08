@@ -28,7 +28,7 @@ RUN apt-get update && \
 # Configure with static linking and WLLVM
 # Build minimal vim without GUI features
 RUN CC=wllvm \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     FORCE_UNSAFE_CONFIGURE=1 \
     ./configure \

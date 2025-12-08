@@ -29,7 +29,7 @@ RUN apt-get update && \
 # Enable only a subset of tools to speed up build
 RUN CC=wllvm \
     CXX=wllvm++ \
-    CFLAGS="-g -O0" \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     FORCE_UNSAFE_CONFIGURE=1 \
     ./configure \
