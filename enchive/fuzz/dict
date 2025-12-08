@@ -1,0 +1,30 @@
+# Enchive command line options
+"archive"
+"extract"
+"keygen"
+"fingerprint"
+"--agent"
+"--delete"
+"--edit"
+"--force"
+"--pubkey"
+"--seckey"
+"--version"
+"-a"
+"-d"
+"-e"
+"-f"
+"-h"
+"-p"
+"-s"
+"-v"
+
+# Enchive file format markers
+header_enchive="enchive"
+header_v1="\x00\x00\x00\x01"
+
+# Common crypto-related strings
+"Curve25519"
+"ChaCha20"
+"HMAC-SHA256"
+"SHA-256"
