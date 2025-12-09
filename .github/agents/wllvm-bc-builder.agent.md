@@ -65,7 +65,8 @@ description: 编译开源项目，生成 LLVM bitcode (.bc) 文件和 AFL++ fuzz
 ### WLLVM 安装
 ```dockerfile
 RUN apt-get update && \
-    apt-get install -y pipx && \
+    apt-get install -y pipx python3-tomli python3.10-venv && \
+    apt-get install -y <编译依赖（如果有的话）> && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -179,7 +180,7 @@ RUN ./bootstrap --skip-po --gnulib-srcdir=<依赖目录>
    ```bash
    docker run --rm <项目>-bc sh -c 'llvm-nm -u ~/bc/*.bc'
    ```
-   
+
    **验证标准**：输出应该只包含标准 libc/系统库函数（如 `malloc`, `printf`, `pthread_*` 等）
 
 注意：bc 文件会在 GitHub Actions 构建时自动提取并发布到 Release 中，不需要手动复制或使用 Git LFS 提交。
