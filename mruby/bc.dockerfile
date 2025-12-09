@@ -2,7 +2,8 @@ FROM svftools/svf:latest
 
 # Install wllvm using pipx
 RUN apt-get update && \
-    apt-get install -y pipx bison ruby && \
+    apt-get install -y pipx python3-tomli python3.10-venv && \
+    apt-get install -y bison ruby && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
