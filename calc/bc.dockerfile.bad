@@ -22,8 +22,7 @@ RUN apt-get update && \
 RUN export CC=wllvm \
     CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" && \
-    make clobber && \
-    make calc-static-only -j$(nproc)
+    make clobber calc-static-only BLD_TYPE=calc-static-only -j$(nproc)
 
 RUN mkdir -p ~/bc && \
     extract-bc calc-static && \
