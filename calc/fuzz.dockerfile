@@ -30,7 +30,7 @@ RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    make calc-static-only -j$(nproc)
+    make calc-static-only BLD_TYPE=calc-static-only -j$(nproc)
 
 RUN cp calc-static /out/calc.cmplog
 
