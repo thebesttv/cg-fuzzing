@@ -2,7 +2,7 @@ FROM svftools/svf:latest
 
 # Install wllvm using pipx
 RUN apt-get update && \
-    apt-get install -y pipx && \
+    apt-get install -y pipx python3-tomli python3.10-venv && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

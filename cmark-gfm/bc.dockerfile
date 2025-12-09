@@ -2,7 +2,8 @@ FROM svftools/svf:latest
 
 # 1. Install WLLVM
 RUN apt-get update && \
-    apt-get install -y pipx cmake file && \
+    apt-get install -y pipx python3-tomli python3.10-venv && \
+    apt-get install -y cmake file && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
