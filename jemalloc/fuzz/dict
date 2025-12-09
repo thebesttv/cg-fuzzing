@@ -1,0 +1,22 @@
+# Memory allocation keywords
+"malloc"
+"calloc"
+"realloc"
+"free"
+"arena"
+"thread"
+"cache"
+
+# Common size values
+"\x00\x00\x00\x00"
+"\x01\x00\x00\x00"
+"\x10\x00\x00\x00"
+"\x00\x10\x00\x00"
+"\x00\x00\x10\x00"
+"\xff\xff\xff\xff"
+
+# Alignment values
+"\x08"
+"\x10"
+"\x20"
+"\x40"

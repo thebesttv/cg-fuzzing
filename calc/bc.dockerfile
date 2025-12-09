@@ -1,0 +1,31 @@
+FROM svftools/svf:latest
+
+RUN apt-get update && \
+    apt-get install -y pipx python3-tomli python3.10-venv && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN pipx install wllvm
+
+ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
+ENV LLVM_COMPILER=clang
+
+WORKDIR /home/SVF-tools
+RUN wget https://github.com/lcn2/calc/releases/download/v2.15.1.1/calc-2.15.1.1.tar.bz2 && \
+    tar -xjf calc-2.15.1.1.tar.bz2 && rm calc-2.15.1.1.tar.bz2
+
+WORKDIR /home/SVF-tools/calc-2.15.1.1
+
+RUN apt-get update && \
+    apt-get install -y file libreadline-dev libncurses-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN CC=wllvm \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
+    make calc-static-only -j$(nproc)
+
+RUN mkdir -p ~/bc && \
+    extract-bc calc-static && \
+    mv calc-static.bc ~/bc/calc.bc
+
+RUN ls -la ~/bc/
