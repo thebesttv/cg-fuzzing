@@ -19,14 +19,11 @@ RUN apt-get update && \
     apt-get install -y file libreadline-dev libncurses-dev && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN CC=wllvm \
+RUN export CC=wllvm \
     CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
-    LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    make -f Makefile clobber && \
-    CC=wllvm \
-    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
-    LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    make -f Makefile calc-static-only BLD_TYPE=calc-static-only -j$(nproc)
+    LDFLAGS="-static -Wl,--allow-multiple-definition" && \
+    make clobber && \
+    make calc-static-only -j$(nproc)
 
 RUN mkdir -p ~/bc && \
     extract-bc calc-static && \
