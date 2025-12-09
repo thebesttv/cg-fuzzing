@@ -30,7 +30,8 @@ RUN CC=wllvm \
 
 RUN make -j$(nproc)
 
-RUN echo '#include <unistr.h>' > test_unistring.c && \
+RUN echo '#include "config.h"' > test_unistring.c && \
+    echo '#include <unistr.h>' >> test_unistring.c && \
     echo '#include <stdlib.h>' >> test_unistring.c && \
     echo '#include <unistd.h>' >> test_unistring.c && \
     echo '#include <fcntl.h>' >> test_unistring.c && \
