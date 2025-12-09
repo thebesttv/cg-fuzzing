@@ -6,6 +6,13 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Work around rapidjson packaging bug (clang rejects assignment to const GenericStringRef::length in document.h)
+RUN mkdir -p /opt/rapidjson && \
+    cp -r /usr/include/rapidjson /opt/rapidjson && \
+    if grep -q "const SizeType length;" /opt/rapidjson/rapidjson/document.h; then \
+        sed -Ei 's/^[[:space:]]*const SizeType length;/SizeType length;/' /opt/rapidjson/rapidjson/document.h; \
+    fi
+
 # Create output directory
 RUN mkdir -p /out
 
@@ -22,7 +29,8 @@ WORKDIR /src/groonga-15.2.1
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
-    LDFLAGS="-Wl,--allow-multiple-definition" \
+    CPPFLAGS="-I/opt/rapidjson" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared --enable-static --disable-document --without-mecab
 
 RUN make -j$(nproc)
@@ -42,7 +50,8 @@ WORKDIR /src/groonga-15.2.1
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
-    LDFLAGS="-Wl,--allow-multiple-definition" \
+    CPPFLAGS="-I/opt/rapidjson" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
     ./configure --disable-shared --enable-static --disable-document --without-mecab
 
