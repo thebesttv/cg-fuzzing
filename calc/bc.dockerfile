@@ -22,7 +22,11 @@ RUN apt-get update && \
 RUN CC=wllvm \
     CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    make calc-static-only -j$(nproc)
+    make -f Makefile clobber && \
+    CC=wllvm \
+    CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
+    make -f Makefile calc-static-only BLD_TYPE=calc-static-only -j$(nproc)
 
 RUN mkdir -p ~/bc && \
     extract-bc calc-static && \

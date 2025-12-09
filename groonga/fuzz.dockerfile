@@ -6,6 +6,9 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Work around rapidjson packaging bug (const member assignment) for clang builds
+RUN sed -i 's/const SizeType length;/SizeType length;/' /usr/include/rapidjson/document.h
+
 # Create output directory
 RUN mkdir -p /out
 
@@ -22,7 +25,7 @@ WORKDIR /src/groonga-15.2.1
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
-    LDFLAGS="-Wl,--allow-multiple-definition" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared --enable-static --disable-document --without-mecab
 
 RUN make -j$(nproc)
@@ -42,7 +45,7 @@ WORKDIR /src/groonga-15.2.1
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
-    LDFLAGS="-Wl,--allow-multiple-definition" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
     ./configure --disable-shared --enable-static --disable-document --without-mecab
 
