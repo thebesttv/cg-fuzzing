@@ -1,0 +1,13 @@
+# libssh fuzzing dictionary
+"SSH-2.0"
+"SSH-1.99"
+"OpenSSH"
+"diffie-hellman"
+"ssh-rsa"
+"ssh-ed25519"
+"\r\n"
+"localhost"
+"127.0.0.1"
+"22"
+"publickey"
+"password"

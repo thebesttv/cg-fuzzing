@@ -1,0 +1,11 @@
+# libunistring fuzzing dictionary
+# UTF-8 sequences
+"\xC2\xA0"
+"\xE2\x80\x8B"
+"\xEF\xBB\xBF"
+"\xF0\x9F\x98\x80"
+# Common strings
+"Hello"
+"UTF-8"
+"\x00"
+"\xFF"
