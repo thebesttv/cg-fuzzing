@@ -15,7 +15,7 @@ WORKDIR /src/calc-2.15.1.1
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-Wl,--allow-multiple-definition" \
-    make calc-static-only -j$(nproc)
+    make calc-static-only BLD_TYPE=calc-static-only -j$(nproc)
 
 RUN cp calc-static /out/calc
 
