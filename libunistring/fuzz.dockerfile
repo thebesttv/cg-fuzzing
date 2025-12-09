@@ -21,7 +21,8 @@ RUN CC=afl-clang-lto \
 
 RUN make -j$(nproc)
 
-RUN echo '#include <unistr.h>' > test_unistring.c && \
+RUN echo '#include "config.h"' > test_unistring.c && \
+    echo '#include <unistr.h>' >> test_unistring.c && \
     echo '#include <stdlib.h>' >> test_unistring.c && \
     echo '#include <unistd.h>' >> test_unistring.c && \
     echo '#include <fcntl.h>' >> test_unistring.c && \
@@ -38,7 +39,7 @@ RUN echo '#include <unistr.h>' > test_unistring.c && \
     echo '}' >> test_unistring.c
 
 RUN afl-clang-lto -O2 test_unistring.c -o /out/test_unistring \
-    -I./lib lib/.libs/libunistring.a \
+    -I. -I./lib lib/.libs/libunistring.a \
     -static -Wl,--allow-multiple-definition
 
 WORKDIR /src
@@ -57,7 +58,8 @@ RUN CC=afl-clang-lto \
 
 RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN echo '#include <unistr.h>' > test_unistring.c && \
+RUN echo '#include "config.h"' > test_unistring.c && \
+    echo '#include <unistr.h>' >> test_unistring.c && \
     echo '#include <stdlib.h>' >> test_unistring.c && \
     echo '#include <unistd.h>' >> test_unistring.c && \
     echo '#include <fcntl.h>' >> test_unistring.c && \
@@ -74,7 +76,7 @@ RUN echo '#include <unistr.h>' > test_unistring.c && \
     echo '}' >> test_unistring.c
 
 RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 test_unistring.c -o /out/test_unistring.cmplog \
-    -I./lib lib/.libs/libunistring.a \
+    -I. -I./lib lib/.libs/libunistring.a \
     -static -Wl,--allow-multiple-definition
 
 COPY libunistring/fuzz/dict /out/dict
