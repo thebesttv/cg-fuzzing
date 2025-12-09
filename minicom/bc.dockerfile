@@ -21,7 +21,7 @@ WORKDIR /home/SVF-tools/minicom-2.9
 
 # Install build dependencies
 RUN apt-get update && \
-    apt-get install -y file autoconf automake gettext libncurses-dev && \
+    apt-get install -y file autoconf automake gettext libncurses-dev pkg-config && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
