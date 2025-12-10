@@ -38,14 +38,75 @@ jobs:
           echo "projects=${projects}" >> $GITHUB_OUTPUT
           echo "Found projects: ${projects}"
 
-  build-project:
+  get-changed-projects:
     needs: find-projects
-    if: ${{ needs.find-projects.outputs.projects != '[]' && needs.find-projects.outputs.projects != 'null' }}
+    runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.set-projects.outputs.projects }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Detect changed dataset files
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            dataset:
+              - 'dataset/**'
+          list-files: json
+
+      - name: Compute changed projects
+        id: set-projects
+        run: |
+          set -euo pipefail
+          echo "GITHUB_REF=$GITHUB_REF"
+          DEFAULT_REF="refs/heads/${{ github.event.repository.default_branch }}"
+          # If this is the default branch, always run all projects
+          if [ "$GITHUB_REF" = "$DEFAULT_REF" ]; then
+            echo "Default branch detected ($GITHUB_REF) - running all projects"
+            echo "projects=${{ needs.find-projects.outputs.projects }}" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          FILES='${{ steps.changes.outputs.dataset_files }}'
+          if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
+            echo "No dataset files changed"
+            echo "projects=[]" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          ALL='${{ needs.find-projects.outputs.projects }}'
+          # Extract unique project names from changed dataset files
+          CHANGED_PROJECTS=$(echo "$FILES" | jq -r '.[] | split("/")[1]' | sort -u)
+
+          # Build final intersection between changed projects and projects that have dockerfiles
+          RESULT_ARRAY=()
+          for p in $CHANGED_PROJECTS; do
+            if echo "$ALL" | jq -e --arg p "$p" 'index($p) // empty' >/dev/null 2>&1; then
+              RESULT_ARRAY+=("$p")
+            fi
+          done
+
+          if [ ${#RESULT_ARRAY[@]} -eq 0 ]; then
+            echo "projects=[]" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Convert bash array to JSON array
+          JSON=$(printf '%s\n' "${RESULT_ARRAY[@]}" | jq -R -s -c 'split("\\n") | map(select(length > 0))')
+          echo "projects=$JSON" >> $GITHUB_OUTPUT
+
+  build-project:
+    needs: get-changed-projects
+    if: ${{ needs.get-changed-projects.outputs.projects != '[]' && needs.get-changed-projects.outputs.projects != 'null' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        project: ${{ fromJson(needs.find-projects.outputs.projects) }}
+        project: ${{ fromJson(needs.get-changed-projects.outputs.projects) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
