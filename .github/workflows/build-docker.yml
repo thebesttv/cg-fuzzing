@@ -2,11 +2,6 @@ name: Build Docker Images
 
 on:
   push:
-    branches:
-      - '**'
-  pull_request:
-    branches:
-      - '**'
   workflow_dispatch:
 
 env:
@@ -15,6 +10,10 @@ env:
 # Permissions for artifacts and releases
 permissions:
   contents: write
+
+defaults:
+  run:
+    working-directory: ./dataset
 
 jobs:
   find-projects:
@@ -35,7 +34,7 @@ jobs:
             | sed 's|^\./||' \
             | sort -u \
             | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          
+
           echo "projects=${projects}" >> $GITHUB_OUTPUT
           echo "Found projects: ${projects}"
 
@@ -175,7 +174,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.project }}
-          path: output/${{ matrix.project }}.zip
+          # `defaults.run.working-directory` is `./dataset` so run steps create zips under
+          # `dataset/output/...`. Actions using `uses:` run from the workspace root, so
+          # specify the dataset prefix so the uploader finds the file.
+          path: dataset/output/${{ matrix.project }}.zip
           retention-days: 30
 
       - name: Login to Docker Hub
@@ -208,7 +210,11 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          # `download-artifact` writes into the given path relative to the workspace root.
+          # We set `path: dataset/artifacts` so subsequent `run` steps (which are executed
+          # inside `dataset` due to defaults) can access the downloaded zips with
+          # `artifacts/**/*.zip`.
+          path: dataset/artifacts
 
       - name: List downloaded artifacts
         run: |
@@ -247,20 +253,22 @@ jobs:
           name: Latest Build
           body: |
             Automatically built artifacts from the main branch.
-            
+
             ## Downloads
-            
+
             - `all.zip` - All projects combined (unpacked contents)
             - Individual project zips (e.g., `jq.zip`, `sqlite.zip`)
-            
+
             ## Each project zip contains:
             - `bc/` - LLVM bitcode files for static analysis
             - `fuzz/` - AFL++ fuzzing binaries and resources
           draft: false
           prerelease: false
           files: |
-            all.zip
-            artifacts/**/*.zip
+            # Files paths are relative to the workspace root; our created zips live under
+            # `dataset/`, so reference them with the dataset prefix.
+            dataset/all.zip
+            dataset/artifacts/**/*.zip
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
