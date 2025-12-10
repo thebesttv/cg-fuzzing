@@ -16,6 +16,10 @@ env:
 permissions:
   contents: write
 
+defaults:
+  run:
+    working-directory: ./dataset
+
 jobs:
   find-projects:
     runs-on: ubuntu-latest
