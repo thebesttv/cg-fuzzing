@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract bison v3.8.2
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/bison/bison-3.8.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/bison/bison-3.8.2.tar.gz && \
     tar -xzf bison-3.8.2.tar.gz && \
     rm bison-3.8.2.tar.gz
 

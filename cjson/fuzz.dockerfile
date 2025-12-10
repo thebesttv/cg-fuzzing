@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract cJSON 1.7.19 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/DaveGamble/cJSON/archive/refs/tags/v1.7.19.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/DaveGamble/cJSON/archive/refs/tags/v1.7.19.tar.gz && \
     tar -xzf v1.7.19.tar.gz && \
     rm v1.7.19.tar.gz
 
@@ -39,7 +39,7 @@ RUN cp afl_harness /out/cjson_afl
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf cJSON-1.7.19 && \
-    wget https://github.com/DaveGamble/cJSON/archive/refs/tags/v1.7.19.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/DaveGamble/cJSON/archive/refs/tags/v1.7.19.tar.gz && \
     tar -xzf v1.7.19.tar.gz && \
     rm v1.7.19.tar.gz
 

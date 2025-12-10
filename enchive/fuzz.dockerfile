@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract enchive v3.5 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/skeeto/enchive/archive/refs/tags/3.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/skeeto/enchive/archive/refs/tags/3.5.tar.gz && \
     tar -xzf 3.5.tar.gz && \
     rm 3.5.tar.gz
 
@@ -27,7 +27,7 @@ RUN cp enchive /out/enchive
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf enchive-3.5 && \
-    wget https://github.com/skeeto/enchive/archive/refs/tags/3.5.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/skeeto/enchive/archive/refs/tags/3.5.tar.gz && \
     tar -xzf 3.5.tar.gz && \
     rm 3.5.tar.gz
 

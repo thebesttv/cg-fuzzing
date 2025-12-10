@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract html2text v2.3.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/grobian/html2text/releases/download/v2.3.0/html2text-2.3.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/grobian/html2text/releases/download/v2.3.0/html2text-2.3.0.tar.gz && \
     tar -xzf html2text-2.3.0.tar.gz && \
     rm html2text-2.3.0.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract SoX v14.4.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://downloads.sourceforge.net/project/sox/sox/14.4.2/sox-14.4.2.tar.bz2 && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://downloads.sourceforge.net/project/sox/sox/14.4.2/sox-14.4.2.tar.bz2 && \
     tar -xjf sox-14.4.2.tar.bz2 && \
     rm sox-14.4.2.tar.bz2
 
@@ -37,7 +37,7 @@ RUN cp src/sox /out/sox
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf sox-14.4.2 && \
-    wget https://downloads.sourceforge.net/project/sox/sox/14.4.2/sox-14.4.2.tar.bz2 && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://downloads.sourceforge.net/project/sox/sox/14.4.2/sox-14.4.2.tar.bz2 && \
     tar -xjf sox-14.4.2.tar.bz2 && \
     rm sox-14.4.2.tar.bz2
 

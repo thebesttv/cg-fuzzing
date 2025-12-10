@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download inih r62
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/benhoyt/inih/archive/refs/tags/r62.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/benhoyt/inih/archive/refs/tags/r62.tar.gz && \
     tar -xzf r62.tar.gz && \
     rm r62.tar.gz
 

@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract tig v2.6.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/jonas/tig/releases/download/tig-2.6.0/tig-2.6.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jonas/tig/releases/download/tig-2.6.0/tig-2.6.0.tar.gz && \
     tar -xzf tig-2.6.0.tar.gz && \
     rm tig-2.6.0.tar.gz
 

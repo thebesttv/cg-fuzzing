@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract miniz v3.1.0
 WORKDIR /src
-RUN wget https://github.com/richgel999/miniz/archive/refs/tags/3.1.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/richgel999/miniz/archive/refs/tags/3.1.0.tar.gz && \
     tar -xzf 3.1.0.tar.gz && \
     rm 3.1.0.tar.gz
 
@@ -87,7 +87,7 @@ RUN cp miniz_fuzz /out/miniz_fuzz
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf miniz-3.1.0 && \
-    wget https://github.com/richgel999/miniz/archive/refs/tags/3.1.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/richgel999/miniz/archive/refs/tags/3.1.0.tar.gz && \
     tar -xzf 3.1.0.tar.gz && \
     rm 3.1.0.tar.gz
 

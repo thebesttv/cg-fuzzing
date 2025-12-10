@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract xz v5.8.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/tukaani-project/xz/releases/download/v5.8.1/xz-5.8.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/tukaani-project/xz/releases/download/v5.8.1/xz-5.8.1.tar.gz && \
     tar -xzf xz-5.8.1.tar.gz && \
     rm xz-5.8.1.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/xz/xz /out/xz
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf xz-5.8.1 && \
-    wget https://github.com/tukaani-project/xz/releases/download/v5.8.1/xz-5.8.1.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/tukaani-project/xz/releases/download/v5.8.1/xz-5.8.1.tar.gz && \
     tar -xzf xz-5.8.1.tar.gz && \
     rm xz-5.8.1.tar.gz
 

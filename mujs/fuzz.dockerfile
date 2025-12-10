@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract mujs 1.3.8 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/ArtifexSoftware/mujs/archive/refs/tags/1.3.8.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ArtifexSoftware/mujs/archive/refs/tags/1.3.8.tar.gz && \
     tar -xzf 1.3.8.tar.gz && \
     rm 1.3.8.tar.gz
 
@@ -42,7 +42,7 @@ RUN cp /src/mujs-1.3.8/UnicodeData.txt /src/mujs-1.3.8/SpecialCasing.txt /tmp/ |
 # Clean and rebuild for CMPLOG
 WORKDIR /src
 RUN rm -rf mujs-1.3.8 && \
-    wget https://github.com/ArtifexSoftware/mujs/archive/refs/tags/1.3.8.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ArtifexSoftware/mujs/archive/refs/tags/1.3.8.tar.gz && \
     tar -xzf 1.3.8.tar.gz && \
     rm 1.3.8.tar.gz
 

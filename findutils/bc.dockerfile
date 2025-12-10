@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract findutils v4.10.0
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/findutils/findutils-4.10.0.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/findutils/findutils-4.10.0.tar.xz && \
     tar -xJf findutils-4.10.0.tar.xz && \
     rm findutils-4.10.0.tar.xz
 

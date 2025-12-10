@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract findutils v4.10.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/findutils/findutils-4.10.0.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/findutils/findutils-4.10.0.tar.xz && \
     tar -xJf findutils-4.10.0.tar.xz && \
     rm findutils-4.10.0.tar.xz
 
@@ -33,7 +33,7 @@ RUN cp find/find /out/find
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf findutils-4.10.0 && \
-    wget https://ftp.gnu.org/gnu/findutils/findutils-4.10.0.tar.xz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/findutils/findutils-4.10.0.tar.xz && \
     tar -xJf findutils-4.10.0.tar.xz && \
     rm findutils-4.10.0.tar.xz
 

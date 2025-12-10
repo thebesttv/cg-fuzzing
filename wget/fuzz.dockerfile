@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract wget v1.24.5 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/wget/wget-1.24.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/wget/wget-1.24.5.tar.gz && \
     tar -xzf wget-1.24.5.tar.gz && \
     rm wget-1.24.5.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp src/wget /out/wget
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf wget-1.24.5 && \
-    wget https://ftp.gnu.org/gnu/wget/wget-1.24.5.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/wget/wget-1.24.5.tar.gz && \
     tar -xzf wget-1.24.5.tar.gz && \
     rm wget-1.24.5.tar.gz
 

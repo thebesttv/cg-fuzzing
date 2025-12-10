@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract time 1.9
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/time/time-1.9.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/time/time-1.9.tar.gz && \
     tar -xzf time-1.9.tar.gz && \
     rm time-1.9.tar.gz
 

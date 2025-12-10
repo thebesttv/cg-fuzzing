@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract procps v4.0.4 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://gitlab.com/procps-ng/procps/-/archive/v4.0.4/procps-v4.0.4.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://gitlab.com/procps-ng/procps/-/archive/v4.0.4/procps-v4.0.4.tar.gz && \
     tar -xzf procps-v4.0.4.tar.gz && \
     rm procps-v4.0.4.tar.gz
 
@@ -35,7 +35,7 @@ RUN cp src/ps/pscommand /out/ps
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf procps-v4.0.4 && \
-    wget https://gitlab.com/procps-ng/procps/-/archive/v4.0.4/procps-v4.0.4.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://gitlab.com/procps-ng/procps/-/archive/v4.0.4/procps-v4.0.4.tar.gz && \
     tar -xzf procps-v4.0.4.tar.gz && \
     rm procps-v4.0.4.tar.gz
 

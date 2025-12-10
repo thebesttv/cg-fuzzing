@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract upx v5.0.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/upx/upx/releases/download/v5.0.2/upx-5.0.2-src.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/upx/upx/releases/download/v5.0.2/upx-5.0.2-src.tar.xz && \
     tar -xf upx-5.0.2-src.tar.xz && \
     rm upx-5.0.2-src.tar.xz
 
@@ -35,7 +35,7 @@ RUN cp build/upx /out/upx
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf upx-5.0.2-src && \
-    wget https://github.com/upx/upx/releases/download/v5.0.2/upx-5.0.2-src.tar.xz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/upx/upx/releases/download/v5.0.2/upx-5.0.2-src.tar.xz && \
     tar -xf upx-5.0.2-src.tar.xz && \
     rm upx-5.0.2-src.tar.xz
 

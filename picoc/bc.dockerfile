@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # 2. Download picoc source code
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/jpoirier/picoc/archive/refs/tags/v3.2.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jpoirier/picoc/archive/refs/tags/v3.2.2.tar.gz && \
     tar -xzf v3.2.2.tar.gz && \
     rm v3.2.2.tar.gz
 

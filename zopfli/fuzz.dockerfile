@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract zopfli v1.0.3 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/google/zopfli/archive/refs/tags/zopfli-1.0.3.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/google/zopfli/archive/refs/tags/zopfli-1.0.3.tar.gz && \
     tar -xzf zopfli-1.0.3.tar.gz && \
     rm zopfli-1.0.3.tar.gz
 
@@ -29,7 +29,7 @@ RUN cp zopfli /out/zopfli
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf zopfli-zopfli-1.0.3 && \
-    wget https://github.com/google/zopfli/archive/refs/tags/zopfli-1.0.3.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/google/zopfli/archive/refs/tags/zopfli-1.0.3.tar.gz && \
     tar -xzf zopfli-1.0.3.tar.gz && \
     rm zopfli-1.0.3.tar.gz
 

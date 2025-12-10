@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract zlib 1.3.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz && \
     tar -xzf zlib-1.3.1.tar.gz && \
     rm zlib-1.3.1.tar.gz
 
@@ -34,7 +34,7 @@ RUN cp minigzip /out/minigzip
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf zlib-1.3.1 && \
-    wget https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz && \
     tar -xzf zlib-1.3.1.tar.gz && \
     rm zlib-1.3.1.tar.gz
 

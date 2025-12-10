@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract cppi v1.18
 WORKDIR /home/SVF-tools
-RUN wget --no-check-certificate https://mirror.keystealth.org/gnu/cppi/cppi-1.18.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 --no-check-certificate https://mirror.keystealth.org/gnu/cppi/cppi-1.18.tar.xz && \
     tar -xf cppi-1.18.tar.xz && \
     rm cppi-1.18.tar.xz
 

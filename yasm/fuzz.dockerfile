@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract yasm 1.3.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/yasm/yasm/releases/download/v1.3.0/yasm-1.3.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/yasm/yasm/releases/download/v1.3.0/yasm-1.3.0.tar.gz && \
     tar -xzf yasm-1.3.0.tar.gz && \
     rm yasm-1.3.0.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp yasm /out/yasm
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf yasm-1.3.0 && \
-    wget https://github.com/yasm/yasm/releases/download/v1.3.0/yasm-1.3.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/yasm/yasm/releases/download/v1.3.0/yasm-1.3.0.tar.gz && \
     tar -xzf yasm-1.3.0.tar.gz && \
     rm yasm-1.3.0.tar.gz
 

@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract tinyexpr (latest master)
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/codeplea/tinyexpr/archive/refs/heads/master.tar.gz -O tinyexpr.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/codeplea/tinyexpr/archive/refs/heads/master.tar.gz -O tinyexpr.tar.gz && \
     tar -xzf tinyexpr.tar.gz && \
     rm tinyexpr.tar.gz
 

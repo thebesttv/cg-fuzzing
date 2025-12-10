@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract unrtf 0.21.10
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/unrtf/unrtf-0.21.10.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/unrtf/unrtf-0.21.10.tar.gz && \
     tar -xzf unrtf-0.21.10.tar.gz && \
     rm unrtf-0.21.10.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract odt2txt v0.5 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/dstosberg/odt2txt/archive/refs/tags/v0.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/dstosberg/odt2txt/archive/refs/tags/v0.5.tar.gz && \
     tar -xzf v0.5.tar.gz && \
     rm v0.5.tar.gz
 
@@ -29,7 +29,7 @@ RUN cp odt2txt /out/odt2txt
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf odt2txt-0.5 && \
-    wget https://github.com/dstosberg/odt2txt/archive/refs/tags/v0.5.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/dstosberg/odt2txt/archive/refs/tags/v0.5.tar.gz && \
     tar -xzf v0.5.tar.gz && \
     rm v0.5.tar.gz
 

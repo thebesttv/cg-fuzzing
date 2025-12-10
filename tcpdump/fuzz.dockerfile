@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libpcap v1.10.5
 WORKDIR /src
-RUN wget https://www.tcpdump.org/release/libpcap-1.10.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.tcpdump.org/release/libpcap-1.10.5.tar.gz && \
     tar -xzf libpcap-1.10.5.tar.gz && \
     rm libpcap-1.10.5.tar.gz
 
@@ -28,7 +28,7 @@ RUN make install
 
 # Download and extract tcpdump v4.99.5
 WORKDIR /src
-RUN wget https://www.tcpdump.org/release/tcpdump-4.99.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.tcpdump.org/release/tcpdump-4.99.5.tar.gz && \
     tar -xzf tcpdump-4.99.5.tar.gz && \
     rm tcpdump-4.99.5.tar.gz
 
@@ -50,7 +50,7 @@ RUN cp tcpdump /out/tcpdump
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf libpcap-1.10.5 && \
-    wget https://www.tcpdump.org/release/libpcap-1.10.5.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.tcpdump.org/release/libpcap-1.10.5.tar.gz && \
     tar -xzf libpcap-1.10.5.tar.gz && \
     rm libpcap-1.10.5.tar.gz
 
@@ -67,7 +67,7 @@ RUN make install
 
 WORKDIR /src
 RUN rm -rf tcpdump-4.99.5 && \
-    wget https://www.tcpdump.org/release/tcpdump-4.99.5.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.tcpdump.org/release/tcpdump-4.99.5.tar.gz && \
     tar -xzf tcpdump-4.99.5.tar.gz && \
     rm tcpdump-4.99.5.tar.gz
 

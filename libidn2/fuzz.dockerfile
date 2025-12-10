@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libidn2 2.3.8 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/libidn/libidn2-2.3.8.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/libidn/libidn2-2.3.8.tar.gz && \
     tar -xzf libidn2-2.3.8.tar.gz && \
     rm libidn2-2.3.8.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/idn2 /out/idn2
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf libidn2-2.3.8 && \
-    wget https://ftp.gnu.org/gnu/libidn/libidn2-2.3.8.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/libidn/libidn2-2.3.8.tar.gz && \
     tar -xzf libidn2-2.3.8.tar.gz && \
     rm libidn2-2.3.8.tar.gz
 

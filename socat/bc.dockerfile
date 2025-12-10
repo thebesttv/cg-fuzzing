@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract socat v1.7.3.4
 WORKDIR /home/SVF-tools
-RUN wget http://www.dest-unreach.org/socat/download/socat-1.7.3.4.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 http://www.dest-unreach.org/socat/download/socat-1.7.3.4.tar.gz && \
     tar -xzf socat-1.7.3.4.tar.gz && \
     rm socat-1.7.3.4.tar.gz
 

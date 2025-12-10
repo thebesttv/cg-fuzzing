@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Build static zlib for static linking
 RUN cd /tmp && \
-    wget https://www.zlib.net/zlib-1.3.1.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.zlib.net/zlib-1.3.1.tar.gz && \
     tar -xzf zlib-1.3.1.tar.gz && \
     cd zlib-1.3.1 && \
     ./configure --static && \
@@ -21,7 +21,7 @@ RUN cd /tmp && \
 
 # Download zziplib from GitHub (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/gdraheim/zziplib/archive/refs/tags/v0.13.80.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/gdraheim/zziplib/archive/refs/tags/v0.13.80.tar.gz && \
     tar -xzf v0.13.80.tar.gz && \
     rm v0.13.80.tar.gz
 
@@ -47,7 +47,7 @@ RUN cp build/bins/unzzip-big /out/unzzip-big && \
 # Build CMPLOG versions for better fuzzing
 WORKDIR /src
 RUN rm -rf zziplib-0.13.80 && \
-    wget https://github.com/gdraheim/zziplib/archive/refs/tags/v0.13.80.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/gdraheim/zziplib/archive/refs/tags/v0.13.80.tar.gz && \
     tar -xzf v0.13.80.tar.gz && \
     rm v0.13.80.tar.gz
 

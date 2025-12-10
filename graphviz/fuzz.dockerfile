@@ -12,7 +12,7 @@ RUN mkdir -p /out
 
 # Download and extract graphviz v12.2.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/12.2.1/graphviz-12.2.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/12.2.1/graphviz-12.2.1.tar.gz && \
     tar -xzf graphviz-12.2.1.tar.gz && \
     rm graphviz-12.2.1.tar.gz
 
@@ -42,7 +42,7 @@ RUN cp cmd/dot/dot_static /out/dot
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf graphviz-12.2.1 && \
-    wget https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/12.2.1/graphviz-12.2.1.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/12.2.1/graphviz-12.2.1.tar.gz && \
     tar -xzf graphviz-12.2.1.tar.gz && \
     rm graphviz-12.2.1.tar.gz
 

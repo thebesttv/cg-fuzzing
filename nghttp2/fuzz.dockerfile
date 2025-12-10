@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract nghttp2 v1.68.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/nghttp2/nghttp2/releases/download/v1.68.0/nghttp2-1.68.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/nghttp2/nghttp2/releases/download/v1.68.0/nghttp2-1.68.0.tar.gz && \
     tar -xzf nghttp2-1.68.0.tar.gz && \
     rm nghttp2-1.68.0.tar.gz
 
@@ -74,7 +74,7 @@ RUN afl-clang-lto -O2 -static -Wl,--allow-multiple-definition \
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf nghttp2-1.68.0 && \
-    wget https://github.com/nghttp2/nghttp2/releases/download/v1.68.0/nghttp2-1.68.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/nghttp2/nghttp2/releases/download/v1.68.0/nghttp2-1.68.0.tar.gz && \
     tar -xzf nghttp2-1.68.0.tar.gz && \
     rm nghttp2-1.68.0.tar.gz
 

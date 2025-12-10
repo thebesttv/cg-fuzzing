@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract git v2.52.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/git/git/archive/refs/tags/v2.52.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/git/git/archive/refs/tags/v2.52.0.tar.gz && \
     tar -xzf v2.52.0.tar.gz && \
     rm v2.52.0.tar.gz
 
@@ -41,7 +41,7 @@ RUN cp git /out/git
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf git-2.52.0 && \
-    wget https://github.com/git/git/archive/refs/tags/v2.52.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/git/git/archive/refs/tags/v2.52.0.tar.gz && \
     tar -xzf v2.52.0.tar.gz && \
     rm v2.52.0.tar.gz
 

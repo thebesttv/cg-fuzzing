@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract wolfssl 5.7.4 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/wolfSSL/wolfssl/archive/refs/tags/v5.7.4-stable.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/wolfSSL/wolfssl/archive/refs/tags/v5.7.4-stable.tar.gz && \
     tar -xzf v5.7.4-stable.tar.gz && \
     rm v5.7.4-stable.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp examples/asn1/asn1 /out/asn1
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf wolfssl-5.7.4-stable && \
-    wget https://github.com/wolfSSL/wolfssl/archive/refs/tags/v5.7.4-stable.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/wolfSSL/wolfssl/archive/refs/tags/v5.7.4-stable.tar.gz && \
     tar -xzf v5.7.4-stable.tar.gz && \
     rm v5.7.4-stable.tar.gz
 

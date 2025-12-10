@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract c-blosc v1.21.6
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/Blosc/c-blosc/archive/refs/tags/v1.21.6.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/Blosc/c-blosc/archive/refs/tags/v1.21.6.tar.gz && \
     tar -xzf v1.21.6.tar.gz && \
     rm v1.21.6.tar.gz
 

@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libplist 2.7.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/libimobiledevice/libplist/archive/refs/tags/2.7.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libimobiledevice/libplist/archive/refs/tags/2.7.0.tar.gz && \
     tar -xzf 2.7.0.tar.gz && \
     rm 2.7.0.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract GNU units 2.24 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/units/units-2.24.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/units/units-2.24.tar.gz && \
     tar -xzf units-2.24.tar.gz && \
     rm units-2.24.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp units /out/units && \
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf units-2.24 && \
-    wget https://ftp.gnu.org/gnu/units/units-2.24.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/units/units-2.24.tar.gz && \
     tar -xzf units-2.24.tar.gz && \
     rm units-2.24.tar.gz
 

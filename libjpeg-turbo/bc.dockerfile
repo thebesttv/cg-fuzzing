@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libjpeg-turbo 3.1.2
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.2.tar.gz && \
     tar -xzf 3.1.2.tar.gz && \
     rm 3.1.2.tar.gz
 

@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract figlet v2.2.5
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/cmatsuoka/figlet/archive/refs/tags/2.2.5.tar.gz -O figlet-2.2.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/cmatsuoka/figlet/archive/refs/tags/2.2.5.tar.gz -O figlet-2.2.5.tar.gz && \
     tar -xzf figlet-2.2.5.tar.gz && \
     rm figlet-2.2.5.tar.gz
 

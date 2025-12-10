@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract md4c release-0.5.2
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/mity/md4c/archive/refs/tags/release-0.5.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/mity/md4c/archive/refs/tags/release-0.5.2.tar.gz && \
     tar -xzf release-0.5.2.tar.gz && \
     rm release-0.5.2.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libdeflate v1.25 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/ebiggers/libdeflate/releases/download/v1.25/libdeflate-1.25.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ebiggers/libdeflate/releases/download/v1.25/libdeflate-1.25.tar.gz && \
     tar -xzf libdeflate-1.25.tar.gz && \
     rm libdeflate-1.25.tar.gz
 
@@ -37,7 +37,7 @@ RUN cp build/programs/libdeflate-gzip /out/libdeflate-gzip
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf libdeflate-1.25 && \
-    wget https://github.com/ebiggers/libdeflate/releases/download/v1.25/libdeflate-1.25.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ebiggers/libdeflate/releases/download/v1.25/libdeflate-1.25.tar.gz && \
     tar -xzf libdeflate-1.25.tar.gz && \
     rm libdeflate-1.25.tar.gz
 

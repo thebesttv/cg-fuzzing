@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract jq v1.8.1
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-1.8.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-1.8.1.tar.gz && \
     tar -xzf jq-1.8.1.tar.gz && \
     rm jq-1.8.1.tar.gz
 

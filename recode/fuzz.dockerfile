@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract recode (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/rrthomas/recode/releases/download/v3.7.14/recode-3.7.14.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/rrthomas/recode/releases/download/v3.7.14/recode-3.7.14.tar.gz && \
     tar -xzf recode-3.7.14.tar.gz && \
     rm recode-3.7.14.tar.gz
 
@@ -30,7 +30,7 @@ RUN cp src/recode /out/recode
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf recode-3.7.14 && \
-    wget https://github.com/rrthomas/recode/releases/download/v3.7.14/recode-3.7.14.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/rrthomas/recode/releases/download/v3.7.14/recode-3.7.14.tar.gz && \
     tar -xzf recode-3.7.14.tar.gz && \
     rm recode-3.7.14.tar.gz
 

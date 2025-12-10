@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract html-xml-utils v8.6
 WORKDIR /home/SVF-tools
-RUN wget https://www.w3.org/Tools/HTML-XML-utils/html-xml-utils-8.6.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.w3.org/Tools/HTML-XML-utils/html-xml-utils-8.6.tar.gz && \
     tar -xzf html-xml-utils-8.6.tar.gz && \
     rm html-xml-utils-8.6.tar.gz
 

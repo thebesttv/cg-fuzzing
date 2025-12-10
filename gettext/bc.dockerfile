@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract gettext v0.23.1
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/gettext/gettext-0.23.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gettext/gettext-0.23.1.tar.gz && \
     tar -xzf gettext-0.23.1.tar.gz && \
     rm gettext-0.23.1.tar.gz
 

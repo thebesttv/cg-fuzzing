@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract mpg123 v1.32.7 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://downloads.sourceforge.net/project/mpg123/mpg123/1.32.7/mpg123-1.32.7.tar.bz2 && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://downloads.sourceforge.net/project/mpg123/mpg123/1.32.7/mpg123-1.32.7.tar.bz2 && \
     tar -xjf mpg123-1.32.7.tar.bz2 && \
     rm mpg123-1.32.7.tar.bz2
 
@@ -34,7 +34,7 @@ RUN cp src/mpg123 /out/mpg123
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf mpg123-1.32.7 && \
-    wget https://downloads.sourceforge.net/project/mpg123/mpg123/1.32.7/mpg123-1.32.7.tar.bz2 && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://downloads.sourceforge.net/project/mpg123/mpg123/1.32.7/mpg123-1.32.7.tar.bz2 && \
     tar -xjf mpg123-1.32.7.tar.bz2 && \
     rm mpg123-1.32.7.tar.bz2
 

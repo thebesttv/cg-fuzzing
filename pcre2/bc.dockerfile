@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract pcre2 10.47
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.47/pcre2-10.47.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.47/pcre2-10.47.tar.gz && \
     tar -xzf pcre2-10.47.tar.gz && \
     rm pcre2-10.47.tar.gz
 

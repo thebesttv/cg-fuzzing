@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract hoedown v3.0.7
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/hoedown/hoedown/archive/refs/tags/3.0.7.tar.gz -O hoedown-3.0.7.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/hoedown/hoedown/archive/refs/tags/3.0.7.tar.gz -O hoedown-3.0.7.tar.gz && \
     tar -xzf hoedown-3.0.7.tar.gz && \
     rm hoedown-3.0.7.tar.gz
 

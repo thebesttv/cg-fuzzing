@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download tomlc99 from master branch (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/cktan/tomlc99/archive/refs/heads/master.zip && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/cktan/tomlc99/archive/refs/heads/master.zip && \
     unzip master.zip && \
     rm master.zip
 
@@ -32,7 +32,7 @@ RUN cp toml_cat /out/toml_cat
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf tomlc99-master && \
-    wget https://github.com/cktan/tomlc99/archive/refs/heads/master.zip && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/cktan/tomlc99/archive/refs/heads/master.zip && \
     unzip master.zip && \
     rm master.zip
 

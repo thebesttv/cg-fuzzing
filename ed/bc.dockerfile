@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract GNU ed 1.22
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/ed/ed-1.22.tar.lz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/ed/ed-1.22.tar.lz && \
     apt-get update && apt-get install -y lzip && \
     tar --lzip -xf ed-1.22.tar.lz && \
     rm ed-1.22.tar.lz && \

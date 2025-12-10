@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract unifdef 2.12
 WORKDIR /home/SVF-tools
-RUN wget https://dotat.at/prog/unifdef/unifdef-2.12.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://dotat.at/prog/unifdef/unifdef-2.12.tar.gz && \
     tar -xzf unifdef-2.12.tar.gz && \
     rm unifdef-2.12.tar.gz
 

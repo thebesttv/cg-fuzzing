@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download re2c 4.3
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/skvadrik/re2c/releases/download/4.3/re2c-4.3.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/skvadrik/re2c/releases/download/4.3/re2c-4.3.tar.xz && \
     tar -xf re2c-4.3.tar.xz && \
     rm re2c-4.3.tar.xz
 

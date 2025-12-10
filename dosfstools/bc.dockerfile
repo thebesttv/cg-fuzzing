@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract dosfstools 4.2
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/dosfstools/dosfstools/releases/download/v4.2/dosfstools-4.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/dosfstools/dosfstools/releases/download/v4.2/dosfstools-4.2.tar.gz && \
     tar -xzf dosfstools-4.2.tar.gz && \
     rm dosfstools-4.2.tar.gz
 

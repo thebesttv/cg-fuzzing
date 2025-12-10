@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract BearSSL 0.6
 WORKDIR /home/SVF-tools
-RUN wget https://bearssl.org/bearssl-0.6.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://bearssl.org/bearssl-0.6.tar.gz && \
     tar -xzf bearssl-0.6.tar.gz && \
     rm bearssl-0.6.tar.gz
 

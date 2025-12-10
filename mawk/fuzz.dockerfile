@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract mawk 1.3.4-20240905 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://invisible-mirror.net/archives/mawk/mawk-1.3.4-20240905.tgz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://invisible-mirror.net/archives/mawk/mawk-1.3.4-20240905.tgz && \
     tar -xzf mawk-1.3.4-20240905.tgz && \
     rm mawk-1.3.4-20240905.tgz
 
@@ -29,7 +29,7 @@ RUN cp mawk /out/mawk
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf mawk-1.3.4-20240905 && \
-    wget https://invisible-mirror.net/archives/mawk/mawk-1.3.4-20240905.tgz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://invisible-mirror.net/archives/mawk/mawk-1.3.4-20240905.tgz && \
     tar -xzf mawk-1.3.4-20240905.tgz && \
     rm mawk-1.3.4-20240905.tgz
 

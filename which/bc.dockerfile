@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract which 2.23
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/which/which-2.23.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/which/which-2.23.tar.gz && \
     tar -xzf which-2.23.tar.gz && \
     rm which-2.23.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract which 2.23 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/which/which-2.23.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/which/which-2.23.tar.gz && \
     tar -xzf which-2.23.tar.gz && \
     rm which-2.23.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp which /out/which
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf which-2.23 && \
-    wget https://ftp.gnu.org/gnu/which/which-2.23.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/which/which-2.23.tar.gz && \
     tar -xzf which-2.23.tar.gz && \
     rm which-2.23.tar.gz
 

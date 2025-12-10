@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y wget && apt-get clean && rm -rf /var/li
 RUN mkdir -p /out
 
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/hello/hello-2.12.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/hello/hello-2.12.1.tar.gz && \
     tar -xzf hello-2.12.1.tar.gz && rm hello-2.12.1.tar.gz
 
 WORKDIR /src/hello-2.12.1
@@ -18,7 +18,7 @@ RUN cp hello /out/hello
 
 WORKDIR /src
 RUN rm -rf hello-2.12.1 && \
-    wget https://ftp.gnu.org/gnu/hello/hello-2.12.1.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/hello/hello-2.12.1.tar.gz && \
     tar -xzf hello-2.12.1.tar.gz && rm hello-2.12.1.tar.gz
 
 WORKDIR /src/hello-2.12.1

@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract wget v1.24.5
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/wget/wget-1.24.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/wget/wget-1.24.5.tar.gz && \
     tar -xzf wget-1.24.5.tar.gz && \
     rm wget-1.24.5.tar.gz
 

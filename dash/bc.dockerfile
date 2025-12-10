@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract dash v0.5.12
 WORKDIR /home/SVF-tools
-RUN wget http://gondor.apana.org.au/~herbert/dash/files/dash-0.5.12.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 http://gondor.apana.org.au/~herbert/dash/files/dash-0.5.12.tar.gz && \
     tar -xzf dash-0.5.12.tar.gz && \
     rm dash-0.5.12.tar.gz
 

@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract zopfli v1.0.3
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/google/zopfli/archive/refs/tags/zopfli-1.0.3.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/google/zopfli/archive/refs/tags/zopfli-1.0.3.tar.gz && \
     tar -xzf zopfli-1.0.3.tar.gz && \
     rm zopfli-1.0.3.tar.gz
 

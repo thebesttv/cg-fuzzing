@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract datamash 1.9 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/datamash/datamash-1.9.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/datamash/datamash-1.9.tar.gz && \
     tar -xzf datamash-1.9.tar.gz && \
     rm datamash-1.9.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp datamash /out/datamash
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf datamash-1.9 && \
-    wget https://ftp.gnu.org/gnu/datamash/datamash-1.9.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/datamash/datamash-1.9.tar.gz && \
     tar -xzf datamash-1.9.tar.gz && \
     rm datamash-1.9.tar.gz
 

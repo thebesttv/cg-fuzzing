@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract nawk 20240728 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/onetrueawk/awk/archive/refs/tags/20240728.tar.gz -O nawk.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/onetrueawk/awk/archive/refs/tags/20240728.tar.gz -O nawk.tar.gz && \
     tar -xzf nawk.tar.gz && \
     rm nawk.tar.gz
 
@@ -27,7 +27,7 @@ RUN cp a.out /out/nawk
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf awk-20240728 && \
-    wget https://github.com/onetrueawk/awk/archive/refs/tags/20240728.tar.gz -O nawk.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/onetrueawk/awk/archive/refs/tags/20240728.tar.gz -O nawk.tar.gz && \
     tar -xzf nawk.tar.gz && \
     rm nawk.tar.gz
 

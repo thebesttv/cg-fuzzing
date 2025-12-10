@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download wavpack from GitHub (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/dbry/WavPack/archive/refs/tags/5.8.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/dbry/WavPack/archive/refs/tags/5.8.1.tar.gz && \
     tar -xzf 5.8.1.tar.gz && \
     rm 5.8.1.tar.gz
 
@@ -37,7 +37,7 @@ RUN cp build/wvunpack /out/wvunpack
 # Build CMPLOG versions for better fuzzing
 WORKDIR /src
 RUN rm -rf WavPack-5.8.1 && \
-    wget https://github.com/dbry/WavPack/archive/refs/tags/5.8.1.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/dbry/WavPack/archive/refs/tags/5.8.1.tar.gz && \
     tar -xzf 5.8.1.tar.gz && \
     rm 5.8.1.tar.gz
 

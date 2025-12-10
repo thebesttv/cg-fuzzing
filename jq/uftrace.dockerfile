@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract jq v1.8.1 (same version as bc.dockerfile and fuzz.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-1.8.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-1.8.1.tar.gz && \
     tar -xzf jq-1.8.1.tar.gz && \
     rm jq-1.8.1.tar.gz
 

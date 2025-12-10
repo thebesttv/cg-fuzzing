@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract gifsicle v1.96 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://www.lcdf.org/gifsicle/gifsicle-1.96.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.lcdf.org/gifsicle/gifsicle-1.96.tar.gz && \
     tar -xzf gifsicle-1.96.tar.gz && \
     rm gifsicle-1.96.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/gifsicle /out/gifsicle
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf gifsicle-1.96 && \
-    wget https://www.lcdf.org/gifsicle/gifsicle-1.96.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.lcdf.org/gifsicle/gifsicle-1.96.tar.gz && \
     tar -xzf gifsicle-1.96.tar.gz && \
     rm gifsicle-1.96.tar.gz
 

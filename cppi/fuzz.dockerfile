@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract cppi v1.18 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget --no-check-certificate https://mirror.keystealth.org/gnu/cppi/cppi-1.18.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 --no-check-certificate https://mirror.keystealth.org/gnu/cppi/cppi-1.18.tar.xz && \
     tar -xf cppi-1.18.tar.xz && \
     rm cppi-1.18.tar.xz
 
@@ -35,7 +35,7 @@ RUN cp src/cppi /out/cppi
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf cppi-1.18 && \
-    wget --no-check-certificate https://mirror.keystealth.org/gnu/cppi/cppi-1.18.tar.xz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 --no-check-certificate https://mirror.keystealth.org/gnu/cppi/cppi-1.18.tar.xz && \
     tar -xf cppi-1.18.tar.xz && \
     rm cppi-1.18.tar.xz
 

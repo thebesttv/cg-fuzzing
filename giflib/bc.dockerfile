@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract giflib 5.2.2
 WORKDIR /home/SVF-tools
-RUN wget https://sourceforge.net/projects/giflib/files/giflib-5.2.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://sourceforge.net/projects/giflib/files/giflib-5.2.2.tar.gz && \
     tar -xzf giflib-5.2.2.tar.gz && \
     rm giflib-5.2.2.tar.gz
 

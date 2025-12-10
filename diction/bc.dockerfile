@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract diction 1.11
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/diction/diction-1.11.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/diction/diction-1.11.tar.gz && \
     tar -xzf diction-1.11.tar.gz && \
     rm diction-1.11.tar.gz
 

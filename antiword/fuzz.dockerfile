@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract antiword (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/grobian/antiword/archive/refs/heads/main.tar.gz -O antiword.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/grobian/antiword/archive/refs/heads/main.tar.gz -O antiword.tar.gz && \
     tar -xzf antiword.tar.gz && \
     rm antiword.tar.gz
 
@@ -31,7 +31,7 @@ RUN cp antiword /out/antiword
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf antiword-main && \
-    wget https://github.com/grobian/antiword/archive/refs/heads/main.tar.gz -O antiword.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/grobian/antiword/archive/refs/heads/main.tar.gz -O antiword.tar.gz && \
     tar -xzf antiword.tar.gz && \
     rm antiword.tar.gz
 

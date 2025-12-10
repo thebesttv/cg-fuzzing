@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract yyjson v0.12.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/ibireme/yyjson/archive/refs/tags/0.12.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ibireme/yyjson/archive/refs/tags/0.12.0.tar.gz && \
     tar -xzf 0.12.0.tar.gz && \
     rm 0.12.0.tar.gz
 
@@ -42,7 +42,7 @@ RUN cp yyjson_parse /out/yyjson_parse
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf yyjson-0.12.0 && \
-    wget https://github.com/ibireme/yyjson/archive/refs/tags/0.12.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ibireme/yyjson/archive/refs/tags/0.12.0.tar.gz && \
     tar -xzf 0.12.0.tar.gz && \
     rm 0.12.0.tar.gz
 

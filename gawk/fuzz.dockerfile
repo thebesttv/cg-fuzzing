@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract gawk 5.3.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/gawk/gawk-5.3.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gawk/gawk-5.3.2.tar.gz && \
     tar -xzf gawk-5.3.2.tar.gz && \
     rm gawk-5.3.2.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp gawk /out/gawk
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf gawk-5.3.2 && \
-    wget https://ftp.gnu.org/gnu/gawk/gawk-5.3.2.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gawk/gawk-5.3.2.tar.gz && \
     tar -xzf gawk-5.3.2.tar.gz && \
     rm gawk-5.3.2.tar.gz
 

@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract csvquote 0.1.5
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/dbro/csvquote/archive/refs/tags/v0.1.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/dbro/csvquote/archive/refs/tags/v0.1.5.tar.gz && \
     tar -xzf v0.1.5.tar.gz && \
     rm v0.1.5.tar.gz
 

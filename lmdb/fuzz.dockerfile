@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract lmdb 0.9.31 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/LMDB/lmdb/archive/refs/tags/LMDB_0.9.31.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/LMDB/lmdb/archive/refs/tags/LMDB_0.9.31.tar.gz && \
     tar -xzf LMDB_0.9.31.tar.gz && \
     rm LMDB_0.9.31.tar.gz
 
@@ -28,7 +28,7 @@ RUN cp mdb_load /out/mdb_load
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf lmdb-LMDB_0.9.31 && \
-    wget https://github.com/LMDB/lmdb/archive/refs/tags/LMDB_0.9.31.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/LMDB/lmdb/archive/refs/tags/LMDB_0.9.31.tar.gz && \
     tar -xzf LMDB_0.9.31.tar.gz && \
     rm LMDB_0.9.31.tar.gz
 

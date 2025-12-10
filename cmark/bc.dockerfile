@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract cmark 0.31.1
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/commonmark/cmark/archive/refs/tags/0.31.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/commonmark/cmark/archive/refs/tags/0.31.1.tar.gz && \
     tar -xzf 0.31.1.tar.gz && \
     rm 0.31.1.tar.gz
 

@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract enchive v3.5
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/skeeto/enchive/archive/refs/tags/3.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/skeeto/enchive/archive/refs/tags/3.5.tar.gz && \
     tar -xzf 3.5.tar.gz && \
     rm 3.5.tar.gz
 

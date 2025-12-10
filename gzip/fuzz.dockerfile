@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract gzip 1.14 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gzip/gzip-1.14.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gzip/gzip-1.14.tar.gz && \
     tar -xzf gzip-1.14.tar.gz && \
     rm gzip-1.14.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp gzip /out/gzip
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf gzip-1.14 && \
-    wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gzip/gzip-1.14.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gzip/gzip-1.14.tar.gz && \
     tar -xzf gzip-1.14.tar.gz && \
     rm gzip-1.14.tar.gz
 

@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract tar v1.35
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/tar/tar-1.35.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/tar/tar-1.35.tar.xz && \
     tar -xJf tar-1.35.tar.xz && \
     rm tar-1.35.tar.xz
 

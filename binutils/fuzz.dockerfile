@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract binutils v2.43.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/binutils/binutils-2.43.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/binutils/binutils-2.43.1.tar.gz && \
     tar -xzf binutils-2.43.1.tar.gz && \
     rm binutils-2.43.1.tar.gz
 
@@ -40,7 +40,7 @@ RUN cp binutils/readelf /out/readelf
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf binutils-2.43.1 && \
-    wget https://ftp.gnu.org/gnu/binutils/binutils-2.43.1.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/binutils/binutils-2.43.1.tar.gz && \
     tar -xzf binutils-2.43.1.tar.gz && \
     rm binutils-2.43.1.tar.gz
 

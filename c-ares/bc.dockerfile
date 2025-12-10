@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract c-ares v1.34.5
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/c-ares/c-ares/releases/download/v1.34.5/c-ares-1.34.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/c-ares/c-ares/releases/download/v1.34.5/c-ares-1.34.5.tar.gz && \
     tar -xzf c-ares-1.34.5.tar.gz && \
     rm c-ares-1.34.5.tar.gz
 

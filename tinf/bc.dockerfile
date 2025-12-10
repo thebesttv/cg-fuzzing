@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # 2. Download tinf source code
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/jibsen/tinf/archive/refs/tags/v1.2.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jibsen/tinf/archive/refs/tags/v1.2.1.tar.gz && \
     tar -xzf v1.2.1.tar.gz && \
     rm v1.2.1.tar.gz
 

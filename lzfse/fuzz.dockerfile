@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract lzfse 1.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/lzfse/lzfse/archive/refs/tags/lzfse-1.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/lzfse/lzfse/archive/refs/tags/lzfse-1.0.tar.gz && \
     tar -xzf lzfse-1.0.tar.gz && \
     rm lzfse-1.0.tar.gz
 
@@ -34,7 +34,7 @@ RUN cp build/lzfse /out/lzfse
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf lzfse-lzfse-1.0 && \
-    wget https://github.com/lzfse/lzfse/archive/refs/tags/lzfse-1.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/lzfse/lzfse/archive/refs/tags/lzfse-1.0.tar.gz && \
     tar -xzf lzfse-1.0.tar.gz && \
     rm lzfse-1.0.tar.gz
 

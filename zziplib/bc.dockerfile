@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract zziplib v0.13.80
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/gdraheim/zziplib/archive/refs/tags/v0.13.80.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/gdraheim/zziplib/archive/refs/tags/v0.13.80.tar.gz && \
     tar -xzf v0.13.80.tar.gz && \
     rm v0.13.80.tar.gz
 
@@ -27,7 +27,7 @@ RUN apt-get update && \
 
 # Build static zlib since Ubuntu doesn't provide libz.a
 RUN cd /tmp && \
-    wget https://www.zlib.net/zlib-1.3.1.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.zlib.net/zlib-1.3.1.tar.gz && \
     tar -xzf zlib-1.3.1.tar.gz && \
     cd zlib-1.3.1 && \
     ./configure --static && \

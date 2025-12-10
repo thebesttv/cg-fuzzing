@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract jsmn v1.1.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/zserge/jsmn/archive/refs/tags/v1.1.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/zserge/jsmn/archive/refs/tags/v1.1.0.tar.gz && \
     tar -xzf v1.1.0.tar.gz && \
     rm v1.1.0.tar.gz
 

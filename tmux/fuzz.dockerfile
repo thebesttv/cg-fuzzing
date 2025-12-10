@@ -16,7 +16,7 @@ RUN mkdir -p /out
 
 # Download and extract tmux 3.6 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/tmux/tmux/releases/download/3.6/tmux-3.6.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/tmux/tmux/releases/download/3.6/tmux-3.6.tar.gz && \
     tar -xzf tmux-3.6.tar.gz && \
     rm tmux-3.6.tar.gz
 
@@ -39,7 +39,7 @@ RUN cp tmux /out/tmux
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf tmux-3.6 && \
-    wget https://github.com/tmux/tmux/releases/download/3.6/tmux-3.6.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/tmux/tmux/releases/download/3.6/tmux-3.6.tar.gz && \
     tar -xzf tmux-3.6.tar.gz && \
     rm tmux-3.6.tar.gz
 

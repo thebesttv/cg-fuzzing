@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract screen v5.0.1
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/screen/screen-5.0.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/screen/screen-5.0.1.tar.gz && \
     tar -xzf screen-5.0.1.tar.gz && \
     rm screen-5.0.1.tar.gz
 

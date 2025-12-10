@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract GNU indent 2.2.13 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/indent/indent-2.2.13.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/indent/indent-2.2.13.tar.gz && \
     tar -xzf indent-2.2.13.tar.gz && \
     rm indent-2.2.13.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/indent /out/indent
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf indent-2.2.13 && \
-    wget https://ftp.gnu.org/gnu/indent/indent-2.2.13.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/indent/indent-2.2.13.tar.gz && \
     tar -xzf indent-2.2.13.tar.gz && \
     rm indent-2.2.13.tar.gz
 

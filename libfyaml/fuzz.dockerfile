@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libfyaml v0.9 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/pantoniou/libfyaml/releases/download/v0.9/libfyaml-0.9.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/pantoniou/libfyaml/releases/download/v0.9/libfyaml-0.9.tar.gz && \
     tar -xzf libfyaml-0.9.tar.gz && \
     rm libfyaml-0.9.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/fy-tool /out/fy-tool
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf libfyaml-0.9 && \
-    wget https://github.com/pantoniou/libfyaml/releases/download/v0.9/libfyaml-0.9.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/pantoniou/libfyaml/releases/download/v0.9/libfyaml-0.9.tar.gz && \
     tar -xzf libfyaml-0.9.tar.gz && \
     rm libfyaml-0.9.tar.gz
 

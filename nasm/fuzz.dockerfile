@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract nasm v2.16.03 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/nasm-2.16.03.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/nasm-2.16.03.tar.gz && \
     tar -xzf nasm-2.16.03.tar.gz && \
     rm nasm-2.16.03.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp nasm /out/nasm
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf nasm-2.16.03 && \
-    wget https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/nasm-2.16.03.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/nasm-2.16.03.tar.gz && \
     tar -xzf nasm-2.16.03.tar.gz && \
     rm nasm-2.16.03.tar.gz
 

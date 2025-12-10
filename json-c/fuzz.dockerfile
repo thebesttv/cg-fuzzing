@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract json-c 0.18 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/json-c/json-c/archive/refs/tags/json-c-0.18-20240915.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/json-c/json-c/archive/refs/tags/json-c-0.18-20240915.tar.gz && \
     tar -xzf json-c-0.18-20240915.tar.gz && \
     rm json-c-0.18-20240915.tar.gz
 
@@ -34,7 +34,7 @@ RUN cp build/apps/json_parse /out/json_parse
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf json-c-json-c-0.18-20240915 && \
-    wget https://github.com/json-c/json-c/archive/refs/tags/json-c-0.18-20240915.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/json-c/json-c/archive/refs/tags/json-c-0.18-20240915.tar.gz && \
     tar -xzf json-c-0.18-20240915.tar.gz && \
     rm json-c-0.18-20240915.tar.gz
 

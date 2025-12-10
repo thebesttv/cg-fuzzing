@@ -13,12 +13,12 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract tcpdump v4.99.5
 WORKDIR /home/SVF-tools
-RUN wget https://www.tcpdump.org/release/tcpdump-4.99.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.tcpdump.org/release/tcpdump-4.99.5.tar.gz && \
     tar -xzf tcpdump-4.99.5.tar.gz && \
     rm tcpdump-4.99.5.tar.gz
 
 # Download and build libpcap (required dependency)
-RUN wget https://www.tcpdump.org/release/libpcap-1.10.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.tcpdump.org/release/libpcap-1.10.5.tar.gz && \
     tar -xzf libpcap-1.10.5.tar.gz && \
     rm libpcap-1.10.5.tar.gz
 

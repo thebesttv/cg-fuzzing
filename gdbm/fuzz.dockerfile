@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract gdbm 1.26 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/gdbm/gdbm-1.26.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gdbm/gdbm-1.26.tar.gz && \
     tar -xzf gdbm-1.26.tar.gz && \
     rm gdbm-1.26.tar.gz
 
@@ -30,7 +30,7 @@ RUN cp tools/gdbm_load /out/gdbm_load
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf gdbm-1.26 && \
-    wget https://ftp.gnu.org/gnu/gdbm/gdbm-1.26.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gdbm/gdbm-1.26.tar.gz && \
     tar -xzf gdbm-1.26.tar.gz && \
     rm gdbm-1.26.tar.gz
 

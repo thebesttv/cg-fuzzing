@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract nghttp2 v1.68.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/nghttp2/nghttp2/releases/download/v1.68.0/nghttp2-1.68.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/nghttp2/nghttp2/releases/download/v1.68.0/nghttp2-1.68.0.tar.gz && \
     tar -xzf nghttp2-1.68.0.tar.gz && \
     rm nghttp2-1.68.0.tar.gz
 

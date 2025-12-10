@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract gperf 3.1
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/gperf/gperf-3.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gperf/gperf-3.1.tar.gz && \
     tar -xzf gperf-3.1.tar.gz && \
     rm gperf-3.1.tar.gz
 

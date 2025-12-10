@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libdeflate v1.25
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/ebiggers/libdeflate/releases/download/v1.25/libdeflate-1.25.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ebiggers/libdeflate/releases/download/v1.25/libdeflate-1.25.tar.gz && \
     tar -xzf libdeflate-1.25.tar.gz && \
     rm libdeflate-1.25.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract Lua 5.4.8 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://www.lua.org/ftp/lua-5.4.8.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.lua.org/ftp/lua-5.4.8.tar.gz && \
     tar -xzf lua-5.4.8.tar.gz && \
     rm lua-5.4.8.tar.gz
 
@@ -31,7 +31,7 @@ RUN cp src/lua /out/lua
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf lua-5.4.8 && \
-    wget https://www.lua.org/ftp/lua-5.4.8.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.lua.org/ftp/lua-5.4.8.tar.gz && \
     tar -xzf lua-5.4.8.tar.gz && \
     rm lua-5.4.8.tar.gz
 

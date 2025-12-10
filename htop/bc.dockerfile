@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract htop 3.4.1
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/htop-dev/htop/releases/download/3.4.1/htop-3.4.1.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/htop-dev/htop/releases/download/3.4.1/htop-3.4.1.tar.xz && \
     tar -xf htop-3.4.1.tar.xz && \
     rm htop-3.4.1.tar.xz
 

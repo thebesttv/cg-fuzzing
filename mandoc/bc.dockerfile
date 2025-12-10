@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract mandoc 1.14.6
 WORKDIR /home/SVF-tools
-RUN wget https://mandoc.bsd.lv/snapshots/mandoc.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://mandoc.bsd.lv/snapshots/mandoc.tar.gz && \
     tar -xzf mandoc.tar.gz && \
     rm mandoc.tar.gz
 

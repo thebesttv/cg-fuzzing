@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract m4 v1.4.19 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.gz && \
     tar -xzf m4-1.4.19.tar.gz && \
     rm m4-1.4.19.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/m4 /out/m4
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf m4-1.4.19 && \
-    wget https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.gz && \
     tar -xzf m4-1.4.19.tar.gz && \
     rm m4-1.4.19.tar.gz
 

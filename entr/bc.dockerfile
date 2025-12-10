@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract entr 5.6
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/eradman/entr/archive/refs/tags/5.6.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/eradman/entr/archive/refs/tags/5.6.tar.gz && \
     tar -xzf 5.6.tar.gz && \
     rm 5.6.tar.gz
 

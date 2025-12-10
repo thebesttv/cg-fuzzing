@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract unrtf 0.21.10 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/unrtf/unrtf-0.21.10.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/unrtf/unrtf-0.21.10.tar.gz && \
     tar -xzf unrtf-0.21.10.tar.gz && \
     rm unrtf-0.21.10.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/unrtf /out/unrtf
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf unrtf-0.21.10 && \
-    wget https://ftp.gnu.org/gnu/unrtf/unrtf-0.21.10.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/unrtf/unrtf-0.21.10.tar.gz && \
     tar -xzf unrtf-0.21.10.tar.gz && \
     rm unrtf-0.21.10.tar.gz
 

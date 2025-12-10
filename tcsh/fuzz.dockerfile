@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract tcsh v6.24.16 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://astron.com/pub/tcsh/tcsh-6.24.16.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://astron.com/pub/tcsh/tcsh-6.24.16.tar.gz && \
     tar -xzf tcsh-6.24.16.tar.gz && \
     rm tcsh-6.24.16.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp tcsh /out/tcsh
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf tcsh-6.24.16 && \
-    wget https://astron.com/pub/tcsh/tcsh-6.24.16.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://astron.com/pub/tcsh/tcsh-6.24.16.tar.gz && \
     tar -xzf tcsh-6.24.16.tar.gz && \
     rm tcsh-6.24.16.tar.gz
 

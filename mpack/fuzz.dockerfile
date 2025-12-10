@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract mpack 1.1.1 (amalgamation version)
 WORKDIR /src
-RUN wget https://github.com/ludocode/mpack/releases/download/v1.1.1/mpack-amalgamation-1.1.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ludocode/mpack/releases/download/v1.1.1/mpack-amalgamation-1.1.1.tar.gz && \
     tar -xzf mpack-amalgamation-1.1.1.tar.gz && \
     rm mpack-amalgamation-1.1.1.tar.gz
 
@@ -31,7 +31,7 @@ RUN cp fuzz_mpack /out/fuzz_mpack
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf mpack-amalgamation-1.1.1 && \
-    wget https://github.com/ludocode/mpack/releases/download/v1.1.1/mpack-amalgamation-1.1.1.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ludocode/mpack/releases/download/v1.1.1/mpack-amalgamation-1.1.1.tar.gz && \
     tar -xzf mpack-amalgamation-1.1.1.tar.gz && \
     rm mpack-amalgamation-1.1.1.tar.gz
 

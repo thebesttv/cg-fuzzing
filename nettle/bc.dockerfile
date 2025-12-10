@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract nettle 3.10.2
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/nettle/nettle-3.10.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/nettle/nettle-3.10.2.tar.gz && \
     tar -xzf nettle-3.10.2.tar.gz && \
     rm nettle-3.10.2.tar.gz
 

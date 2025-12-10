@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libsndfile 1.2.2
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz && \
     tar -xJf libsndfile-1.2.2.tar.xz && \
     rm libsndfile-1.2.2.tar.xz
 

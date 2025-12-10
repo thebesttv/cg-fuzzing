@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract yajl 2.1.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/lloyd/yajl/archive/refs/tags/2.1.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/lloyd/yajl/archive/refs/tags/2.1.0.tar.gz && \
     tar -xzf 2.1.0.tar.gz && \
     rm 2.1.0.tar.gz
 
@@ -38,7 +38,7 @@ RUN find build -type f -name "json_verify" -executable -exec cp {} /out/json_ver
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf yajl-2.1.0 && \
-    wget https://github.com/lloyd/yajl/archive/refs/tags/2.1.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/lloyd/yajl/archive/refs/tags/2.1.0.tar.gz && \
     tar -xzf 2.1.0.tar.gz && \
     rm 2.1.0.tar.gz
 
