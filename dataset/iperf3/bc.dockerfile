@@ -12,7 +12,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract iperf3 v3.17.1
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/esnet/iperf/releases/download/3.17.1/iperf-3.17.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/esnet/iperf/releases/download/3.17.1/iperf-3.17.1.tar.gz && \
     tar -xzf iperf-3.17.1.tar.gz && \
     rm iperf-3.17.1.tar.gz
 

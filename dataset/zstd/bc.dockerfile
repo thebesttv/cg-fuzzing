@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract zstd v1.5.7
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz && \
     tar -xzf zstd-1.5.7.tar.gz && \
     rm zstd-1.5.7.tar.gz
 

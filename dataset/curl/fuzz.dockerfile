@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract curl v8.17.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/curl/curl/releases/download/curl-8_17_0/curl-8.17.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/curl/curl/releases/download/curl-8_17_0/curl-8.17.0.tar.gz && \
     tar -xzf curl-8.17.0.tar.gz && \
     rm curl-8.17.0.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/curl /out/curl
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf curl-8.17.0 && \
-    wget https://github.com/curl/curl/releases/download/curl-8_17_0/curl-8.17.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/curl/curl/releases/download/curl-8_17_0/curl-8.17.0.tar.gz && \
     tar -xzf curl-8.17.0.tar.gz && \
     rm curl-8.17.0.tar.gz
 

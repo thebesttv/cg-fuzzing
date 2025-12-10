@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and build lzo library (dependency)
 WORKDIR /src
-RUN wget https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz && \
     tar -xzf lzo-2.10.tar.gz && \
     rm lzo-2.10.tar.gz
 
@@ -28,7 +28,7 @@ RUN make install
 
 # Download lzop (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://www.lzop.org/download/lzop-1.04.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.lzop.org/download/lzop-1.04.tar.gz && \
     tar -xzf lzop-1.04.tar.gz && \
     rm lzop-1.04.tar.gz
 
@@ -50,7 +50,7 @@ WORKDIR /src
 RUN rm -rf lzop-1.04 lzo-2.10
 
 # Rebuild lzo with CMPLOG
-RUN wget https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz && \
     tar -xzf lzo-2.10.tar.gz && \
     rm lzo-2.10.tar.gz
 
@@ -67,7 +67,7 @@ RUN make install
 
 # Download and build lzop with CMPLOG
 WORKDIR /src
-RUN wget https://www.lzop.org/download/lzop-1.04.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.lzop.org/download/lzop-1.04.tar.gz && \
     tar -xzf lzop-1.04.tar.gz && \
     rm lzop-1.04.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract cabextract v1.11 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://www.cabextract.org.uk/cabextract-1.11.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.cabextract.org.uk/cabextract-1.11.tar.gz && \
     tar -xzf cabextract-1.11.tar.gz && \
     rm cabextract-1.11.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp cabextract /out/cabextract
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf cabextract-1.11 && \
-    wget https://www.cabextract.org.uk/cabextract-1.11.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.cabextract.org.uk/cabextract-1.11.tar.gz && \
     tar -xzf cabextract-1.11.tar.gz && \
     rm cabextract-1.11.tar.gz
 

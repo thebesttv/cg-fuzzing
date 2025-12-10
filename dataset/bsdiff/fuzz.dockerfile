@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download bsdiff from GitHub (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/mendsley/bsdiff/archive/refs/heads/master.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/mendsley/bsdiff/archive/refs/heads/master.tar.gz && \
     tar -xzf master.tar.gz && \
     rm master.tar.gz
 
@@ -35,7 +35,7 @@ RUN cp bsdiff /out/bsdiff && cp bspatch /out/bspatch
 # Build CMPLOG versions for better fuzzing
 WORKDIR /src
 RUN rm -rf bsdiff-master && \
-    wget https://github.com/mendsley/bsdiff/archive/refs/heads/master.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/mendsley/bsdiff/archive/refs/heads/master.tar.gz && \
     tar -xzf master.tar.gz && \
     rm master.tar.gz
 

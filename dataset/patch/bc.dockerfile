@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract GNU patch 2.8
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/patch/patch-2.8.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/patch/patch-2.8.tar.gz && \
     tar -xzf patch-2.8.tar.gz && \
     rm patch-2.8.tar.gz
 

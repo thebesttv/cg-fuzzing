@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract upx v5.0.2
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/upx/upx/releases/download/v5.0.2/upx-5.0.2-src.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/upx/upx/releases/download/v5.0.2/upx-5.0.2-src.tar.xz && \
     tar -xf upx-5.0.2-src.tar.xz && \
     rm upx-5.0.2-src.tar.xz
 

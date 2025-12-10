@@ -12,7 +12,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract sysstat v12.7.6
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/sysstat/sysstat/archive/v12.7.6.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/sysstat/sysstat/archive/v12.7.6.tar.gz && \
     tar -xzf v12.7.6.tar.gz && \
     rm v12.7.6.tar.gz
 

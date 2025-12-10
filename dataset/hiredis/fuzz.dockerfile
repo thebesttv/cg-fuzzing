@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract hiredis 1.3.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/redis/hiredis/archive/refs/tags/v1.3.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/redis/hiredis/archive/refs/tags/v1.3.0.tar.gz && \
     tar -xzf v1.3.0.tar.gz && \
     rm v1.3.0.tar.gz
 
@@ -87,7 +87,7 @@ RUN afl-clang-lto \
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf hiredis-1.3.0 && \
-    wget https://github.com/redis/hiredis/archive/refs/tags/v1.3.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/redis/hiredis/archive/refs/tags/v1.3.0.tar.gz && \
     tar -xzf v1.3.0.tar.gz && \
     rm v1.3.0.tar.gz
 

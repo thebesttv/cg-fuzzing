@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract cflow v1.7
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/cflow/cflow-1.7.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/cflow/cflow-1.7.tar.gz && \
     tar -xzf cflow-1.7.tar.gz && \
     rm cflow-1.7.tar.gz
 

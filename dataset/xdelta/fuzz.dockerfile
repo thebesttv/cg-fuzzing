@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download xdelta from GitHub (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/jmacd/xdelta/archive/refs/tags/v3.1.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jmacd/xdelta/archive/refs/tags/v3.1.0.tar.gz && \
     tar -xzf v3.1.0.tar.gz && \
     rm v3.1.0.tar.gz
 
@@ -35,7 +35,7 @@ RUN cp xdelta3 /out/xdelta3
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf xdelta-3.1.0 && \
-    wget https://github.com/jmacd/xdelta/archive/refs/tags/v3.1.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jmacd/xdelta/archive/refs/tags/v3.1.0.tar.gz && \
     tar -xzf v3.1.0.tar.gz && \
     rm v3.1.0.tar.gz
 

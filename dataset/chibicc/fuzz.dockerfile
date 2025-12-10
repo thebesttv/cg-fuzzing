@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract chibicc (same version as bc.dockerfile - main branch)
 WORKDIR /src
-RUN wget https://github.com/rui314/chibicc/archive/refs/heads/main.tar.gz -O chibicc.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/rui314/chibicc/archive/refs/heads/main.tar.gz -O chibicc.tar.gz && \
     tar -xzf chibicc.tar.gz && \
     rm chibicc.tar.gz
 
@@ -29,7 +29,7 @@ RUN cp chibicc /out/chibicc
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf chibicc-main && \
-    wget https://github.com/rui314/chibicc/archive/refs/heads/main.tar.gz -O chibicc.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/rui314/chibicc/archive/refs/heads/main.tar.gz -O chibicc.tar.gz && \
     tar -xzf chibicc.tar.gz && \
     rm chibicc.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libvpx v1.14.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/webmproject/libvpx/archive/refs/tags/v1.14.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/webmproject/libvpx/archive/refs/tags/v1.14.1.tar.gz && \
     tar -xzf v1.14.1.tar.gz && \
     rm v1.14.1.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp vpxdec /out/vpxdec
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf libvpx-1.14.1 && \
-    wget https://github.com/webmproject/libvpx/archive/refs/tags/v1.14.1.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/webmproject/libvpx/archive/refs/tags/v1.14.1.tar.gz && \
     tar -xzf v1.14.1.tar.gz && \
     rm v1.14.1.tar.gz
 

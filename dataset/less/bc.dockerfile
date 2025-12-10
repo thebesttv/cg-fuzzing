@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract less v668
 WORKDIR /home/SVF-tools
-RUN wget https://greenwoodsoftware.com/less/less-668.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://greenwoodsoftware.com/less/less-668.tar.gz && \
     tar -xzf less-668.tar.gz && \
     rm less-668.tar.gz
 

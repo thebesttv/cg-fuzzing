@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libtiff v4.7.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://download.osgeo.org/libtiff/tiff-4.7.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://download.osgeo.org/libtiff/tiff-4.7.0.tar.gz && \
     tar -xzf tiff-4.7.0.tar.gz && \
     rm tiff-4.7.0.tar.gz
 
@@ -42,7 +42,7 @@ RUN cp cmake_build/tools/tiffinfo /out/tiffinfo
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf tiff-4.7.0 && \
-    wget https://download.osgeo.org/libtiff/tiff-4.7.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://download.osgeo.org/libtiff/tiff-4.7.0.tar.gz && \
     tar -xzf tiff-4.7.0.tar.gz && \
     rm tiff-4.7.0.tar.gz
 

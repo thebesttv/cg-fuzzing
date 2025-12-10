@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libexif v0.6.25
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/libexif/libexif/releases/download/v0.6.25/libexif-0.6.25.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libexif/libexif/releases/download/v0.6.25/libexif-0.6.25.tar.gz && \
     tar -xzf libexif-0.6.25.tar.gz && \
     rm libexif-0.6.25.tar.gz
 
@@ -36,7 +36,7 @@ RUN make install
 
 # Download and build exif CLI tool
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/libexif/exif/releases/download/exif-0_6_22-release/exif-0.6.22.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libexif/exif/releases/download/exif-0_6_22-release/exif-0.6.22.tar.gz && \
     tar -xzf exif-0.6.22.tar.gz && \
     rm exif-0.6.22.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract diction 1.11 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/diction/diction-1.11.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/diction/diction-1.11.tar.gz && \
     tar -xzf diction-1.11.tar.gz && \
     rm diction-1.11.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp diction /out/diction
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf diction-1.11 && \
-    wget https://ftp.gnu.org/gnu/diction/diction-1.11.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/diction/diction-1.11.tar.gz && \
     tar -xzf diction-1.11.tar.gz && \
     rm diction-1.11.tar.gz
 

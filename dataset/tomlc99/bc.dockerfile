@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download tomlc99 from master branch (commit 26b9c1ea770dab2378e5041b695d24ccebe58a7a)
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/cktan/tomlc99/archive/refs/heads/master.zip && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/cktan/tomlc99/archive/refs/heads/master.zip && \
     unzip master.zip && \
     rm master.zip
 

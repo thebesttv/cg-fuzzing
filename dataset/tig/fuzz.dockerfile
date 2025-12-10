@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract tig v2.6.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/jonas/tig/releases/download/tig-2.6.0/tig-2.6.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jonas/tig/releases/download/tig-2.6.0/tig-2.6.0.tar.gz && \
     tar -xzf tig-2.6.0.tar.gz && \
     rm tig-2.6.0.tar.gz
 
@@ -34,7 +34,7 @@ RUN cp src/tig /out/tig
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf tig-2.6.0 && \
-    wget https://github.com/jonas/tig/releases/download/tig-2.6.0/tig-2.6.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jonas/tig/releases/download/tig-2.6.0/tig-2.6.0.tar.gz && \
     tar -xzf tig-2.6.0.tar.gz && \
     rm tig-2.6.0.tar.gz
 

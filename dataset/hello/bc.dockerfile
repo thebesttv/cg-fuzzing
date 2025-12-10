@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract hello 2.12.1 (2.12.2 may have issues)
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/hello/hello-2.12.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/hello/hello-2.12.1.tar.gz && \
     tar -xzf hello-2.12.1.tar.gz && \
     rm hello-2.12.1.tar.gz
 

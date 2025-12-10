@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract mujs 1.3.8
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/ArtifexSoftware/mujs/archive/refs/tags/1.3.8.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ArtifexSoftware/mujs/archive/refs/tags/1.3.8.tar.gz && \
     tar -xzf 1.3.8.tar.gz && \
     rm 1.3.8.tar.gz
 

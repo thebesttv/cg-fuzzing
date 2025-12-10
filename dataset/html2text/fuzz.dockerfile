@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract html2text v2.3.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/grobian/html2text/releases/download/v2.3.0/html2text-2.3.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/grobian/html2text/releases/download/v2.3.0/html2text-2.3.0.tar.gz && \
     tar -xzf html2text-2.3.0.tar.gz && \
     rm html2text-2.3.0.tar.gz
 
@@ -35,7 +35,7 @@ RUN cp html2text /out/html2text
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf html2text-2.3.0 && \
-    wget https://github.com/grobian/html2text/releases/download/v2.3.0/html2text-2.3.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/grobian/html2text/releases/download/v2.3.0/html2text-2.3.0.tar.gz && \
     tar -xzf html2text-2.3.0.tar.gz && \
     rm html2text-2.3.0.tar.gz
 

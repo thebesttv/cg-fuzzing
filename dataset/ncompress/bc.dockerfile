@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract ncompress 5.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/vapier/ncompress/archive/refs/tags/v5.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/vapier/ncompress/archive/refs/tags/v5.0.tar.gz && \
     tar -xzf v5.0.tar.gz && \
     rm v5.0.tar.gz
 

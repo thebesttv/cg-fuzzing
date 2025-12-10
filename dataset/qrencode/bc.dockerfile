@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libqrencode v4.1.1
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/fukuchi/libqrencode/archive/refs/tags/v4.1.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/fukuchi/libqrencode/archive/refs/tags/v4.1.1.tar.gz && \
     tar -xzf v4.1.1.tar.gz && \
     rm v4.1.1.tar.gz
 

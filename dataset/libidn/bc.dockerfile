@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libidn 1.42
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/libidn/libidn-1.42.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/libidn/libidn-1.42.tar.gz && \
     tar -xzf libidn-1.42.tar.gz && \
     rm libidn-1.42.tar.gz
 

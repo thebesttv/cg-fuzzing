@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract qbe (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://c9x.me/compile/release/qbe-1.2.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://c9x.me/compile/release/qbe-1.2.tar.xz && \
     tar -xJf qbe-1.2.tar.xz && \
     rm qbe-1.2.tar.xz
 
@@ -29,7 +29,7 @@ RUN cp qbe /out/qbe
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf qbe-1.2 && \
-    wget https://c9x.me/compile/release/qbe-1.2.tar.xz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://c9x.me/compile/release/qbe-1.2.tar.xz && \
     tar -xJf qbe-1.2.tar.xz && \
     rm qbe-1.2.tar.xz
 

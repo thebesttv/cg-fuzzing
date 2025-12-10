@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract lzo 2.10 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz && \
     tar -xzf lzo-2.10.tar.gz && \
     rm lzo-2.10.tar.gz
 
@@ -36,7 +36,7 @@ RUN cp examples/lzopack /out/lzopack
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf lzo-2.10 && \
-    wget https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz && \
     tar -xzf lzo-2.10.tar.gz && \
     rm lzo-2.10.tar.gz
 

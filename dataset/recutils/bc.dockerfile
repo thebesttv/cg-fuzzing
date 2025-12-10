@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract recutils v1.9
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/recutils/recutils-1.9.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/recutils/recutils-1.9.tar.gz && \
     tar -xzf recutils-1.9.tar.gz && \
     rm recutils-1.9.tar.gz
 

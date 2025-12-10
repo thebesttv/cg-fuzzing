@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract cpio 2.15 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/cpio/cpio-2.15.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/cpio/cpio-2.15.tar.gz && \
     tar -xzf cpio-2.15.tar.gz && \
     rm cpio-2.15.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp src/cpio /out/cpio
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf cpio-2.15 && \
-    wget https://ftp.gnu.org/gnu/cpio/cpio-2.15.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/cpio/cpio-2.15.tar.gz && \
     tar -xzf cpio-2.15.tar.gz && \
     rm cpio-2.15.tar.gz
 

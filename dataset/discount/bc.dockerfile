@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract discount v3.0.1.2
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/Orc/discount/archive/refs/tags/v3.0.1.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/Orc/discount/archive/refs/tags/v3.0.1.2.tar.gz && \
     tar -xzf v3.0.1.2.tar.gz && \
     rm v3.0.1.2.tar.gz
 

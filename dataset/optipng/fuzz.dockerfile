@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract optipng 0.7.8 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://sourceforge.net/projects/optipng/files/OptiPNG/optipng-0.7.8/optipng-0.7.8.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://sourceforge.net/projects/optipng/files/OptiPNG/optipng-0.7.8/optipng-0.7.8.tar.gz && \
     tar -xzf optipng-0.7.8.tar.gz && \
     rm optipng-0.7.8.tar.gz
 
@@ -31,7 +31,7 @@ RUN cp src/optipng/optipng /out/optipng
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf optipng-0.7.8 && \
-    wget https://sourceforge.net/projects/optipng/files/OptiPNG/optipng-0.7.8/optipng-0.7.8.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://sourceforge.net/projects/optipng/files/OptiPNG/optipng-0.7.8/optipng-0.7.8.tar.gz && \
     tar -xzf optipng-0.7.8.tar.gz && \
     rm optipng-0.7.8.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract lexbor v2.6.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/lexbor/lexbor/archive/refs/tags/v2.6.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/lexbor/lexbor/archive/refs/tags/v2.6.0.tar.gz && \
     tar -xzf v2.6.0.tar.gz && \
     rm v2.6.0.tar.gz
 
@@ -39,7 +39,7 @@ RUN afl-clang-lto -O2 -I/src/lexbor-2.6.0/source \
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf lexbor-2.6.0 && \
-    wget https://github.com/lexbor/lexbor/archive/refs/tags/v2.6.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/lexbor/lexbor/archive/refs/tags/v2.6.0.tar.gz && \
     tar -xzf v2.6.0.tar.gz && \
     rm v2.6.0.tar.gz
 

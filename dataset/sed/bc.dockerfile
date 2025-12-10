@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract sed 4.9
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/sed/sed-4.9.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/sed/sed-4.9.tar.gz && \
     tar -xzf sed-4.9.tar.gz && \
     rm sed-4.9.tar.gz
 

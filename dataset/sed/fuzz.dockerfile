@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract sed 4.9 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/sed/sed-4.9.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/sed/sed-4.9.tar.gz && \
     tar -xzf sed-4.9.tar.gz && \
     rm sed-4.9.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp sed/sed /out/sed
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf sed-4.9 && \
-    wget https://ftp.gnu.org/gnu/sed/sed-4.9.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/sed/sed-4.9.tar.gz && \
     tar -xzf sed-4.9.tar.gz && \
     rm sed-4.9.tar.gz
 

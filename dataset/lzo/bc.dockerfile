@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract lzo 2.10
 WORKDIR /home/SVF-tools
-RUN wget https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz && \
     tar -xzf lzo-2.10.tar.gz && \
     rm lzo-2.10.tar.gz
 

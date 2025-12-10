@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract GNU bc 1.08.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/bc/bc-1.08.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/bc/bc-1.08.2.tar.gz && \
     tar -xzf bc-1.08.2.tar.gz && \
     rm bc-1.08.2.tar.gz
 
@@ -34,7 +34,7 @@ RUN cp bc/bc /out/bc
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf bc-1.08.2 && \
-    wget https://ftp.gnu.org/gnu/bc/bc-1.08.2.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/bc/bc-1.08.2.tar.gz && \
     tar -xzf bc-1.08.2.tar.gz && \
     rm bc-1.08.2.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract giflib 5.2.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://sourceforge.net/projects/giflib/files/giflib-5.2.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://sourceforge.net/projects/giflib/files/giflib-5.2.2.tar.gz && \
     tar -xzf giflib-5.2.2.tar.gz && \
     rm giflib-5.2.2.tar.gz
 
@@ -34,7 +34,7 @@ RUN cp giftext /out/giftext
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf giflib-5.2.2 && \
-    wget https://sourceforge.net/projects/giflib/files/giflib-5.2.2.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://sourceforge.net/projects/giflib/files/giflib-5.2.2.tar.gz && \
     tar -xzf giflib-5.2.2.tar.gz && \
     rm giflib-5.2.2.tar.gz
 

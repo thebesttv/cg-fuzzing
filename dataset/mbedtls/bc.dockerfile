@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract mbedtls 3.6.2 (latest LTS version)
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-3.6.2/mbedtls-3.6.2.tar.bz2 && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-3.6.2/mbedtls-3.6.2.tar.bz2 && \
     tar -xjf mbedtls-3.6.2.tar.bz2 && \
     rm mbedtls-3.6.2.tar.bz2
 

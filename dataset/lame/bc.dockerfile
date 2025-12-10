@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract lame v3.100
 WORKDIR /home/SVF-tools
-RUN wget https://downloads.sourceforge.net/lame/lame-3.100.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://downloads.sourceforge.net/lame/lame-3.100.tar.gz && \
     tar -xzf lame-3.100.tar.gz && \
     rm lame-3.100.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libzip v1.11.4 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/nih-at/libzip/archive/refs/tags/v1.11.4.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/nih-at/libzip/archive/refs/tags/v1.11.4.tar.gz && \
     tar -xzf v1.11.4.tar.gz && \
     rm v1.11.4.tar.gz
 
@@ -45,7 +45,7 @@ RUN cp build/src/zipcmp /out/zipcmp
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf libzip-1.11.4 && \
-    wget https://github.com/nih-at/libzip/archive/refs/tags/v1.11.4.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/nih-at/libzip/archive/refs/tags/v1.11.4.tar.gz && \
     tar -xzf v1.11.4.tar.gz && \
     rm v1.11.4.tar.gz
 

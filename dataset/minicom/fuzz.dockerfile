@@ -8,7 +8,7 @@ RUN apt-get update && \
 RUN mkdir -p /out
 
 WORKDIR /src
-RUN wget https://salsa.debian.org/minicom-team/minicom/-/archive/2.9/minicom-2.9.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://salsa.debian.org/minicom-team/minicom/-/archive/2.9/minicom-2.9.tar.gz && \
     tar -xzf minicom-2.9.tar.gz && \
     rm minicom-2.9.tar.gz
 
@@ -26,7 +26,7 @@ RUN cp src/minicom /out/minicom
 
 WORKDIR /src
 RUN rm -rf minicom-2.9 && \
-    wget https://salsa.debian.org/minicom-team/minicom/-/archive/2.9/minicom-2.9.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://salsa.debian.org/minicom-team/minicom/-/archive/2.9/minicom-2.9.tar.gz && \
     tar -xzf minicom-2.9.tar.gz && \
     rm minicom-2.9.tar.gz
 

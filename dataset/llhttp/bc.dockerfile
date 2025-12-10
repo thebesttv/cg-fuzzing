@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract llhttp v9.2.1
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/nodejs/llhttp/archive/refs/tags/release/v9.2.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/nodejs/llhttp/archive/refs/tags/release/v9.2.1.tar.gz && \
     tar -xzf v9.2.1.tar.gz && \
     rm v9.2.1.tar.gz
 

@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract secp256k1 v0.7.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/bitcoin-core/secp256k1/archive/refs/tags/v0.7.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/bitcoin-core/secp256k1/archive/refs/tags/v0.7.0.tar.gz && \
     tar -xzf v0.7.0.tar.gz && \
     rm v0.7.0.tar.gz
 

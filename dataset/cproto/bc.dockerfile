@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract cproto 4.7w
 WORKDIR /home/SVF-tools
-RUN wget https://invisible-mirror.net/archives/cproto/cproto-4.7w.tgz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://invisible-mirror.net/archives/cproto/cproto-4.7w.tgz && \
     tar -xzf cproto-4.7w.tgz && \
     rm cproto-4.7w.tgz
 

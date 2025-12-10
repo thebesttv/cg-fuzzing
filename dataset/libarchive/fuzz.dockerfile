@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libarchive 3.8.3 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/libarchive/libarchive/releases/download/v3.8.3/libarchive-3.8.3.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libarchive/libarchive/releases/download/v3.8.3/libarchive-3.8.3.tar.gz && \
     tar -xzf libarchive-3.8.3.tar.gz && \
     rm libarchive-3.8.3.tar.gz
 
@@ -34,7 +34,7 @@ RUN cp bsdtar /out/bsdtar
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf libarchive-3.8.3 && \
-    wget https://github.com/libarchive/libarchive/releases/download/v3.8.3/libarchive-3.8.3.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libarchive/libarchive/releases/download/v3.8.3/libarchive-3.8.3.tar.gz && \
     tar -xzf libarchive-3.8.3.tar.gz && \
     rm libarchive-3.8.3.tar.gz
 

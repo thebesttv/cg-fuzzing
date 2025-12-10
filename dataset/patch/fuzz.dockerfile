@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract GNU patch 2.8 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/patch/patch-2.8.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/patch/patch-2.8.tar.gz && \
     tar -xzf patch-2.8.tar.gz && \
     rm patch-2.8.tar.gz
 
@@ -35,7 +35,7 @@ RUN cp src/patch /out/patch
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf patch-2.8 && \
-    wget https://ftp.gnu.org/gnu/patch/patch-2.8.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/patch/patch-2.8.tar.gz && \
     tar -xzf patch-2.8.tar.gz && \
     rm patch-2.8.tar.gz
 

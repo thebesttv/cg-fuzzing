@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract yara v4.5.5 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/VirusTotal/yara/archive/refs/tags/v4.5.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/VirusTotal/yara/archive/refs/tags/v4.5.5.tar.gz && \
     tar -xzf v4.5.5.tar.gz && \
     rm v4.5.5.tar.gz
 
@@ -43,7 +43,7 @@ RUN cp yara /out/yara
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf yara-4.5.5 && \
-    wget https://github.com/VirusTotal/yara/archive/refs/tags/v4.5.5.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/VirusTotal/yara/archive/refs/tags/v4.5.5.tar.gz && \
     tar -xzf v4.5.5.tar.gz && \
     rm v4.5.5.tar.gz
 

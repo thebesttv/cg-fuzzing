@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract flex v2.6.4 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz && \
     tar -xzf flex-2.6.4.tar.gz && \
     rm flex-2.6.4.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/flex /out/flex
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf flex-2.6.4 && \
-    wget https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz && \
     tar -xzf flex-2.6.4.tar.gz && \
     rm flex-2.6.4.tar.gz
 

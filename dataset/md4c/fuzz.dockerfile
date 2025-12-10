@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract md4c release-0.5.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/mity/md4c/archive/refs/tags/release-0.5.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/mity/md4c/archive/refs/tags/release-0.5.2.tar.gz && \
     tar -xzf release-0.5.2.tar.gz && \
     rm release-0.5.2.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp build/md2html/md2html /out/md2html
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf md4c-release-0.5.2 && \
-    wget https://github.com/mity/md4c/archive/refs/tags/release-0.5.2.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/mity/md4c/archive/refs/tags/release-0.5.2.tar.gz && \
     tar -xzf release-0.5.2.tar.gz && \
     rm release-0.5.2.tar.gz
 

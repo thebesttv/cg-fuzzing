@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract nettle 3.10.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/nettle/nettle-3.10.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/nettle/nettle-3.10.2.tar.gz && \
     tar -xzf nettle-3.10.2.tar.gz && \
     rm nettle-3.10.2.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp tools/sexp-conv /out/sexp-conv
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf nettle-3.10.2 && \
-    wget https://ftp.gnu.org/gnu/nettle/nettle-3.10.2.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/nettle/nettle-3.10.2.tar.gz && \
     tar -xzf nettle-3.10.2.tar.gz && \
     rm nettle-3.10.2.tar.gz
 

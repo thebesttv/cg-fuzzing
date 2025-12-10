@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract daemonize v1.7.8
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/bmc/daemonize/archive/refs/tags/release-1.7.8.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/bmc/daemonize/archive/refs/tags/release-1.7.8.tar.gz && \
     tar -xzf release-1.7.8.tar.gz && \
     rm release-1.7.8.tar.gz
 

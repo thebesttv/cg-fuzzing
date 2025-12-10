@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract GNU ed 1.22 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/ed/ed-1.22.tar.lz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/ed/ed-1.22.tar.lz && \
     tar --lzip -xf ed-1.22.tar.lz && \
     rm ed-1.22.tar.lz
 
@@ -30,7 +30,7 @@ RUN cp ed /out/ed
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf ed-1.22 && \
-    wget https://ftp.gnu.org/gnu/ed/ed-1.22.tar.lz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/ed/ed-1.22.tar.lz && \
     tar --lzip -xf ed-1.22.tar.lz && \
     rm ed-1.22.tar.lz
 

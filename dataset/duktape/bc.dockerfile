@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download duktape 2.7.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/svaarala/duktape/releases/download/v2.7.0/duktape-2.7.0.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/svaarala/duktape/releases/download/v2.7.0/duktape-2.7.0.tar.xz && \
     tar -xf duktape-2.7.0.tar.xz && \
     rm duktape-2.7.0.tar.xz
 

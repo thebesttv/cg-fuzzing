@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract binutils v2.43.1
 WORKDIR /home/SVF-tools
-RUN wget https://ftpmirror.gnu.org/gnu/binutils/binutils-2.43.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/binutils/binutils-2.43.1.tar.gz && \
     tar -xzf binutils-2.43.1.tar.gz && \
     rm binutils-2.43.1.tar.gz
 

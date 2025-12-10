@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract minizip-ng v4.0.10
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/zlib-ng/minizip-ng/archive/refs/tags/4.0.10.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/zlib-ng/minizip-ng/archive/refs/tags/4.0.10.tar.gz && \
     tar -xzf 4.0.10.tar.gz && \
     rm 4.0.10.tar.gz
 

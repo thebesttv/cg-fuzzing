@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract ncompress 5.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/vapier/ncompress/archive/refs/tags/v5.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/vapier/ncompress/archive/refs/tags/v5.0.tar.gz && \
     tar -xzf v5.0.tar.gz && \
     rm v5.0.tar.gz
 
@@ -29,7 +29,7 @@ RUN cp compress /out/compress
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf ncompress-5.0 && \
-    wget https://github.com/vapier/ncompress/archive/refs/tags/v5.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/vapier/ncompress/archive/refs/tags/v5.0.tar.gz && \
     tar -xzf v5.0.tar.gz && \
     rm v5.0.tar.gz
 

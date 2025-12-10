@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libtasn1 4.20.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.20.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/libtasn1/libtasn1-4.20.0.tar.gz && \
     tar -xzf libtasn1-4.20.0.tar.gz && \
     rm libtasn1-4.20.0.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp src/asn1Parser /out/asn1Parser
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf libtasn1-4.20.0 && \
-    wget https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.20.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/libtasn1/libtasn1-4.20.0.tar.gz && \
     tar -xzf libtasn1-4.20.0.tar.gz && \
     rm libtasn1-4.20.0.tar.gz
 

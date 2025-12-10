@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract jbig2dec v0.20 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/ArtifexSoftware/jbig2dec/archive/refs/tags/0.20.tar.gz -O jbig2dec-0.20.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ArtifexSoftware/jbig2dec/archive/refs/tags/0.20.tar.gz -O jbig2dec-0.20.tar.gz && \
     tar -xzf jbig2dec-0.20.tar.gz && \
     rm jbig2dec-0.20.tar.gz
 
@@ -30,7 +30,7 @@ RUN cp jbig2dec /out/jbig2dec
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf jbig2dec-0.20 && \
-    wget https://github.com/ArtifexSoftware/jbig2dec/archive/refs/tags/0.20.tar.gz -O jbig2dec-0.20.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ArtifexSoftware/jbig2dec/archive/refs/tags/0.20.tar.gz -O jbig2dec-0.20.tar.gz && \
     tar -xzf jbig2dec-0.20.tar.gz && \
     rm jbig2dec-0.20.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract entr 5.6 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/eradman/entr/archive/refs/tags/5.6.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/eradman/entr/archive/refs/tags/5.6.tar.gz && \
     tar -xzf 5.6.tar.gz && \
     rm 5.6.tar.gz
 
@@ -26,7 +26,7 @@ RUN cp entr /out/entr
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf entr-5.6 && \
-    wget https://github.com/eradman/entr/archive/refs/tags/5.6.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/eradman/entr/archive/refs/tags/5.6.tar.gz && \
     tar -xzf 5.6.tar.gz && \
     rm 5.6.tar.gz
 

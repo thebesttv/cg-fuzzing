@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract Lua 5.4.8
 WORKDIR /home/SVF-tools
-RUN wget https://www.lua.org/ftp/lua-5.4.8.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.lua.org/ftp/lua-5.4.8.tar.gz && \
     tar -xzf lua-5.4.8.tar.gz && \
     rm lua-5.4.8.tar.gz
 

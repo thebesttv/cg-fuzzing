@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract frozen 1.7
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/cesanta/frozen/archive/refs/tags/1.7.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/cesanta/frozen/archive/refs/tags/1.7.tar.gz && \
     tar -xzf 1.7.tar.gz && \
     rm 1.7.tar.gz
 

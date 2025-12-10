@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # 2. Download uchardet source code
 WORKDIR /home/SVF-tools
-RUN wget https://www.freedesktop.org/software/uchardet/releases/uchardet-0.0.8.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.freedesktop.org/software/uchardet/releases/uchardet-0.0.8.tar.xz && \
     tar -xf uchardet-0.0.8.tar.xz && \
     rm uchardet-0.0.8.tar.xz
 

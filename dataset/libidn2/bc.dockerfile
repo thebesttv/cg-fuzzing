@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libidn2 2.3.8
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/libidn/libidn2-2.3.8.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/libidn/libidn2-2.3.8.tar.gz && \
     tar -xzf libidn2-2.3.8.tar.gz && \
     rm libidn2-2.3.8.tar.gz
 

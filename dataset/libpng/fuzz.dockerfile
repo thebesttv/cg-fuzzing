@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libpng 1.6.47 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://download.sourceforge.net/libpng/libpng-1.6.47.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://download.sourceforge.net/libpng/libpng-1.6.47.tar.gz && \
     tar -xzf libpng-1.6.47.tar.gz && \
     rm libpng-1.6.47.tar.gz
 
@@ -38,7 +38,7 @@ RUN cp png2pnm /out/png2pnm
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf libpng-1.6.47 && \
-    wget https://download.sourceforge.net/libpng/libpng-1.6.47.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://download.sourceforge.net/libpng/libpng-1.6.47.tar.gz && \
     tar -xzf libpng-1.6.47.tar.gz && \
     rm libpng-1.6.47.tar.gz
 

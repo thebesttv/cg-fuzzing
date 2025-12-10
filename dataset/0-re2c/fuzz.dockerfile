@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download re2c 4.3 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/skvadrik/re2c/releases/download/4.3/re2c-4.3.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/skvadrik/re2c/releases/download/4.3/re2c-4.3.tar.xz && \
     tar -xf re2c-4.3.tar.xz && \
     rm re2c-4.3.tar.xz
 
@@ -32,7 +32,7 @@ RUN cp re2c /out/re2c
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf re2c-4.3 && \
-    wget https://github.com/skvadrik/re2c/releases/download/4.3/re2c-4.3.tar.xz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/skvadrik/re2c/releases/download/4.3/re2c-4.3.tar.xz && \
     tar -xf re2c-4.3.tar.xz && \
     rm re2c-4.3.tar.xz
 

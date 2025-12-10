@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract iniparser v4.2.6 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/ndevilla/iniparser/archive/refs/tags/v4.2.6.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ndevilla/iniparser/archive/refs/tags/v4.2.6.tar.gz && \
     tar -xzf v4.2.6.tar.gz && \
     rm v4.2.6.tar.gz
 
@@ -38,7 +38,7 @@ RUN cp parse /out/parse
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf iniparser-4.2.6 && \
-    wget https://github.com/ndevilla/iniparser/archive/refs/tags/v4.2.6.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ndevilla/iniparser/archive/refs/tags/v4.2.6.tar.gz && \
     tar -xzf v4.2.6.tar.gz && \
     rm v4.2.6.tar.gz
 

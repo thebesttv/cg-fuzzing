@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libplist 2.7.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/libimobiledevice/libplist/archive/refs/tags/2.7.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libimobiledevice/libplist/archive/refs/tags/2.7.0.tar.gz && \
     tar -xzf 2.7.0.tar.gz && \
     rm 2.7.0.tar.gz
 
@@ -42,7 +42,7 @@ RUN cp tools/plistutil /out/plistutil
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf libplist-2.7.0 && \
-    wget https://github.com/libimobiledevice/libplist/archive/refs/tags/2.7.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libimobiledevice/libplist/archive/refs/tags/2.7.0.tar.gz && \
     tar -xzf 2.7.0.tar.gz && \
     rm 2.7.0.tar.gz
 

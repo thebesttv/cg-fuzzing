@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libucl 0.9.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/vstakhov/libucl/archive/refs/tags/0.9.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/vstakhov/libucl/archive/refs/tags/0.9.2.tar.gz && \
     tar -xzf 0.9.2.tar.gz && \
     rm 0.9.2.tar.gz
 
@@ -34,7 +34,7 @@ RUN cp build/utils/ucl_tool /out/ucl_tool
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf libucl-0.9.2 && \
-    wget https://github.com/vstakhov/libucl/archive/refs/tags/0.9.2.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/vstakhov/libucl/archive/refs/tags/0.9.2.tar.gz && \
     tar -xzf 0.9.2.tar.gz && \
     rm 0.9.2.tar.gz
 

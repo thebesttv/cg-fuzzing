@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract xz v5.8.1
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/tukaani-project/xz/releases/download/v5.8.1/xz-5.8.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/tukaani-project/xz/releases/download/v5.8.1/xz-5.8.1.tar.gz && \
     tar -xzf xz-5.8.1.tar.gz && \
     rm xz-5.8.1.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract stress-ng v0.18.05 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/ColinIanKing/stress-ng/archive/V0.18.05.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ColinIanKing/stress-ng/archive/V0.18.05.tar.gz && \
     tar -xzf V0.18.05.tar.gz && \
     rm V0.18.05.tar.gz
 
@@ -30,7 +30,7 @@ RUN cp stress-ng /out/stress-ng
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf stress-ng-0.18.05 && \
-    wget https://github.com/ColinIanKing/stress-ng/archive/V0.18.05.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ColinIanKing/stress-ng/archive/V0.18.05.tar.gz && \
     tar -xzf V0.18.05.tar.gz && \
     rm V0.18.05.tar.gz
 

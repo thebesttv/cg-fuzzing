@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract opus v1.5.2
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/xiph/opus/releases/download/v1.5.2/opus-1.5.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/xiph/opus/releases/download/v1.5.2/opus-1.5.2.tar.gz && \
     tar -xzf opus-1.5.2.tar.gz && \
     rm opus-1.5.2.tar.gz
 

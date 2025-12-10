@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract tar v1.35 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/tar/tar-1.35.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/tar/tar-1.35.tar.xz && \
     tar -xJf tar-1.35.tar.xz && \
     rm tar-1.35.tar.xz
 
@@ -33,7 +33,7 @@ RUN cp src/tar /out/tar
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf tar-1.35 && \
-    wget https://ftp.gnu.org/gnu/tar/tar-1.35.tar.xz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/tar/tar-1.35.tar.xz && \
     tar -xJf tar-1.35.tar.xz && \
     rm tar-1.35.tar.xz
 

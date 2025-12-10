@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract frozen 1.7 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/cesanta/frozen/archive/refs/tags/1.7.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/cesanta/frozen/archive/refs/tags/1.7.tar.gz && \
     tar -xzf 1.7.tar.gz && \
     rm 1.7.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp fuzz_json /out/fuzz_json
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf frozen-1.7 && \
-    wget https://github.com/cesanta/frozen/archive/refs/tags/1.7.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/cesanta/frozen/archive/refs/tags/1.7.tar.gz && \
     tar -xzf 1.7.tar.gz && \
     rm 1.7.tar.gz
 

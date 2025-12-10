@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract bmake v20251111 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget http://www.crufty.net/ftp/pub/sjg/bmake-20251111.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 http://www.crufty.net/ftp/pub/sjg/bmake-20251111.tar.gz && \
     tar -xzf bmake-20251111.tar.gz && \
     rm bmake-20251111.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp bmake /out/bmake
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf bmake && \
-    wget http://www.crufty.net/ftp/pub/sjg/bmake-20251111.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 http://www.crufty.net/ftp/pub/sjg/bmake-20251111.tar.gz && \
     tar -xzf bmake-20251111.tar.gz && \
     rm bmake-20251111.tar.gz
 

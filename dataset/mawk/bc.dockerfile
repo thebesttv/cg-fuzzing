@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract mawk 1.3.4-20240905
 WORKDIR /home/SVF-tools
-RUN wget https://invisible-mirror.net/archives/mawk/mawk-1.3.4-20240905.tgz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://invisible-mirror.net/archives/mawk/mawk-1.3.4-20240905.tgz && \
     tar -xzf mawk-1.3.4-20240905.tgz && \
     rm mawk-1.3.4-20240905.tgz
 

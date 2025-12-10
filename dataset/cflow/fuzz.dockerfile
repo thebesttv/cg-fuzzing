@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract cflow v1.7 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/cflow/cflow-1.7.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/cflow/cflow-1.7.tar.gz && \
     tar -xzf cflow-1.7.tar.gz && \
     rm cflow-1.7.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/cflow /out/cflow
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf cflow-1.7 && \
-    wget https://ftp.gnu.org/gnu/cflow/cflow-1.7.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/cflow/cflow-1.7.tar.gz && \
     tar -xzf cflow-1.7.tar.gz && \
     rm cflow-1.7.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract grep 3.12 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/grep/grep-3.12.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/grep/grep-3.12.tar.gz && \
     tar -xzf grep-3.12.tar.gz && \
     rm grep-3.12.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp src/grep /out/grep
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf grep-3.12 && \
-    wget https://ftp.gnu.org/gnu/grep/grep-3.12.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/grep/grep-3.12.tar.gz && \
     tar -xzf grep-3.12.tar.gz && \
     rm grep-3.12.tar.gz
 

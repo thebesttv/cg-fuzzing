@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract remind v06.02.01
 WORKDIR /home/SVF-tools
-RUN wget https://dianne.skoll.ca/projects/remind/download/remind-06.02.01.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://dianne.skoll.ca/projects/remind/download/remind-06.02.01.tar.gz && \
     tar -xzf remind-06.02.01.tar.gz && \
     rm remind-06.02.01.tar.gz
 

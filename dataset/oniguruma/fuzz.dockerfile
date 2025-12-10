@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract oniguruma 6.9.10 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/kkos/oniguruma/releases/download/v6.9.10/onig-6.9.10.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/kkos/oniguruma/releases/download/v6.9.10/onig-6.9.10.tar.gz && \
     tar -xzf onig-6.9.10.tar.gz && \
     rm onig-6.9.10.tar.gz
 
@@ -36,7 +36,7 @@ RUN cp sample/simple /out/simple
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf onig-6.9.10 && \
-    wget https://github.com/kkos/oniguruma/releases/download/v6.9.10/onig-6.9.10.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/kkos/oniguruma/releases/download/v6.9.10/onig-6.9.10.tar.gz && \
     tar -xzf onig-6.9.10.tar.gz && \
     rm onig-6.9.10.tar.gz
 

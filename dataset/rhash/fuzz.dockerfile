@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract RHash 1.4.5 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/rhash/RHash/archive/refs/tags/v1.4.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/rhash/RHash/archive/refs/tags/v1.4.5.tar.gz && \
     tar -xzf v1.4.5.tar.gz && \
     rm v1.4.5.tar.gz
 
@@ -26,7 +26,7 @@ RUN cp rhash /out/rhash
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf RHash-1.4.5 && \
-    wget https://github.com/rhash/RHash/archive/refs/tags/v1.4.5.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/rhash/RHash/archive/refs/tags/v1.4.5.tar.gz && \
     tar -xzf v1.4.5.tar.gz && \
     rm v1.4.5.tar.gz
 

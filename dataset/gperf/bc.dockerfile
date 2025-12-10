@@ -14,14 +14,14 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract gperf 3.1
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/gperf/gperf-3.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/gperf/gperf-3.1.tar.gz && \
     tar -xzf gperf-3.1.tar.gz && \
     rm gperf-3.1.tar.gz
 
 WORKDIR /home/SVF-tools/gperf-3.1
 
 # Configure with static linking and WLLVM
-# gperf is C++ so we need CXX=wllvm++ 
+# gperf is C++ so we need CXX=wllvm++
 # -Wno-register to suppress C++17 register keyword error
 RUN CC=wllvm \
     CXX=wllvm++ \

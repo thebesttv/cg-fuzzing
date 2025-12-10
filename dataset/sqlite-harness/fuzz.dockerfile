@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract SQLite version-3.51.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/sqlite/sqlite/archive/refs/tags/version-3.51.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/sqlite/sqlite/archive/refs/tags/version-3.51.0.tar.gz && \
     tar -xzf version-3.51.0.tar.gz && \
     rm version-3.51.0.tar.gz
 
@@ -47,7 +47,7 @@ RUN afl-clang-lto -O2 \
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf sqlite-version-3.51.0 && \
-    wget https://github.com/sqlite/sqlite/archive/refs/tags/version-3.51.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/sqlite/sqlite/archive/refs/tags/version-3.51.0.tar.gz && \
     tar -xzf version-3.51.0.tar.gz && \
     rm version-3.51.0.tar.gz
 

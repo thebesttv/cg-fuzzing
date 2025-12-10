@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract civetweb v1.16
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/civetweb/civetweb/archive/refs/tags/v1.16.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/civetweb/civetweb/archive/refs/tags/v1.16.tar.gz && \
     tar -xzf v1.16.tar.gz && \
     rm v1.16.tar.gz
 

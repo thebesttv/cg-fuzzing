@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract wren 0.4.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/wren-lang/wren/archive/refs/tags/0.4.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/wren-lang/wren/archive/refs/tags/0.4.0.tar.gz && \
     tar -xzf 0.4.0.tar.gz && \
     rm 0.4.0.tar.gz
 
@@ -38,7 +38,7 @@ RUN cp wren_parse /out/wren_parse
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf wren-0.4.0 && \
-    wget https://github.com/wren-lang/wren/archive/refs/tags/0.4.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/wren-lang/wren/archive/refs/tags/0.4.0.tar.gz && \
     tar -xzf 0.4.0.tar.gz && \
     rm 0.4.0.tar.gz
 

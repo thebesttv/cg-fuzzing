@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract json-c 0.18
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/json-c/json-c/archive/refs/tags/json-c-0.18-20240915.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/json-c/json-c/archive/refs/tags/json-c-0.18-20240915.tar.gz && \
     tar -xzf json-c-0.18-20240915.tar.gz && \
     rm json-c-0.18-20240915.tar.gz
 

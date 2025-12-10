@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libjpeg-turbo 3.1.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.2.tar.gz && \
     tar -xzf 3.1.2.tar.gz && \
     rm 3.1.2.tar.gz
 
@@ -37,7 +37,7 @@ RUN cp build/djpeg-static /out/djpeg
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf libjpeg-turbo-3.1.2 && \
-    wget https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.2.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.2.tar.gz && \
     tar -xzf 3.1.2.tar.gz && \
     rm 3.1.2.tar.gz
 

@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract gawk 5.3.2
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/gawk/gawk-5.3.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/gawk/gawk-5.3.2.tar.gz && \
     tar -xzf gawk-5.3.2.tar.gz && \
     rm gawk-5.3.2.tar.gz
 

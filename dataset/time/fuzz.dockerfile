@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract time 1.9 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/time/time-1.9.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/time/time-1.9.tar.gz && \
     tar -xzf time-1.9.tar.gz && \
     rm time-1.9.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp time /out/time
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf time-1.9 && \
-    wget https://ftp.gnu.org/gnu/time/time-1.9.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/time/time-1.9.tar.gz && \
     tar -xzf time-1.9.tar.gz && \
     rm time-1.9.tar.gz
 

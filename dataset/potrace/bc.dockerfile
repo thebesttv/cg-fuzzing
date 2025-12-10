@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract potrace 1.16
 WORKDIR /home/SVF-tools
-RUN wget https://potrace.sourceforge.net/download/1.16/potrace-1.16.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://potrace.sourceforge.net/download/1.16/potrace-1.16.tar.gz && \
     tar -xzf potrace-1.16.tar.gz && \
     rm potrace-1.16.tar.gz
 

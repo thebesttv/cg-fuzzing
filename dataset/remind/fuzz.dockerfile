@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract remind v06.02.01 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://dianne.skoll.ca/projects/remind/download/remind-06.02.01.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://dianne.skoll.ca/projects/remind/download/remind-06.02.01.tar.gz && \
     tar -xzf remind-06.02.01.tar.gz && \
     rm remind-06.02.01.tar.gz
 
@@ -31,7 +31,7 @@ RUN cp src/remind /out/remind
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf remind-06.02.01 && \
-    wget https://dianne.skoll.ca/projects/remind/download/remind-06.02.01.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://dianne.skoll.ca/projects/remind/download/remind-06.02.01.tar.gz && \
     tar -xzf remind-06.02.01.tar.gz && \
     rm remind-06.02.01.tar.gz
 

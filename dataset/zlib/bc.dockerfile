@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract zlib 1.3.1
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz && \
     tar -xzf zlib-1.3.1.tar.gz && \
     rm zlib-1.3.1.tar.gz
 

@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract yyjson v0.12.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/ibireme/yyjson/archive/refs/tags/0.12.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ibireme/yyjson/archive/refs/tags/0.12.0.tar.gz && \
     tar -xzf 0.12.0.tar.gz && \
     rm 0.12.0.tar.gz
 

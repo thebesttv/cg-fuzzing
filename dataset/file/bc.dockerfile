@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract file 5.46
 WORKDIR /home/SVF-tools
-RUN wget https://astron.com/pub/file/file-5.46.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://astron.com/pub/file/file-5.46.tar.gz && \
     tar -xzf file-5.46.tar.gz && \
     rm file-5.46.tar.gz
 

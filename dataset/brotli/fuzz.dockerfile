@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract brotli v1.2.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/google/brotli/archive/refs/tags/v1.2.0.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/google/brotli/archive/refs/tags/v1.2.0.tar.gz && \
     tar -xzf v1.2.0.tar.gz && \
     rm v1.2.0.tar.gz
 
@@ -35,7 +35,7 @@ RUN cp build/brotli /out/brotli
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf brotli-1.2.0 && \
-    wget https://github.com/google/brotli/archive/refs/tags/v1.2.0.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/google/brotli/archive/refs/tags/v1.2.0.tar.gz && \
     tar -xzf v1.2.0.tar.gz && \
     rm v1.2.0.tar.gz
 

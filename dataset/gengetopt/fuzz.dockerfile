@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract gengetopt 2.23 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/gengetopt/gengetopt-2.23.tar.xz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/gengetopt/gengetopt-2.23.tar.xz && \
     tar -xJf gengetopt-2.23.tar.xz && \
     rm gengetopt-2.23.tar.xz
 
@@ -32,7 +32,7 @@ RUN cp src/gengetopt /out/gengetopt
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf gengetopt-2.23 && \
-    wget https://ftp.gnu.org/gnu/gengetopt/gengetopt-2.23.tar.xz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/gengetopt/gengetopt-2.23.tar.xz && \
     tar -xJf gengetopt-2.23.tar.xz && \
     rm gengetopt-2.23.tar.xz
 

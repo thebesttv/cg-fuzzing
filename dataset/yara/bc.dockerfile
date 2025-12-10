@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract yara v4.5.5
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/VirusTotal/yara/archive/refs/tags/v4.5.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/VirusTotal/yara/archive/refs/tags/v4.5.5.tar.gz && \
     tar -xzf v4.5.5.tar.gz && \
     rm v4.5.5.tar.gz
 

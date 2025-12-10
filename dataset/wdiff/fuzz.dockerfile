@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract wdiff 1.2.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/wdiff/wdiff-1.2.2.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/wdiff/wdiff-1.2.2.tar.gz && \
     tar -xzf wdiff-1.2.2.tar.gz && \
     rm wdiff-1.2.2.tar.gz
 
@@ -36,7 +36,7 @@ RUN cp src/wdiff /out/wdiff
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf wdiff-1.2.2 && \
-    wget https://ftp.gnu.org/gnu/wdiff/wdiff-1.2.2.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/wdiff/wdiff-1.2.2.tar.gz && \
     tar -xzf wdiff-1.2.2.tar.gz && \
     rm wdiff-1.2.2.tar.gz
 

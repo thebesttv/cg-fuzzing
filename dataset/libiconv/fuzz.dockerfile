@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libiconv 1.18 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/libiconv/libiconv-1.18.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/libiconv/libiconv-1.18.tar.gz && \
     tar -xzf libiconv-1.18.tar.gz && \
     rm libiconv-1.18.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp src/iconv_no_i18n /out/iconv
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf libiconv-1.18 && \
-    wget https://ftp.gnu.org/gnu/libiconv/libiconv-1.18.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/libiconv/libiconv-1.18.tar.gz && \
     tar -xzf libiconv-1.18.tar.gz && \
     rm libiconv-1.18.tar.gz
 

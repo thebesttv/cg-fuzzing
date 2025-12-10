@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract squashfs-tools 4.7.4 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/plougher/squashfs-tools/releases/download/4.7.4/squashfs-tools-4.7.4.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/plougher/squashfs-tools/releases/download/4.7.4/squashfs-tools-4.7.4.tar.gz && \
     tar -xzf squashfs-tools-4.7.4.tar.gz && \
     rm squashfs-tools-4.7.4.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp unsquashfs /out/unsquashfs
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf squashfs-tools-4.7.4 && \
-    wget https://github.com/plougher/squashfs-tools/releases/download/4.7.4/squashfs-tools-4.7.4.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/plougher/squashfs-tools/releases/download/4.7.4/squashfs-tools-4.7.4.tar.gz && \
     tar -xzf squashfs-tools-4.7.4.tar.gz && \
     rm squashfs-tools-4.7.4.tar.gz
 

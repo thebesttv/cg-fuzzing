@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libyaml 0.2.5 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/yaml/libyaml/releases/download/0.2.5/yaml-0.2.5.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/yaml/libyaml/releases/download/0.2.5/yaml-0.2.5.tar.gz && \
     tar -xzf yaml-0.2.5.tar.gz && \
     rm yaml-0.2.5.tar.gz
 
@@ -34,7 +34,7 @@ RUN cp tests/run-parser /out/run-parser
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf yaml-0.2.5 && \
-    wget https://github.com/yaml/libyaml/releases/download/0.2.5/yaml-0.2.5.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/yaml/libyaml/releases/download/0.2.5/yaml-0.2.5.tar.gz && \
     tar -xzf yaml-0.2.5.tar.gz && \
     rm yaml-0.2.5.tar.gz
 
