@@ -174,7 +174,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.project }}
-          path: output/${{ matrix.project }}.zip
+          # `defaults.run.working-directory` is `./dataset` so run steps create zips under
+          # `dataset/output/...`. Actions using `uses:` run from the workspace root, so
+          # specify the dataset prefix so the uploader finds the file.
+          path: dataset/output/${{ matrix.project }}.zip
           retention-days: 30
 
       - name: Login to Docker Hub
@@ -207,7 +210,11 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          # `download-artifact` writes into the given path relative to the workspace root.
+          # We set `path: dataset/artifacts` so subsequent `run` steps (which are executed
+          # inside `dataset` due to defaults) can access the downloaded zips with
+          # `artifacts/**/*.zip`.
+          path: dataset/artifacts
 
       - name: List downloaded artifacts
         run: |
@@ -258,8 +265,10 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            all.zip
-            artifacts/**/*.zip
+            # Files paths are relative to the workspace root; our created zips live under
+            # `dataset/`, so reference them with the dataset prefix.
+            dataset/all.zip
+            dataset/artifacts/**/*.zip
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
