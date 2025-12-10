@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract diffutils 3.12
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/diffutils/diffutils-3.12.tar.gz && \
+RUN wget https://ftpmirror.gnu.org/gnu/diffutils/diffutils-3.12.tar.gz && \
     tar -xzf diffutils-3.12.tar.gz && \
     rm diffutils-3.12.tar.gz
 

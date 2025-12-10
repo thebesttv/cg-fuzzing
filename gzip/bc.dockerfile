@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract gzip 1.14
 WORKDIR /home/SVF-tools
-RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gzip/gzip-1.14.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/gzip/gzip-1.14.tar.gz && \
     tar -xzf gzip-1.14.tar.gz && \
     rm gzip-1.14.tar.gz
 

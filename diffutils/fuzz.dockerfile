@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract diffutils 3.12 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/diffutils/diffutils-3.12.tar.gz && \
+RUN wget https://ftpmirror.gnu.org/gnu/diffutils/diffutils-3.12.tar.gz && \
     tar -xzf diffutils-3.12.tar.gz && \
     rm diffutils-3.12.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp src/diff /out/diff
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf diffutils-3.12 && \
-    wget https://ftp.gnu.org/gnu/diffutils/diffutils-3.12.tar.gz && \
+    wget https://ftpmirror.gnu.org/gnu/diffutils/diffutils-3.12.tar.gz && \
     tar -xzf diffutils-3.12.tar.gz && \
     rm diffutils-3.12.tar.gz
 
