@@ -11,7 +11,7 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/libunistring/libunistring-1.2.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/libunistring/libunistring-1.2.tar.gz && \
     tar -xzf libunistring-1.2.tar.gz && \
     rm libunistring-1.2.tar.gz
 

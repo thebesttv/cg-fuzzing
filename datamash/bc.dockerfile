@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract datamash 1.9
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/datamash/datamash-1.9.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/datamash/datamash-1.9.tar.gz && \
     tar -xzf datamash-1.9.tar.gz && \
     rm datamash-1.9.tar.gz
 

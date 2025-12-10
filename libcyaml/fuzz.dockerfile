@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libcyaml 1.4.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget -O libcyaml-1.4.2.tar.gz "https://api.github.com/repos/tlsa/libcyaml/tarball/v1.4.2" && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 -O libcyaml-1.4.2.tar.gz "https://api.github.com/repos/tlsa/libcyaml/tarball/v1.4.2" && \
     tar -xzf libcyaml-1.4.2.tar.gz && \
     mv tlsa-libcyaml-* libcyaml-1.4.2 && \
     rm libcyaml-1.4.2.tar.gz
@@ -34,7 +34,7 @@ RUN cp examples/numerical/numerical /out/numerical
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf libcyaml-1.4.2 && \
-    wget -O libcyaml-1.4.2.tar.gz "https://api.github.com/repos/tlsa/libcyaml/tarball/v1.4.2" && \
+    wget --tries=3 --retry-connrefused --waitretry=5 -O libcyaml-1.4.2.tar.gz "https://api.github.com/repos/tlsa/libcyaml/tarball/v1.4.2" && \
     tar -xzf libcyaml-1.4.2.tar.gz && \
     mv tlsa-libcyaml-* libcyaml-1.4.2 && \
     rm libcyaml-1.4.2.tar.gz

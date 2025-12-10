@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract capstone 5.0.3 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/capstone-engine/capstone/archive/refs/tags/5.0.3.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/capstone-engine/capstone/archive/refs/tags/5.0.3.tar.gz && \
     tar -xzf 5.0.3.tar.gz && \
     rm 5.0.3.tar.gz
 
@@ -37,7 +37,7 @@ RUN cp build/cstool /out/cstool
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf capstone-5.0.3 && \
-    wget https://github.com/capstone-engine/capstone/archive/refs/tags/5.0.3.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/capstone-engine/capstone/archive/refs/tags/5.0.3.tar.gz && \
     tar -xzf 5.0.3.tar.gz && \
     rm 5.0.3.tar.gz
 

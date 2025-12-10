@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract pigz v2.8 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/madler/pigz/archive/refs/tags/v2.8.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/madler/pigz/archive/refs/tags/v2.8.tar.gz && \
     tar -xzf v2.8.tar.gz && \
     rm v2.8.tar.gz
 
@@ -31,7 +31,7 @@ RUN cp pigz /out/pigz
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf pigz-2.8 && \
-    wget https://github.com/madler/pigz/archive/refs/tags/v2.8.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/madler/pigz/archive/refs/tags/v2.8.tar.gz && \
     tar -xzf v2.8.tar.gz && \
     rm v2.8.tar.gz
 

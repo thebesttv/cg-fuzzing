@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libucl 0.9.2
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/vstakhov/libucl/archive/refs/tags/0.9.2.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/vstakhov/libucl/archive/refs/tags/0.9.2.tar.gz && \
     tar -xzf 0.9.2.tar.gz && \
     rm 0.9.2.tar.gz
 

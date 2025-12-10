@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract lhasa v0.4.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/fragglet/lhasa/releases/download/v0.4.0/lhasa-0.4.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/fragglet/lhasa/releases/download/v0.4.0/lhasa-0.4.0.tar.gz && \
     tar -xzf lhasa-0.4.0.tar.gz && \
     rm lhasa-0.4.0.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/lha /out/lha
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf lhasa-0.4.0 && \
-    wget https://github.com/fragglet/lhasa/releases/download/v0.4.0/lhasa-0.4.0.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/fragglet/lhasa/releases/download/v0.4.0/lhasa-0.4.0.tar.gz && \
     tar -xzf lhasa-0.4.0.tar.gz && \
     rm lhasa-0.4.0.tar.gz
 

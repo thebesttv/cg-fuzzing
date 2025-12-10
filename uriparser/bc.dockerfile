@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract uriparser 0.9.9
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/uriparser/uriparser/releases/download/uriparser-0.9.9/uriparser-0.9.9.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/uriparser/uriparser/releases/download/uriparser-0.9.9/uriparser-0.9.9.tar.gz && \
     tar -xzf uriparser-0.9.9.tar.gz && \
     rm uriparser-0.9.9.tar.gz
 

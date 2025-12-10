@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract figlet v2.2.5 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/cmatsuoka/figlet/archive/refs/tags/2.2.5.tar.gz -O figlet-2.2.5.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/cmatsuoka/figlet/archive/refs/tags/2.2.5.tar.gz -O figlet-2.2.5.tar.gz && \
     tar -xzf figlet-2.2.5.tar.gz && \
     rm figlet-2.2.5.tar.gz
 
@@ -31,7 +31,7 @@ RUN cp figlet /out/figlet
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf figlet-2.2.5 && \
-    wget https://github.com/cmatsuoka/figlet/archive/refs/tags/2.2.5.tar.gz -O figlet-2.2.5.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/cmatsuoka/figlet/archive/refs/tags/2.2.5.tar.gz -O figlet-2.2.5.tar.gz && \
     tar -xzf figlet-2.2.5.tar.gz && \
     rm figlet-2.2.5.tar.gz
 

@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract mxml 4.0.4
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/michaelrsweet/mxml/releases/download/v4.0.4/mxml-4.0.4.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/michaelrsweet/mxml/releases/download/v4.0.4/mxml-4.0.4.tar.gz && \
     tar -xzf mxml-4.0.4.tar.gz && \
     rm mxml-4.0.4.tar.gz
 

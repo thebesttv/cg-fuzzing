@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract quickjs 2024-01-13 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://bellard.org/quickjs/quickjs-2024-01-13.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://bellard.org/quickjs/quickjs-2024-01-13.tar.xz && \
     tar -xJf quickjs-2024-01-13.tar.xz && \
     rm quickjs-2024-01-13.tar.xz
 
@@ -32,7 +32,7 @@ RUN cp qjs /out/qjs
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf quickjs-2024-01-13 && \
-    wget https://bellard.org/quickjs/quickjs-2024-01-13.tar.xz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://bellard.org/quickjs/quickjs-2024-01-13.tar.xz && \
     tar -xJf quickjs-2024-01-13.tar.xz && \
     rm quickjs-2024-01-13.tar.xz
 

@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract http-parser v2.9.4
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/nodejs/http-parser/archive/refs/tags/v2.9.4.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/nodejs/http-parser/archive/refs/tags/v2.9.4.tar.gz && \
     tar -xzf v2.9.4.tar.gz && \
     rm v2.9.4.tar.gz
 

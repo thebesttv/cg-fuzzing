@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract opus v1.5.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/xiph/opus/releases/download/v1.5.2/opus-1.5.2.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/xiph/opus/releases/download/v1.5.2/opus-1.5.2.tar.gz && \
     tar -xzf opus-1.5.2.tar.gz && \
     rm opus-1.5.2.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp opus_demo /out/opus_demo
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf opus-1.5.2 && \
-    wget https://github.com/xiph/opus/releases/download/v1.5.2/opus-1.5.2.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/xiph/opus/releases/download/v1.5.2/opus-1.5.2.tar.gz && \
     tar -xzf opus-1.5.2.tar.gz && \
     rm opus-1.5.2.tar.gz
 

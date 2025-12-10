@@ -18,7 +18,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN wget https://ftp.gnu.org/gnu/coreutils/coreutils-9.5.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/coreutils/coreutils-9.5.tar.xz && \
     tar -xf coreutils-9.5.tar.xz && \
     rm coreutils-9.5.tar.xz
 

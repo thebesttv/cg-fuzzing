@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract pv (Pipe Viewer) 1.9.7
 WORKDIR /home/SVF-tools
-RUN wget https://www.ivarch.com/programs/sources/pv-1.9.7.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://www.ivarch.com/programs/sources/pv-1.9.7.tar.gz && \
     tar -xzf pv-1.9.7.tar.gz && \
     rm pv-1.9.7.tar.gz
 

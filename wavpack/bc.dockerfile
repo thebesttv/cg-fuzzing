@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract wavpack v5.8.1
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/dbry/WavPack/archive/refs/tags/5.8.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/dbry/WavPack/archive/refs/tags/5.8.1.tar.gz && \
     tar -xzf 5.8.1.tar.gz && \
     rm 5.8.1.tar.gz
 

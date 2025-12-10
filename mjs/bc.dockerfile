@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # 2. Download mjs source code
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/cesanta/mjs/archive/refs/tags/2.20.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/cesanta/mjs/archive/refs/tags/2.20.0.tar.gz && \
     tar -xzf 2.20.0.tar.gz && \
     rm 2.20.0.tar.gz
 

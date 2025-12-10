@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract optipng 0.7.8
 WORKDIR /home/SVF-tools
-RUN wget https://sourceforge.net/projects/optipng/files/OptiPNG/optipng-0.7.8/optipng-0.7.8.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://sourceforge.net/projects/optipng/files/OptiPNG/optipng-0.7.8/optipng-0.7.8.tar.gz && \
     tar -xzf optipng-0.7.8.tar.gz && \
     rm optipng-0.7.8.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract flac v1.5.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/xiph/flac/releases/download/1.5.0/flac-1.5.0.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/xiph/flac/releases/download/1.5.0/flac-1.5.0.tar.xz && \
     tar -xJf flac-1.5.0.tar.xz && \
     rm flac-1.5.0.tar.xz
 
@@ -38,7 +38,7 @@ RUN cp src/flac/flac /out/flac
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf flac-1.5.0 && \
-    wget https://github.com/xiph/flac/releases/download/1.5.0/flac-1.5.0.tar.xz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/xiph/flac/releases/download/1.5.0/flac-1.5.0.tar.xz && \
     tar -xJf flac-1.5.0.tar.xz && \
     rm flac-1.5.0.tar.xz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract cmark-gfm v0.29.0.gfm.13 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/github/cmark-gfm/archive/refs/tags/0.29.0.gfm.13.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/github/cmark-gfm/archive/refs/tags/0.29.0.gfm.13.tar.gz && \
     tar -xzf 0.29.0.gfm.13.tar.gz && \
     rm 0.29.0.gfm.13.tar.gz
 
@@ -36,7 +36,7 @@ RUN cp build/src/cmark-gfm /out/cmark-gfm
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf cmark-gfm-0.29.0.gfm.13 && \
-    wget https://github.com/github/cmark-gfm/archive/refs/tags/0.29.0.gfm.13.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/github/cmark-gfm/archive/refs/tags/0.29.0.gfm.13.tar.gz && \
     tar -xzf 0.29.0.gfm.13.tar.gz && \
     rm 0.29.0.gfm.13.tar.gz
 

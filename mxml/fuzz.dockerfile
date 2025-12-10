@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract mxml 4.0.4 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/michaelrsweet/mxml/releases/download/v4.0.4/mxml-4.0.4.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/michaelrsweet/mxml/releases/download/v4.0.4/mxml-4.0.4.tar.gz && \
     tar -xzf mxml-4.0.4.tar.gz && \
     rm mxml-4.0.4.tar.gz
 
@@ -38,7 +38,7 @@ RUN cp fuzz_mxml /out/fuzz_mxml
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf mxml-4.0.4 && \
-    wget https://github.com/michaelrsweet/mxml/releases/download/v4.0.4/mxml-4.0.4.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/michaelrsweet/mxml/releases/download/v4.0.4/mxml-4.0.4.tar.gz && \
     tar -xzf mxml-4.0.4.tar.gz && \
     rm mxml-4.0.4.tar.gz
 

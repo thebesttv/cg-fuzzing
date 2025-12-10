@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract xdelta v3.1.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/jmacd/xdelta/archive/refs/tags/v3.1.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/jmacd/xdelta/archive/refs/tags/v3.1.0.tar.gz && \
     tar -xzf v3.1.0.tar.gz && \
     rm v3.1.0.tar.gz
 

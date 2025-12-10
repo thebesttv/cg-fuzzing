@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract tcsh v6.24.16
 WORKDIR /home/SVF-tools
-RUN wget https://astron.com/pub/tcsh/tcsh-6.24.16.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://astron.com/pub/tcsh/tcsh-6.24.16.tar.gz && \
     tar -xzf tcsh-6.24.16.tar.gz && \
     rm tcsh-6.24.16.tar.gz
 

@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract TCC (Tiny C Compiler) v0.9.27
 WORKDIR /home/SVF-tools
-RUN wget https://download.savannah.gnu.org/releases/tinycc/tcc-0.9.27.tar.bz2 && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://download.savannah.gnu.org/releases/tinycc/tcc-0.9.27.tar.bz2 && \
     tar -xjf tcc-0.9.27.tar.bz2 && \
     rm tcc-0.9.27.tar.bz2
 

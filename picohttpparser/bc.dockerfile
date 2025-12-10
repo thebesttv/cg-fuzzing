@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract picohttpparser (latest commit from master)
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/h2o/picohttpparser/archive/refs/heads/master.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/h2o/picohttpparser/archive/refs/heads/master.tar.gz && \
     tar -xzf master.tar.gz && \
     rm master.tar.gz
 

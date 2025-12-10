@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libqrencode v4.1.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/fukuchi/libqrencode/archive/refs/tags/v4.1.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/fukuchi/libqrencode/archive/refs/tags/v4.1.1.tar.gz && \
     tar -xzf v4.1.1.tar.gz && \
     rm v4.1.1.tar.gz
 
@@ -36,7 +36,7 @@ RUN cp qrencode /out/qrencode
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf libqrencode-4.1.1 && \
-    wget https://github.com/fukuchi/libqrencode/archive/refs/tags/v4.1.1.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/fukuchi/libqrencode/archive/refs/tags/v4.1.1.tar.gz && \
     tar -xzf v4.1.1.tar.gz && \
     rm v4.1.1.tar.gz
 

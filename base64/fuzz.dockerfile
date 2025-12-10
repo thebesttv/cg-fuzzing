@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract base64 v0.5.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/aklomp/base64/archive/refs/tags/v0.5.2.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/aklomp/base64/archive/refs/tags/v0.5.2.tar.gz && \
     tar -xzf v0.5.2.tar.gz && \
     rm v0.5.2.tar.gz
 
@@ -34,7 +34,7 @@ RUN cp build/bin/base64 /out/base64
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf base64-0.5.2 && \
-    wget https://github.com/aklomp/base64/archive/refs/tags/v0.5.2.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/aklomp/base64/archive/refs/tags/v0.5.2.tar.gz && \
     tar -xzf v0.5.2.tar.gz && \
     rm v0.5.2.tar.gz
 

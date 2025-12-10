@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libevent v2.1.12-stable (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz && \
     tar -xzf libevent-2.1.12-stable.tar.gz && \
     rm libevent-2.1.12-stable.tar.gz
 
@@ -58,7 +58,7 @@ RUN cp test_event /out/test_event
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf libevent-2.1.12-stable && \
-    wget https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz && \
     tar -xzf libevent-2.1.12-stable.tar.gz && \
     rm libevent-2.1.12-stable.tar.gz
 

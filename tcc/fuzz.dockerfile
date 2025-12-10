@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract TCC v0.9.27 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://download.savannah.gnu.org/releases/tinycc/tcc-0.9.27.tar.bz2 && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://download.savannah.gnu.org/releases/tinycc/tcc-0.9.27.tar.bz2 && \
     tar -xjf tcc-0.9.27.tar.bz2 && \
     rm tcc-0.9.27.tar.bz2
 
@@ -30,7 +30,7 @@ RUN cp tcc /out/tcc
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf tcc-0.9.27 && \
-    wget https://download.savannah.gnu.org/releases/tinycc/tcc-0.9.27.tar.bz2 && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://download.savannah.gnu.org/releases/tinycc/tcc-0.9.27.tar.bz2 && \
     tar -xjf tcc-0.9.27.tar.bz2 && \
     rm tcc-0.9.27.tar.bz2
 

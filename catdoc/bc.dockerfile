@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract catdoc 0.95
 WORKDIR /home/SVF-tools
-RUN wget "http://ftp.wagner.pp.ru/pub/catdoc/catdoc-0.95.tar.gz" && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 "http://ftp.wagner.pp.ru/pub/catdoc/catdoc-0.95.tar.gz" && \
     tar -xzf catdoc-0.95.tar.gz && \
     rm catdoc-0.95.tar.gz
 

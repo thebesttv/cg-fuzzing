@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract pv 1.9.7 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://www.ivarch.com/programs/sources/pv-1.9.7.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://www.ivarch.com/programs/sources/pv-1.9.7.tar.gz && \
     tar -xzf pv-1.9.7.tar.gz && \
     rm pv-1.9.7.tar.gz
 
@@ -30,7 +30,7 @@ RUN cp pv /out/pv
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf pv-1.9.7 && \
-    wget https://www.ivarch.com/programs/sources/pv-1.9.7.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://www.ivarch.com/programs/sources/pv-1.9.7.tar.gz && \
     tar -xzf pv-1.9.7.tar.gz && \
     rm pv-1.9.7.tar.gz
 

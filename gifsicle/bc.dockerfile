@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract gifsicle v1.96
 WORKDIR /home/SVF-tools
-RUN wget https://www.lcdf.org/gifsicle/gifsicle-1.96.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://www.lcdf.org/gifsicle/gifsicle-1.96.tar.gz && \
     tar -xzf gifsicle-1.96.tar.gz && \
     rm gifsicle-1.96.tar.gz
 

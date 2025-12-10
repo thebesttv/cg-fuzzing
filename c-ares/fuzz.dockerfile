@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract c-ares v1.34.5 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/c-ares/c-ares/releases/download/v1.34.5/c-ares-1.34.5.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/c-ares/c-ares/releases/download/v1.34.5/c-ares-1.34.5.tar.gz && \
     tar -xzf c-ares-1.34.5.tar.gz && \
     rm c-ares-1.34.5.tar.gz
 
@@ -37,7 +37,7 @@ RUN cp build/bin/adig /out/adig
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf c-ares-1.34.5 && \
-    wget https://github.com/c-ares/c-ares/releases/download/v1.34.5/c-ares-1.34.5.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/c-ares/c-ares/releases/download/v1.34.5/c-ares-1.34.5.tar.gz && \
     tar -xzf c-ares-1.34.5.tar.gz && \
     rm c-ares-1.34.5.tar.gz
 

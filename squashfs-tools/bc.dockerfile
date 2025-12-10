@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract squashfs-tools 4.7.4
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/plougher/squashfs-tools/releases/download/4.7.4/squashfs-tools-4.7.4.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/plougher/squashfs-tools/releases/download/4.7.4/squashfs-tools-4.7.4.tar.gz && \
     tar -xzf squashfs-tools-4.7.4.tar.gz && \
     rm squashfs-tools-4.7.4.tar.gz
 

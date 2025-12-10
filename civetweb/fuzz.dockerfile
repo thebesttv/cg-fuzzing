@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract civetweb v1.16 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/civetweb/civetweb/archive/refs/tags/v1.16.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/civetweb/civetweb/archive/refs/tags/v1.16.tar.gz && \
     tar -xzf v1.16.tar.gz && \
     rm v1.16.tar.gz
 
@@ -34,7 +34,7 @@ RUN afl-clang-lto -O2 -I/src/civetweb-1.16/include -I/src/civetweb-1.16/src \
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf civetweb-1.16 && \
-    wget https://github.com/civetweb/civetweb/archive/refs/tags/v1.16.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/civetweb/civetweb/archive/refs/tags/v1.16.tar.gz && \
     tar -xzf v1.16.tar.gz && \
     rm v1.16.tar.gz
 

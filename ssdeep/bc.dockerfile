@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract ssdeep 2.14.1
 WORKDIR /home/SVF-tools
-RUN wget "https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz" && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 "https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz" && \
     tar -xzf ssdeep-2.14.1.tar.gz && \
     rm ssdeep-2.14.1.tar.gz
 

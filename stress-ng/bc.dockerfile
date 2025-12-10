@@ -12,7 +12,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract stress-ng v0.18.05
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/ColinIanKing/stress-ng/archive/V0.18.05.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/ColinIanKing/stress-ng/archive/V0.18.05.tar.gz && \
     tar -xzf V0.18.05.tar.gz && \
     rm V0.18.05.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract jo 1.9 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/jpmens/jo/releases/download/1.9/jo-1.9.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/jpmens/jo/releases/download/1.9/jo-1.9.tar.gz && \
     tar -xzf jo-1.9.tar.gz && \
     rm jo-1.9.tar.gz
 
@@ -30,7 +30,7 @@ RUN cp jo /out/jo
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf jo-1.9 && \
-    wget https://github.com/jpmens/jo/releases/download/1.9/jo-1.9.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/jpmens/jo/releases/download/1.9/jo-1.9.tar.gz && \
     tar -xzf jo-1.9.tar.gz && \
     rm jo-1.9.tar.gz
 

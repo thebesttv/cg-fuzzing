@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract mandoc 1.14.6 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://mandoc.bsd.lv/snapshots/mandoc.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://mandoc.bsd.lv/snapshots/mandoc.tar.gz && \
     tar -xzf mandoc.tar.gz && \
     rm mandoc.tar.gz
 
@@ -27,7 +27,7 @@ RUN cp mandoc /out/mandoc
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf mandoc-1.14.6 && \
-    wget https://mandoc.bsd.lv/snapshots/mandoc.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://mandoc.bsd.lv/snapshots/mandoc.tar.gz && \
     tar -xzf mandoc.tar.gz && \
     rm mandoc.tar.gz
 

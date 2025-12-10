@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download mruby 3.4.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/mruby/mruby/archive/refs/tags/3.4.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/mruby/mruby/archive/refs/tags/3.4.0.tar.gz && \
     tar -xzf 3.4.0.tar.gz && \
     rm 3.4.0.tar.gz
 

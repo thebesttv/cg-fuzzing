@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract tree 2.1.3 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/Old-Man-Programmer/tree/archive/refs/tags/2.1.3.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/Old-Man-Programmer/tree/archive/refs/tags/2.1.3.tar.gz && \
     tar -xzf 2.1.3.tar.gz && \
     rm 2.1.3.tar.gz
 
@@ -26,7 +26,7 @@ RUN cp tree /out/tree
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf tree-2.1.3 && \
-    wget https://github.com/Old-Man-Programmer/tree/archive/refs/tags/2.1.3.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/Old-Man-Programmer/tree/archive/refs/tags/2.1.3.tar.gz && \
     tar -xzf 2.1.3.tar.gz && \
     rm 2.1.3.tar.gz
 

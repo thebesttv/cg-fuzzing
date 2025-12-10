@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract par v1.53.0
 WORKDIR /home/SVF-tools
-RUN wget http://www.nicemice.net/par/Par-1.53.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 http://www.nicemice.net/par/Par-1.53.0.tar.gz && \
     tar -xzf Par-1.53.0.tar.gz && \
     rm Par-1.53.0.tar.gz
 

@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract ncdu 1.22
 WORKDIR /home/SVF-tools
-RUN wget https://dev.yorhel.nl/download/ncdu-1.22.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://dev.yorhel.nl/download/ncdu-1.22.tar.gz && \
     tar -xzf ncdu-1.22.tar.gz && \
     rm ncdu-1.22.tar.gz
 

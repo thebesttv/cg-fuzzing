@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract chibicc (latest main branch)
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/rui314/chibicc/archive/refs/heads/main.tar.gz -O chibicc.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/rui314/chibicc/archive/refs/heads/main.tar.gz -O chibicc.tar.gz && \
     tar -xzf chibicc.tar.gz && \
     rm chibicc.tar.gz
 

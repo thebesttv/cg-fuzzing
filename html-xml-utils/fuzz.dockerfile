@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract html-xml-utils (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://www.w3.org/Tools/HTML-XML-utils/html-xml-utils-8.6.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://www.w3.org/Tools/HTML-XML-utils/html-xml-utils-8.6.tar.gz && \
     tar -xzf html-xml-utils-8.6.tar.gz && \
     rm html-xml-utils-8.6.tar.gz
 
@@ -30,7 +30,7 @@ RUN cp hxnormalize /out/hxnormalize
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf html-xml-utils-8.6 && \
-    wget https://www.w3.org/Tools/HTML-XML-utils/html-xml-utils-8.6.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://www.w3.org/Tools/HTML-XML-utils/html-xml-utils-8.6.tar.gz && \
     tar -xzf html-xml-utils-8.6.tar.gz && \
     rm html-xml-utils-8.6.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract llhttp v9.2.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/nodejs/llhttp/archive/refs/tags/release/v9.2.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/nodejs/llhttp/archive/refs/tags/release/v9.2.1.tar.gz && \
     tar -xzf v9.2.1.tar.gz && \
     rm v9.2.1.tar.gz
 
@@ -82,7 +82,7 @@ RUN afl-clang-lto -O2 -I./include -L./build -o /out/llhttp_harness harness.c bui
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf llhttp-release-v9.2.1 && \
-    wget https://github.com/nodejs/llhttp/archive/refs/tags/release/v9.2.1.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/nodejs/llhttp/archive/refs/tags/release/v9.2.1.tar.gz && \
     tar -xzf v9.2.1.tar.gz && \
     rm v9.2.1.tar.gz
 

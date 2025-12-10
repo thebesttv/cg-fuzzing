@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract ctags v6.2.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/universal-ctags/ctags/releases/download/v6.2.1/universal-ctags-6.2.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/universal-ctags/ctags/releases/download/v6.2.1/universal-ctags-6.2.1.tar.gz && \
     tar -xzf universal-ctags-6.2.1.tar.gz && \
     rm universal-ctags-6.2.1.tar.gz
 
@@ -39,7 +39,7 @@ RUN cp ctags /out/ctags
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf universal-ctags-6.2.1 && \
-    wget https://github.com/universal-ctags/ctags/releases/download/v6.2.1/universal-ctags-6.2.1.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/universal-ctags/ctags/releases/download/v6.2.1/universal-ctags-6.2.1.tar.gz && \
     tar -xzf universal-ctags-6.2.1.tar.gz && \
     rm universal-ctags-6.2.1.tar.gz
 

@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract fribidi v1.0.15
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/fribidi/fribidi/releases/download/v1.0.15/fribidi-1.0.15.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/fribidi/fribidi/releases/download/v1.0.15/fribidi-1.0.15.tar.xz && \
     tar -xf fribidi-1.0.15.tar.xz && \
     rm fribidi-1.0.15.tar.xz
 

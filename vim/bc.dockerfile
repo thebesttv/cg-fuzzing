@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract vim v9.1.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/vim/vim/archive/refs/tags/v9.1.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/vim/vim/archive/refs/tags/v9.1.0.tar.gz && \
     tar -xzf v9.1.0.tar.gz && \
     rm v9.1.0.tar.gz
 

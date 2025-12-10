@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libhtp v0.5.52 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/OISF/libhtp/archive/refs/tags/0.5.52.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/OISF/libhtp/archive/refs/tags/0.5.52.tar.gz && \
     tar -xzf 0.5.52.tar.gz && \
     rm 0.5.52.tar.gz
 
@@ -38,7 +38,7 @@ RUN cp test/test_fuzz /out/test_fuzz
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf libhtp-0.5.52 && \
-    wget https://github.com/OISF/libhtp/archive/refs/tags/0.5.52.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/OISF/libhtp/archive/refs/tags/0.5.52.tar.gz && \
     tar -xzf 0.5.52.tar.gz && \
     rm 0.5.52.tar.gz
 

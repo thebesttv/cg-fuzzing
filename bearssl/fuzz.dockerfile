@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract BearSSL 0.6 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://bearssl.org/bearssl-0.6.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://bearssl.org/bearssl-0.6.tar.gz && \
     tar -xzf bearssl-0.6.tar.gz && \
     rm bearssl-0.6.tar.gz
 
@@ -40,7 +40,7 @@ RUN cp build/brssl /out/brssl
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf bearssl-0.6 && \
-    wget https://bearssl.org/bearssl-0.6.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://bearssl.org/bearssl-0.6.tar.gz && \
     tar -xzf bearssl-0.6.tar.gz && \
     rm bearssl-0.6.tar.gz
 

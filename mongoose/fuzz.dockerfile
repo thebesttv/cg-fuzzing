@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract mongoose 7.20 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/cesanta/mongoose/archive/refs/tags/7.20.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/cesanta/mongoose/archive/refs/tags/7.20.tar.gz && \
     tar -xzf 7.20.tar.gz && \
     rm 7.20.tar.gz
 
@@ -106,7 +106,7 @@ RUN cp mongoose_fuzz /out/mongoose_fuzz
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf mongoose-7.20 && \
-    wget https://github.com/cesanta/mongoose/archive/refs/tags/7.20.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/cesanta/mongoose/archive/refs/tags/7.20.tar.gz && \
     tar -xzf 7.20.tar.gz && \
     rm 7.20.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libcue 2.3.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/lipnitsk/libcue/archive/refs/tags/v2.3.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/lipnitsk/libcue/archive/refs/tags/v2.3.0.tar.gz && \
     tar -xzf v2.3.0.tar.gz && \
     rm v2.3.0.tar.gz
 
@@ -40,7 +40,7 @@ RUN cp cue_parse /out/cue_parse
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf libcue-2.3.0 && \
-    wget https://github.com/lipnitsk/libcue/archive/refs/tags/v2.3.0.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/lipnitsk/libcue/archive/refs/tags/v2.3.0.tar.gz && \
     tar -xzf v2.3.0.tar.gz && \
     rm v2.3.0.tar.gz
 

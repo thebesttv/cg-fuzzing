@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract hoedown (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/hoedown/hoedown/archive/refs/tags/3.0.7.tar.gz -O hoedown-3.0.7.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/hoedown/hoedown/archive/refs/tags/3.0.7.tar.gz -O hoedown-3.0.7.tar.gz && \
     tar -xzf hoedown-3.0.7.tar.gz && \
     rm hoedown-3.0.7.tar.gz
 
@@ -28,7 +28,7 @@ RUN cp hoedown /out/hoedown
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf hoedown-3.0.7 && \
-    wget https://github.com/hoedown/hoedown/archive/refs/tags/3.0.7.tar.gz -O hoedown-3.0.7.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/hoedown/hoedown/archive/refs/tags/3.0.7.tar.gz -O hoedown-3.0.7.tar.gz && \
     tar -xzf hoedown-3.0.7.tar.gz && \
     rm hoedown-3.0.7.tar.gz
 

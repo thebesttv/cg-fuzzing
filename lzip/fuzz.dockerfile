@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download lzip from GNU (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget http://download.savannah.gnu.org/releases/lzip/lzip-1.15.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 http://download.savannah.gnu.org/releases/lzip/lzip-1.15.tar.gz && \
     tar -xzf lzip-1.15.tar.gz && \
     rm lzip-1.15.tar.gz
 
@@ -31,7 +31,7 @@ RUN cp lzip /out/lzip
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf lzip-1.15 && \
-    wget http://download.savannah.gnu.org/releases/lzip/lzip-1.15.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 http://download.savannah.gnu.org/releases/lzip/lzip-1.15.tar.gz && \
     tar -xzf lzip-1.15.tar.gz && \
     rm lzip-1.15.tar.gz
 

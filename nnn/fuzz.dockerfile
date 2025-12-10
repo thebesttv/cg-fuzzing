@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract nnn v5.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/jarun/nnn/archive/refs/tags/v5.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/jarun/nnn/archive/refs/tags/v5.1.tar.gz && \
     tar -xzf v5.1.tar.gz && \
     rm v5.1.tar.gz
 
@@ -30,7 +30,7 @@ RUN cp nnn /out/nnn
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf nnn-5.1 && \
-    wget https://github.com/jarun/nnn/archive/refs/tags/v5.1.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/jarun/nnn/archive/refs/tags/v5.1.tar.gz && \
     tar -xzf v5.1.tar.gz && \
     rm v5.1.tar.gz
 

@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract yasm 1.3.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/yasm/yasm/releases/download/v1.3.0/yasm-1.3.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/yasm/yasm/releases/download/v1.3.0/yasm-1.3.0.tar.gz && \
     tar -xzf yasm-1.3.0.tar.gz && \
     rm yasm-1.3.0.tar.gz
 

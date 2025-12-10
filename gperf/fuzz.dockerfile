@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract gperf 3.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/gperf/gperf-3.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gperf/gperf-3.1.tar.gz && \
     tar -xzf gperf-3.1.tar.gz && \
     rm gperf-3.1.tar.gz
 
@@ -34,7 +34,7 @@ RUN cp src/gperf /out/gperf
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf gperf-3.1 && \
-    wget https://ftp.gnu.org/gnu/gperf/gperf-3.1.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gperf/gperf-3.1.tar.gz && \
     tar -xzf gperf-3.1.tar.gz && \
     rm gperf-3.1.tar.gz
 

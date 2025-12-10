@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract antiword (latest main branch)
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/grobian/antiword/archive/refs/heads/main.tar.gz -O antiword.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/grobian/antiword/archive/refs/heads/main.tar.gz -O antiword.tar.gz && \
     tar -xzf antiword.tar.gz && \
     rm antiword.tar.gz
 

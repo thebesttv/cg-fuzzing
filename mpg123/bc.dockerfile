@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract mpg123 v1.32.7
 WORKDIR /home/SVF-tools
-RUN wget https://downloads.sourceforge.net/project/mpg123/mpg123/1.32.7/mpg123-1.32.7.tar.bz2 && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://downloads.sourceforge.net/project/mpg123/mpg123/1.32.7/mpg123-1.32.7.tar.bz2 && \
     tar -xjf mpg123-1.32.7.tar.bz2 && \
     rm mpg123-1.32.7.tar.bz2
 

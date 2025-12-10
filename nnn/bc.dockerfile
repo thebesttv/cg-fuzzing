@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract nnn v5.1
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/jarun/nnn/archive/refs/tags/v5.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/jarun/nnn/archive/refs/tags/v5.1.tar.gz && \
     tar -xzf v5.1.tar.gz && \
     rm v5.1.tar.gz
 

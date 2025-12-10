@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract vim v9.1.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/vim/vim/archive/refs/tags/v9.1.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/vim/vim/archive/refs/tags/v9.1.0.tar.gz && \
     tar -xzf v9.1.0.tar.gz && \
     rm v9.1.0.tar.gz
 
@@ -41,7 +41,7 @@ RUN cp src/vim /out/vim
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf vim-9.1.0 && \
-    wget https://github.com/vim/vim/archive/refs/tags/v9.1.0.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/vim/vim/archive/refs/tags/v9.1.0.tar.gz && \
     tar -xzf v9.1.0.tar.gz && \
     rm v9.1.0.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libcsv 3.0.3 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget -O libcsv-3.0.3.tar.gz "https://sourceforge.net/projects/libcsv/files/libcsv/libcsv-3.0.3/libcsv-3.0.3.tar.gz/download" && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 -O libcsv-3.0.3.tar.gz "https://sourceforge.net/projects/libcsv/files/libcsv/libcsv-3.0.3/libcsv-3.0.3.tar.gz/download" && \
     tar -xzf libcsv-3.0.3.tar.gz && \
     rm libcsv-3.0.3.tar.gz
 
@@ -41,7 +41,7 @@ RUN cp examples/csvinfo /out/csvinfo && \
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf libcsv-3.0.3 && \
-    wget -O libcsv-3.0.3.tar.gz "https://sourceforge.net/projects/libcsv/files/libcsv/libcsv-3.0.3/libcsv-3.0.3.tar.gz/download" && \
+    wget --tries=3 --retry-connrefused --waitretry=5 -O libcsv-3.0.3.tar.gz "https://sourceforge.net/projects/libcsv/files/libcsv/libcsv-3.0.3/libcsv-3.0.3.tar.gz/download" && \
     tar -xzf libcsv-3.0.3.tar.gz && \
     rm libcsv-3.0.3.tar.gz
 

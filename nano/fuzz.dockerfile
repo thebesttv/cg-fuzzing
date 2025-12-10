@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract nano 8.7 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://www.nano-editor.org/dist/v8/nano-8.7.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://www.nano-editor.org/dist/v8/nano-8.7.tar.xz && \
     tar -xf nano-8.7.tar.xz && \
     rm nano-8.7.tar.xz
 
@@ -32,7 +32,7 @@ RUN cp src/nano /out/nano
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf nano-8.7 && \
-    wget https://www.nano-editor.org/dist/v8/nano-8.7.tar.xz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://www.nano-editor.org/dist/v8/nano-8.7.tar.xz && \
     tar -xf nano-8.7.tar.xz && \
     rm nano-8.7.tar.xz
 

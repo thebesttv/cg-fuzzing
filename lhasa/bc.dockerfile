@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # 2. Download lhasa source code (v0.4.0 - latest stable)
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/fragglet/lhasa/releases/download/v0.4.0/lhasa-0.4.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/fragglet/lhasa/releases/download/v0.4.0/lhasa-0.4.0.tar.gz && \
     tar -xzf lhasa-0.4.0.tar.gz && \
     rm lhasa-0.4.0.tar.gz
 

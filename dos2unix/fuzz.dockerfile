@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract dos2unix 7.5.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget "https://downloads.sourceforge.net/project/dos2unix/dos2unix/7.5.2/dos2unix-7.5.2.tar.gz" && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 "https://downloads.sourceforge.net/project/dos2unix/dos2unix/7.5.2/dos2unix-7.5.2.tar.gz" && \
     tar -xzf dos2unix-7.5.2.tar.gz && \
     rm dos2unix-7.5.2.tar.gz
 
@@ -29,7 +29,7 @@ RUN cp dos2unix /out/dos2unix
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf dos2unix-7.5.2 && \
-    wget "https://downloads.sourceforge.net/project/dos2unix/dos2unix/7.5.2/dos2unix-7.5.2.tar.gz" && \
+    wget --tries=3 --retry-connrefused --waitretry=5 "https://downloads.sourceforge.net/project/dos2unix/dos2unix/7.5.2/dos2unix-7.5.2.tar.gz" && \
     tar -xzf dos2unix-7.5.2.tar.gz && \
     rm dos2unix-7.5.2.tar.gz
 

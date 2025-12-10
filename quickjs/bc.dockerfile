@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract quickjs 2024-01-13
 WORKDIR /home/SVF-tools
-RUN wget https://bellard.org/quickjs/quickjs-2024-01-13.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://bellard.org/quickjs/quickjs-2024-01-13.tar.xz && \
     tar -xJf quickjs-2024-01-13.tar.xz && \
     rm quickjs-2024-01-13.tar.xz
 

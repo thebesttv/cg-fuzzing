@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract picoc (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/jpoirier/picoc/archive/refs/tags/v3.2.2.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/jpoirier/picoc/archive/refs/tags/v3.2.2.tar.gz && \
     tar -xzf v3.2.2.tar.gz && \
     rm v3.2.2.tar.gz
 
@@ -31,7 +31,7 @@ RUN cp picoc /out/picoc
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf picoc-3.2.2 && \
-    wget https://github.com/jpoirier/picoc/archive/refs/tags/v3.2.2.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/jpoirier/picoc/archive/refs/tags/v3.2.2.tar.gz && \
     tar -xzf v3.2.2.tar.gz && \
     rm v3.2.2.tar.gz
 

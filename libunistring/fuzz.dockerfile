@@ -8,7 +8,7 @@ RUN apt-get update && \
 RUN mkdir -p /out
 
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/libunistring/libunistring-1.2.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/libunistring/libunistring-1.2.tar.gz && \
     tar -xzf libunistring-1.2.tar.gz && \
     rm libunistring-1.2.tar.gz
 
@@ -44,7 +44,7 @@ RUN afl-clang-lto -O2 test_unistring.c -o /out/test_unistring \
 
 WORKDIR /src
 RUN rm -rf libunistring-1.2 && \
-    wget https://ftp.gnu.org/gnu/libunistring/libunistring-1.2.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/libunistring/libunistring-1.2.tar.gz && \
     tar -xzf libunistring-1.2.tar.gz && \
     rm libunistring-1.2.tar.gz
 

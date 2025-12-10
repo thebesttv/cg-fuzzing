@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract pigz v2.8
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/madler/pigz/archive/refs/tags/v2.8.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/madler/pigz/archive/refs/tags/v2.8.tar.gz && \
     tar -xzf v2.8.tar.gz && \
     rm v2.8.tar.gz
 

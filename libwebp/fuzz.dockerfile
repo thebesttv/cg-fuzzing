@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libwebp 1.5.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.5.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.5.0.tar.gz && \
     tar -xzf libwebp-1.5.0.tar.gz && \
     rm libwebp-1.5.0.tar.gz
 
@@ -42,7 +42,7 @@ RUN cp build/dwebp /out/dwebp
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf libwebp-1.5.0 && \
-    wget https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.5.0.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.5.0.tar.gz && \
     tar -xzf libwebp-1.5.0.tar.gz && \
     rm libwebp-1.5.0.tar.gz
 

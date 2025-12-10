@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract recutils v1.9 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/recutils/recutils-1.9.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/recutils/recutils-1.9.tar.gz && \
     tar -xzf recutils-1.9.tar.gz && \
     rm recutils-1.9.tar.gz
 
@@ -34,7 +34,7 @@ RUN cp utils/recsel /out/recsel
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf recutils-1.9 && \
-    wget https://ftp.gnu.org/gnu/recutils/recutils-1.9.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/recutils/recutils-1.9.tar.gz && \
     tar -xzf recutils-1.9.tar.gz && \
     rm recutils-1.9.tar.gz
 

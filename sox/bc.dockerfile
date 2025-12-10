@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract SoX v14.4.2
 WORKDIR /home/SVF-tools
-RUN wget https://downloads.sourceforge.net/project/sox/sox/14.4.2/sox-14.4.2.tar.bz2 && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://downloads.sourceforge.net/project/sox/sox/14.4.2/sox-14.4.2.tar.bz2 && \
     tar -xjf sox-14.4.2.tar.bz2 && \
     rm sox-14.4.2.tar.bz2
 

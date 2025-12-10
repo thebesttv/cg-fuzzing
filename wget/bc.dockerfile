@@ -11,9 +11,9 @@ RUN pipx install wllvm
 ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
-# Download and extract wget v1.24.5
+# Download and extract wget --tries=3 --retry-connrefused --waitretry=5 v1.24.5
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/wget/wget-1.24.5.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/wget/wget-1.24.5.tar.gz && \
     tar -xzf wget-1.24.5.tar.gz && \
     rm wget-1.24.5.tar.gz
 
@@ -33,11 +33,11 @@ RUN CC=wllvm \
     ./configure --disable-shared --with-ssl=openssl --disable-nls
 
 # Build wget
-RUN make -j$(nproc)
+--tries=3 --retry-connrefused --waitretry=5 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
 RUN mkdir -p ~/bc && \
-    extract-bc src/wget && \
+    extract-bc src/wget --tries=3 --retry-connrefused --waitretry=5 && \
     mv src/wget.bc ~/bc/
 
 # Verify that bc files were created

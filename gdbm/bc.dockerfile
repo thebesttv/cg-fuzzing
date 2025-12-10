@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract gdbm 1.26
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/gdbm/gdbm-1.26.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/gdbm/gdbm-1.26.tar.gz && \
     tar -xzf gdbm-1.26.tar.gz && \
     rm gdbm-1.26.tar.gz
 

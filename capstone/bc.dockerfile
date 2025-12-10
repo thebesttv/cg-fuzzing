@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract capstone 5.0.3 (stable version instead of alpha)
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/capstone-engine/capstone/archive/refs/tags/5.0.3.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/capstone-engine/capstone/archive/refs/tags/5.0.3.tar.gz && \
     tar -xzf 5.0.3.tar.gz && \
     rm 5.0.3.tar.gz
 

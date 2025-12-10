@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract less v668 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://greenwoodsoftware.com/less/less-668.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://greenwoodsoftware.com/less/less-668.tar.gz && \
     tar -xzf less-668.tar.gz && \
     rm less-668.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp less /out/less
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf less-668 && \
-    wget https://greenwoodsoftware.com/less/less-668.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://greenwoodsoftware.com/less/less-668.tar.gz && \
     tar -xzf less-668.tar.gz && \
     rm less-668.tar.gz
 

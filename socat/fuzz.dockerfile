@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract socat v1.7.3.4 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget http://www.dest-unreach.org/socat/download/socat-1.7.3.4.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 http://www.dest-unreach.org/socat/download/socat-1.7.3.4.tar.gz && \
     tar -xzf socat-1.7.3.4.tar.gz && \
     rm socat-1.7.3.4.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp socat /out/socat
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf socat-1.7.3.4 && \
-    wget http://www.dest-unreach.org/socat/download/socat-1.7.3.4.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 http://www.dest-unreach.org/socat/download/socat-1.7.3.4.tar.gz && \
     tar -xzf socat-1.7.3.4.tar.gz && \
     rm socat-1.7.3.4.tar.gz
 

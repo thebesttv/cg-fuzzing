@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract graphviz v12.2.1
 WORKDIR /home/SVF-tools
-RUN wget https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/12.2.1/graphviz-12.2.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/12.2.1/graphviz-12.2.1.tar.gz && \
     tar -xzf graphviz-12.2.1.tar.gz && \
     rm graphviz-12.2.1.tar.gz
 

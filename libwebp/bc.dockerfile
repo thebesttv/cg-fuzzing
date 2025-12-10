@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libwebp 1.5.0
 WORKDIR /home/SVF-tools
-RUN wget https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.5.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.5.0.tar.gz && \
     tar -xzf libwebp-1.5.0.tar.gz && \
     rm libwebp-1.5.0.tar.gz
 

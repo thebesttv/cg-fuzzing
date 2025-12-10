@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract lmdb 0.9.31
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/LMDB/lmdb/archive/refs/tags/LMDB_0.9.31.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/LMDB/lmdb/archive/refs/tags/LMDB_0.9.31.tar.gz && \
     tar -xzf LMDB_0.9.31.tar.gz && \
     rm LMDB_0.9.31.tar.gz
 

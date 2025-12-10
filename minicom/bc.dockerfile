@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract minicom v2.9
 WORKDIR /home/SVF-tools
-RUN wget https://salsa.debian.org/minicom-team/minicom/-/archive/2.9/minicom-2.9.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://salsa.debian.org/minicom-team/minicom/-/archive/2.9/minicom-2.9.tar.gz && \
     tar -xzf minicom-2.9.tar.gz && \
     rm minicom-2.9.tar.gz
 

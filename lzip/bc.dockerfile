@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract lzip v1.15
 WORKDIR /home/SVF-tools
-RUN wget http://download.savannah.gnu.org/releases/lzip/lzip-1.15.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 http://download.savannah.gnu.org/releases/lzip/lzip-1.15.tar.gz && \
     tar -xzf lzip-1.15.tar.gz && \
     rm lzip-1.15.tar.gz
 

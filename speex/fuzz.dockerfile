@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract speex 1.2.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/xiph/speex/archive/refs/tags/Speex-1.2.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/xiph/speex/archive/refs/tags/Speex-1.2.1.tar.gz && \
     tar -xzf Speex-1.2.1.tar.gz && \
     rm Speex-1.2.1.tar.gz
 
@@ -42,7 +42,7 @@ RUN cp src/speexdec /out/speexdec
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf speex-Speex-1.2.1 && \
-    wget https://github.com/xiph/speex/archive/refs/tags/Speex-1.2.1.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/xiph/speex/archive/refs/tags/Speex-1.2.1.tar.gz && \
     tar -xzf Speex-1.2.1.tar.gz && \
     rm Speex-1.2.1.tar.gz
 

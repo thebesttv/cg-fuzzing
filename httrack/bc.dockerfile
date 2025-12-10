@@ -12,7 +12,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract httrack v3.49.2
 WORKDIR /home/SVF-tools
-RUN wget https://mirror.httrack.com/httrack-3.49.2.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://mirror.httrack.com/httrack-3.49.2.tar.gz && \
     tar -xzf httrack-3.49.2.tar.gz && \
     rm httrack-3.49.2.tar.gz
 

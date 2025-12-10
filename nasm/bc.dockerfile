@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract nasm v2.16.03
 WORKDIR /home/SVF-tools
-RUN wget https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/nasm-2.16.03.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/nasm-2.16.03.tar.gz && \
     tar -xzf nasm-2.16.03.tar.gz && \
     rm nasm-2.16.03.tar.gz
 

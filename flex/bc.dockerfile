@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract flex v2.6.4
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz && \
     tar -xzf flex-2.6.4.tar.gz && \
     rm flex-2.6.4.tar.gz
 

@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract GNU units 2.24
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/units/units-2.24.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/units/units-2.24.tar.gz && \
     tar -xzf units-2.24.tar.gz && \
     rm units-2.24.tar.gz
 

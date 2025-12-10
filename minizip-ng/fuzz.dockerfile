@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract minizip-ng v4.0.10 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/zlib-ng/minizip-ng/archive/refs/tags/4.0.10.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/zlib-ng/minizip-ng/archive/refs/tags/4.0.10.tar.gz && \
     tar -xzf 4.0.10.tar.gz && \
     rm 4.0.10.tar.gz
 
@@ -40,7 +40,7 @@ RUN afl-clang-lto -O2 -I/src/minizip-ng-4.0.10 \
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf minizip-ng-4.0.10 && \
-    wget https://github.com/zlib-ng/minizip-ng/archive/refs/tags/4.0.10.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/zlib-ng/minizip-ng/archive/refs/tags/4.0.10.tar.gz && \
     tar -xzf 4.0.10.tar.gz && \
     rm 4.0.10.tar.gz
 

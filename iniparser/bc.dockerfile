@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract iniparser v4.2.6
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/ndevilla/iniparser/archive/refs/tags/v4.2.6.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/ndevilla/iniparser/archive/refs/tags/v4.2.6.tar.gz && \
     tar -xzf v4.2.6.tar.gz && \
     rm v4.2.6.tar.gz
 

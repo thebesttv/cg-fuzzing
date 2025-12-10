@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download parson from GitHub (version 1.5.3, same as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/kgabis/parson/archive/ba29f4eda9ea7703a9f6a9cf2b0532a2605723c3.tar.gz -O parson.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/kgabis/parson/archive/ba29f4eda9ea7703a9f6a9cf2b0532a2605723c3.tar.gz -O parson.tar.gz && \
     tar -xzf parson.tar.gz && \
     rm parson.tar.gz && \
     mv parson-ba29f4eda9ea7703a9f6a9cf2b0532a2605723c3 parson
@@ -34,7 +34,7 @@ RUN cp parson_harness /out/parson_harness
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf parson && \
-    wget https://github.com/kgabis/parson/archive/ba29f4eda9ea7703a9f6a9cf2b0532a2605723c3.tar.gz -O parson.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/kgabis/parson/archive/ba29f4eda9ea7703a9f6a9cf2b0532a2605723c3.tar.gz -O parson.tar.gz && \
     tar -xzf parson.tar.gz && \
     rm parson.tar.gz && \
     mv parson-ba29f4eda9ea7703a9f6a9cf2b0532a2605723c3 parson

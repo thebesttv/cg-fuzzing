@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract potrace 1.16 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://potrace.sourceforge.net/download/1.16/potrace-1.16.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://potrace.sourceforge.net/download/1.16/potrace-1.16.tar.gz && \
     tar -xzf potrace-1.16.tar.gz && \
     rm potrace-1.16.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/potrace /out/potrace
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf potrace-1.16 && \
-    wget https://potrace.sourceforge.net/download/1.16/potrace-1.16.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://potrace.sourceforge.net/download/1.16/potrace-1.16.tar.gz && \
     tar -xzf potrace-1.16.tar.gz && \
     rm potrace-1.16.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract jhead 3.08 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/Matthias-Wandel/jhead/archive/refs/tags/3.08.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/Matthias-Wandel/jhead/archive/refs/tags/3.08.tar.gz && \
     tar -xzf 3.08.tar.gz && \
     rm 3.08.tar.gz
 
@@ -31,7 +31,7 @@ RUN cp jhead /out/jhead
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf jhead-3.08 && \
-    wget https://github.com/Matthias-Wandel/jhead/archive/refs/tags/3.08.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/Matthias-Wandel/jhead/archive/refs/tags/3.08.tar.gz && \
     tar -xzf 3.08.tar.gz && \
     rm 3.08.tar.gz
 

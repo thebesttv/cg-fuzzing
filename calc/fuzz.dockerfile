@@ -7,7 +7,7 @@ RUN apt-get update && \
 RUN mkdir -p /out
 
 WORKDIR /src
-RUN wget https://github.com/lcn2/calc/releases/download/v2.15.1.1/calc-2.15.1.1.tar.bz2 && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/lcn2/calc/releases/download/v2.15.1.1/calc-2.15.1.1.tar.bz2 && \
     tar -xjf calc-2.15.1.1.tar.bz2 && rm calc-2.15.1.1.tar.bz2
 
 WORKDIR /src/calc-2.15.1.1
@@ -21,7 +21,7 @@ RUN cp calc-static /out/calc
 
 WORKDIR /src
 RUN rm -rf calc-2.15.1.1 && \
-    wget https://github.com/lcn2/calc/releases/download/v2.15.1.1/calc-2.15.1.1.tar.bz2 && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/lcn2/calc/releases/download/v2.15.1.1/calc-2.15.1.1.tar.bz2 && \
     tar -xjf calc-2.15.1.1.tar.bz2 && rm calc-2.15.1.1.tar.bz2
 
 WORKDIR /src/calc-2.15.1.1

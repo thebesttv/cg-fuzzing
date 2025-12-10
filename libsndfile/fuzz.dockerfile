@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libsndfile 1.2.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz && \
     tar -xJf libsndfile-1.2.2.tar.xz && \
     rm libsndfile-1.2.2.tar.xz
 
@@ -35,7 +35,7 @@ RUN cp programs/sndfile-info /out/sndfile-info
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf libsndfile-1.2.2 && \
-    wget https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz && \
     tar -xJf libsndfile-1.2.2.tar.xz && \
     rm libsndfile-1.2.2.tar.xz
 

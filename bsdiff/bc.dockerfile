@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download bsdiff from GitHub (mendsley's mirror)
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/mendsley/bsdiff/archive/refs/heads/master.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/mendsley/bsdiff/archive/refs/heads/master.tar.gz && \
     tar -xzf master.tar.gz && \
     rm master.tar.gz
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract ncdu 1.22 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://dev.yorhel.nl/download/ncdu-1.22.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://dev.yorhel.nl/download/ncdu-1.22.tar.gz && \
     tar -xzf ncdu-1.22.tar.gz && \
     rm ncdu-1.22.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp ncdu /out/ncdu
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf ncdu-1.22 && \
-    wget https://dev.yorhel.nl/download/ncdu-1.22.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://dev.yorhel.nl/download/ncdu-1.22.tar.gz && \
     tar -xzf ncdu-1.22.tar.gz && \
     rm ncdu-1.22.tar.gz
 

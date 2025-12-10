@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract xxHash v0.8.3 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.3.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.3.tar.gz && \
     tar -xzf v0.8.3.tar.gz && \
     rm v0.8.3.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp xxhsum /out/xxhsum
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf xxHash-0.8.3 && \
-    wget https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.3.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.3.tar.gz && \
     tar -xzf v0.8.3.tar.gz && \
     rm v0.8.3.tar.gz
 

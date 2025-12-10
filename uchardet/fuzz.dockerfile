@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract uchardet (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://www.freedesktop.org/software/uchardet/releases/uchardet-0.0.8.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://www.freedesktop.org/software/uchardet/releases/uchardet-0.0.8.tar.xz && \
     tar -xf uchardet-0.0.8.tar.xz && \
     rm uchardet-0.0.8.tar.xz
 
@@ -34,7 +34,7 @@ RUN cp build/src/tools/uchardet /out/uchardet
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf uchardet-0.0.8 && \
-    wget https://www.freedesktop.org/software/uchardet/releases/uchardet-0.0.8.tar.xz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://www.freedesktop.org/software/uchardet/releases/uchardet-0.0.8.tar.xz && \
     tar -xf uchardet-0.0.8.tar.xz && \
     rm uchardet-0.0.8.tar.xz
 

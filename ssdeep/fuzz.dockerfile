@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract ssdeep 2.14.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget "https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz" && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 "https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz" && \
     tar -xzf ssdeep-2.14.1.tar.gz && \
     rm ssdeep-2.14.1.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp ssdeep /out/ssdeep
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf ssdeep-2.14.1 && \
-    wget "https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz" && \
+    wget --tries=3 --retry-connrefused --waitretry=5 "https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz" && \
     tar -xzf ssdeep-2.14.1.tar.gz && \
     rm ssdeep-2.14.1.tar.gz
 

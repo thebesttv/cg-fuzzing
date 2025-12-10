@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract jimtcl 0.83 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/msteveb/jimtcl/archive/refs/tags/0.83.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/msteveb/jimtcl/archive/refs/tags/0.83.tar.gz && \
     tar -xzf 0.83.tar.gz && \
     rm 0.83.tar.gz
 
@@ -34,7 +34,7 @@ RUN cp jimsh /out/jimsh
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf jimtcl-0.83 && \
-    wget https://github.com/msteveb/jimtcl/archive/refs/tags/0.83.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/msteveb/jimtcl/archive/refs/tags/0.83.tar.gz && \
     tar -xzf 0.83.tar.gz && \
     rm 0.83.tar.gz
 

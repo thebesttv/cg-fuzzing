@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download pdjson (streaming JSON parser)
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/skeeto/pdjson/archive/refs/heads/master.tar.gz -O pdjson.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/skeeto/pdjson/archive/refs/heads/master.tar.gz -O pdjson.tar.gz && \
     tar -xzf pdjson.tar.gz && \
     rm pdjson.tar.gz
 

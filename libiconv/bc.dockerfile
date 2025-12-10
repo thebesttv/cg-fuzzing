@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libiconv 1.18
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/libiconv/libiconv-1.18.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/libiconv/libiconv-1.18.tar.gz && \
     tar -xzf libiconv-1.18.tar.gz && \
     rm libiconv-1.18.tar.gz
 

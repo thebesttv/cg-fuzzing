@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libcsv 3.0.3
 WORKDIR /home/SVF-tools
-RUN wget -O libcsv-3.0.3.tar.gz "https://sourceforge.net/projects/libcsv/files/libcsv/libcsv-3.0.3/libcsv-3.0.3.tar.gz/download" && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 -O libcsv-3.0.3.tar.gz "https://sourceforge.net/projects/libcsv/files/libcsv/libcsv-3.0.3/libcsv-3.0.3.tar.gz/download" && \
     tar -xzf libcsv-3.0.3.tar.gz && \
     rm libcsv-3.0.3.tar.gz
 

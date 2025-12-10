@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract wolfssl 5.7.4
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/wolfSSL/wolfssl/archive/refs/tags/v5.7.4-stable.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/wolfSSL/wolfssl/archive/refs/tags/v5.7.4-stable.tar.gz && \
     tar -xzf v5.7.4-stable.tar.gz && \
     rm v5.7.4-stable.tar.gz
 

@@ -12,7 +12,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract procps v4.0.4
 WORKDIR /home/SVF-tools
-RUN wget https://gitlab.com/procps-ng/procps/-/archive/v4.0.4/procps-v4.0.4.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://gitlab.com/procps-ng/procps/-/archive/v4.0.4/procps-v4.0.4.tar.gz && \
     tar -xzf procps-v4.0.4.tar.gz && \
     rm procps-v4.0.4.tar.gz
 

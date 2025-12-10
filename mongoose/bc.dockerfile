@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract mongoose 7.20
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/cesanta/mongoose/archive/refs/tags/7.20.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/cesanta/mongoose/archive/refs/tags/7.20.tar.gz && \
     tar -xzf 7.20.tar.gz && \
     rm 7.20.tar.gz
 

@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract dateutils v0.4.11
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/hroptatyr/dateutils/releases/download/v0.4.11/dateutils-0.4.11.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/hroptatyr/dateutils/releases/download/v0.4.11/dateutils-0.4.11.tar.xz && \
     tar -xJf dateutils-0.4.11.tar.xz && \
     rm dateutils-0.4.11.tar.xz
 

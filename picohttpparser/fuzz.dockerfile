@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract picohttpparser (latest commit from master)
 WORKDIR /src
-RUN wget https://github.com/h2o/picohttpparser/archive/refs/heads/master.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/h2o/picohttpparser/archive/refs/heads/master.tar.gz && \
     tar -xzf master.tar.gz && \
     rm master.tar.gz
 
@@ -81,7 +81,7 @@ RUN cp picohttpparser_fuzz /out/picohttpparser_fuzz
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf picohttpparser-master && \
-    wget https://github.com/h2o/picohttpparser/archive/refs/heads/master.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/h2o/picohttpparser/archive/refs/heads/master.tar.gz && \
     tar -xzf master.tar.gz && \
     rm master.tar.gz
 

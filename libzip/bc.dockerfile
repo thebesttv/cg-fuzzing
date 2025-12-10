@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # 2. Download libzip source code (v1.11.4)
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/nih-at/libzip/archive/refs/tags/v1.11.4.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/nih-at/libzip/archive/refs/tags/v1.11.4.tar.gz && \
     tar -xzf v1.11.4.tar.gz && \
     rm v1.11.4.tar.gz
 

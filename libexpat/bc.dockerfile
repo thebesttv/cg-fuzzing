@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libexpat 2.7.3
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/libexpat/libexpat/releases/download/R_2_7_3/expat-2.7.3.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/libexpat/libexpat/releases/download/R_2_7_3/expat-2.7.3.tar.gz && \
     tar -xzf expat-2.7.3.tar.gz && \
     rm expat-2.7.3.tar.gz
 

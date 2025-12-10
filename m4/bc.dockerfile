@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract m4 v1.4.19 (v1.4.20 has issues with glibc)
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.gz && \
     tar -xzf m4-1.4.19.tar.gz && \
     rm m4-1.4.19.tar.gz
 

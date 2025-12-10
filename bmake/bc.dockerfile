@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract bmake v20251111
 WORKDIR /home/SVF-tools
-RUN wget http://www.crufty.net/ftp/pub/sjg/bmake-20251111.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 http://www.crufty.net/ftp/pub/sjg/bmake-20251111.tar.gz && \
     tar -xzf bmake-20251111.tar.gz && \
     rm bmake-20251111.tar.gz
 

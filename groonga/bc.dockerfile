@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract groonga v15.2.1
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/groonga/groonga/releases/download/v15.2.1/groonga-15.2.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/groonga/groonga/releases/download/v15.2.1/groonga-15.2.1.tar.gz && \
     tar -xzf groonga-15.2.1.tar.gz && \
     rm groonga-15.2.1.tar.gz
 

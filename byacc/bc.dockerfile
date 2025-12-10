@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract byacc 20240109
 WORKDIR /home/SVF-tools
-RUN wget https://invisible-mirror.net/archives/byacc/byacc-20240109.tgz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://invisible-mirror.net/archives/byacc/byacc-20240109.tgz && \
     tar -xzf byacc-20240109.tgz && \
     rm byacc-20240109.tgz
 

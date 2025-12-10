@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract iperf3 v3.17.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/esnet/iperf/releases/download/3.17.1/iperf-3.17.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/esnet/iperf/releases/download/3.17.1/iperf-3.17.1.tar.gz && \
     tar -xzf iperf-3.17.1.tar.gz && \
     rm iperf-3.17.1.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/iperf3 /out/iperf3
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf iperf-3.17.1 && \
-    wget https://github.com/esnet/iperf/releases/download/3.17.1/iperf-3.17.1.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/esnet/iperf/releases/download/3.17.1/iperf-3.17.1.tar.gz && \
     tar -xzf iperf-3.17.1.tar.gz && \
     rm iperf-3.17.1.tar.gz
 

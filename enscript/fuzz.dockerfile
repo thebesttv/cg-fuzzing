@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract GNU enscript 1.6.6 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/enscript/enscript-1.6.6.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/enscript/enscript-1.6.6.tar.gz && \
     tar -xzf enscript-1.6.6.tar.gz && \
     rm enscript-1.6.6.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/enscript /out/enscript
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf enscript-1.6.6 && \
-    wget https://ftp.gnu.org/gnu/enscript/enscript-1.6.6.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/enscript/enscript-1.6.6.tar.gz && \
     tar -xzf enscript-1.6.6.tar.gz && \
     rm enscript-1.6.6.tar.gz
 

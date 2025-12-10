@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libuv v1.48.0
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/libuv/libuv/archive/refs/tags/v1.48.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/libuv/libuv/archive/refs/tags/v1.48.0.tar.gz && \
     tar -xzf v1.48.0.tar.gz && \
     rm v1.48.0.tar.gz
 

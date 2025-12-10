@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract GNU enscript 1.6.6
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/enscript/enscript-1.6.6.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/enscript/enscript-1.6.6.tar.gz && \
     tar -xzf enscript-1.6.6.tar.gz && \
     rm enscript-1.6.6.tar.gz
 

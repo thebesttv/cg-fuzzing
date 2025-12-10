@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract nawk (one true awk) 20240728
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/onetrueawk/awk/archive/refs/tags/20240728.tar.gz -O nawk.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/onetrueawk/awk/archive/refs/tags/20240728.tar.gz -O nawk.tar.gz && \
     tar -xzf nawk.tar.gz && \
     rm nawk.tar.gz
 

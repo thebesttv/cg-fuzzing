@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # 2. Download cmark-gfm source code (v0.29.0.gfm.13)
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/github/cmark-gfm/archive/refs/tags/0.29.0.gfm.13.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/github/cmark-gfm/archive/refs/tags/0.29.0.gfm.13.tar.gz && \
     tar -xzf 0.29.0.gfm.13.tar.gz && \
     rm 0.29.0.gfm.13.tar.gz
 

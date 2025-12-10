@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract jemalloc v5.3.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 && \
     tar -xjf jemalloc-5.3.0.tar.bz2 && \
     rm jemalloc-5.3.0.tar.bz2
 
@@ -35,7 +35,7 @@ RUN cp test/integration/malloc /out/malloc-test
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf jemalloc-5.3.0 && \
-    wget https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 && \
     tar -xjf jemalloc-5.3.0.tar.bz2 && \
     rm jemalloc-5.3.0.tar.bz2
 

@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract htop 3.4.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/htop-dev/htop/releases/download/3.4.1/htop-3.4.1.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/htop-dev/htop/releases/download/3.4.1/htop-3.4.1.tar.xz && \
     tar -xf htop-3.4.1.tar.xz && \
     rm htop-3.4.1.tar.xz
 
@@ -32,7 +32,7 @@ RUN cp htop /out/htop
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf htop-3.4.1 && \
-    wget https://github.com/htop-dev/htop/releases/download/3.4.1/htop-3.4.1.tar.xz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/htop-dev/htop/releases/download/3.4.1/htop-3.4.1.tar.xz && \
     tar -xf htop-3.4.1.tar.xz && \
     rm htop-3.4.1.tar.xz
 

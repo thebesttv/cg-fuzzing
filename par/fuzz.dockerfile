@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract par v1.53.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget http://www.nicemice.net/par/Par-1.53.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 http://www.nicemice.net/par/Par-1.53.0.tar.gz && \
     tar -xzf Par-1.53.0.tar.gz && \
     rm Par-1.53.0.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp par /out/par
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf Par-1.53.0 && \
-    wget http://www.nicemice.net/par/Par-1.53.0.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 http://www.nicemice.net/par/Par-1.53.0.tar.gz && \
     tar -xzf Par-1.53.0.tar.gz && \
     rm Par-1.53.0.tar.gz
 

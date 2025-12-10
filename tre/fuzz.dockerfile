@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract tre v0.9.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/laurikari/tre/releases/download/v0.9.0/tre-0.9.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/laurikari/tre/releases/download/v0.9.0/tre-0.9.0.tar.gz && \
     tar -xzf tre-0.9.0.tar.gz && \
     rm tre-0.9.0.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/agrep /out/agrep
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf tre-0.9.0 && \
-    wget https://github.com/laurikari/tre/releases/download/v0.9.0/tre-0.9.0.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/laurikari/tre/releases/download/v0.9.0/tre-0.9.0.tar.gz && \
     tar -xzf tre-0.9.0.tar.gz && \
     rm tre-0.9.0.tar.gz
 

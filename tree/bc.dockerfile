@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract tree 2.1.3
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/Old-Man-Programmer/tree/archive/refs/tags/2.1.3.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/Old-Man-Programmer/tree/archive/refs/tags/2.1.3.tar.gz && \
     tar -xzf 2.1.3.tar.gz && \
     rm 2.1.3.tar.gz
 

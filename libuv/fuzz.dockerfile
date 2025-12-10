@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libuv v1.48.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/libuv/libuv/archive/refs/tags/v1.48.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/libuv/libuv/archive/refs/tags/v1.48.0.tar.gz && \
     tar -xzf v1.48.0.tar.gz && \
     rm v1.48.0.tar.gz
 
@@ -62,7 +62,7 @@ RUN cp test_uv /out/test_uv
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf libuv-1.48.0 && \
-    wget https://github.com/libuv/libuv/archive/refs/tags/v1.48.0.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/libuv/libuv/archive/refs/tags/v1.48.0.tar.gz && \
     tar -xzf v1.48.0.tar.gz && \
     rm v1.48.0.tar.gz
 

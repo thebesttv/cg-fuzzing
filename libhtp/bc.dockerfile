@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libhtp v0.5.52
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/OISF/libhtp/archive/refs/tags/0.5.52.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/OISF/libhtp/archive/refs/tags/0.5.52.tar.gz && \
     tar -xzf 0.5.52.tar.gz && \
     rm 0.5.52.tar.gz
 

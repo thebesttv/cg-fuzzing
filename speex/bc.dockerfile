@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract speex 1.2.1
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/xiph/speex/archive/refs/tags/Speex-1.2.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/xiph/speex/archive/refs/tags/Speex-1.2.1.tar.gz && \
     tar -xzf Speex-1.2.1.tar.gz && \
     rm Speex-1.2.1.tar.gz
 

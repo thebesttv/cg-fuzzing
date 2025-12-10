@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # 2. Download cabextract source code (v1.11)
 WORKDIR /home/SVF-tools
-RUN wget https://www.cabextract.org.uk/cabextract-1.11.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://www.cabextract.org.uk/cabextract-1.11.tar.gz && \
     tar -xzf cabextract-1.11.tar.gz && \
     rm cabextract-1.11.tar.gz
 

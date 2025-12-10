@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract jbig2dec v0.20
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/ArtifexSoftware/jbig2dec/archive/refs/tags/0.20.tar.gz -O jbig2dec-0.20.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/ArtifexSoftware/jbig2dec/archive/refs/tags/0.20.tar.gz -O jbig2dec-0.20.tar.gz && \
     tar -xzf jbig2dec-0.20.tar.gz && \
     rm jbig2dec-0.20.tar.gz
 

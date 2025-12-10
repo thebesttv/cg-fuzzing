@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract qbe (latest release)
 WORKDIR /home/SVF-tools
-RUN wget https://c9x.me/compile/release/qbe-1.2.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://c9x.me/compile/release/qbe-1.2.tar.xz && \
     tar -xJf qbe-1.2.tar.xz && \
     rm qbe-1.2.tar.xz
 

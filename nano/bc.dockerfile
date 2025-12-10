@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract nano 8.7
 WORKDIR /home/SVF-tools
-RUN wget https://www.nano-editor.org/dist/v8/nano-8.7.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://www.nano-editor.org/dist/v8/nano-8.7.tar.xz && \
     tar -xf nano-8.7.tar.xz && \
     rm nano-8.7.tar.xz
 

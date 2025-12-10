@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract fribidi (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/fribidi/fribidi/releases/download/v1.0.15/fribidi-1.0.15.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/fribidi/fribidi/releases/download/v1.0.15/fribidi-1.0.15.tar.xz && \
     tar -xf fribidi-1.0.15.tar.xz && \
     rm fribidi-1.0.15.tar.xz
 
@@ -30,7 +30,7 @@ RUN cp bin/fribidi /out/fribidi
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf fribidi-1.0.15 && \
-    wget https://github.com/fribidi/fribidi/releases/download/v1.0.15/fribidi-1.0.15.tar.xz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/fribidi/fribidi/releases/download/v1.0.15/fribidi-1.0.15.tar.xz && \
     tar -xf fribidi-1.0.15.tar.xz && \
     rm fribidi-1.0.15.tar.xz
 

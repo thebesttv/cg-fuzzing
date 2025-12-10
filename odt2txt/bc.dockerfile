@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # 2. Download odt2txt source code (v0.5)
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/dstosberg/odt2txt/archive/refs/tags/v0.5.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/dstosberg/odt2txt/archive/refs/tags/v0.5.tar.gz && \
     tar -xzf v0.5.tar.gz && \
     rm v0.5.tar.gz
 

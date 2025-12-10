@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract base64 v0.5.2
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/aklomp/base64/archive/refs/tags/v0.5.2.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/aklomp/base64/archive/refs/tags/v0.5.2.tar.gz && \
     tar -xzf v0.5.2.tar.gz && \
     rm v0.5.2.tar.gz
 

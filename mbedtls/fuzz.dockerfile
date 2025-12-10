@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract mbedtls 3.6.2 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-3.6.2/mbedtls-3.6.2.tar.bz2 && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-3.6.2/mbedtls-3.6.2.tar.bz2 && \
     tar -xjf mbedtls-3.6.2.tar.bz2 && \
     rm mbedtls-3.6.2.tar.bz2
 
@@ -36,7 +36,7 @@ RUN cp build/programs/pkey/pk_decrypt /out/pk_decrypt
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf mbedtls-3.6.2 && \
-    wget https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-3.6.2/mbedtls-3.6.2.tar.bz2 && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-3.6.2/mbedtls-3.6.2.tar.bz2 && \
     tar -xjf mbedtls-3.6.2.tar.bz2 && \
     rm mbedtls-3.6.2.tar.bz2
 

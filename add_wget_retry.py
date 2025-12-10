@@ -102,7 +102,7 @@ def normalize_whitespace(text: str) -> str:
     return re.sub(r'[ \t]+', ' ', text)
 
 
-def process_line(line: str, line_num: int, filepath: Path) -> Tuple[str, bool]:
+def process_line(line: str, line_num: int, filepath: Path, warnings_list: List[str]) -> Tuple[str, bool]:
     """
     Process a single line to add/update wget retry parameters.
     Returns (modified_line, was_modified).
@@ -135,9 +135,12 @@ def process_line(line: str, line_num: int, filepath: Path) -> Tuple[str, bool]:
             
             # Check if it matches our standard
             if existing_params_str != STANDARD_RETRY_PARAMS:
-                print(f"WARNING: {filepath}:{line_num}")
-                print(f"  Found different retry parameters: {existing_params_str}")
-                print(f"  Replacing with standard: {STANDARD_RETRY_PARAMS}")
+                warning_msg = (
+                    f"WARNING: {filepath}:{line_num}\n"
+                    f"  Found different retry parameters: {existing_params_str}\n"
+                    f"  Replacing with standard: {STANDARD_RETRY_PARAMS}"
+                )
+                warnings_list.append(warning_msg)
                 
                 # Remove existing retry params
                 cleaned_segment = remove_retry_params(wget_segment)
@@ -159,10 +162,7 @@ def process_line(line: str, line_num: int, filepath: Path) -> Tuple[str, bool]:
                     offset += len(new_segment) - len(wget_segment)
                     modified = True
         else:
-            # No retry parameters, add them
-            print(f"INFO: {filepath}:{line_num}")
-            print(f"  Adding retry parameters to wget command")
-            
+            # No retry parameters, add them (silently)
             # Add standard retry params after 'wget '
             wget_match = WGET_PATTERN.search(wget_segment)
             if wget_match:
@@ -182,11 +182,14 @@ def process_line(line: str, line_num: int, filepath: Path) -> Tuple[str, bool]:
     return result, modified
 
 
-def process_dockerfile(filepath: Path, dry_run: bool = False) -> bool:
+def process_dockerfile(filepath: Path, dry_run: bool = False, warnings_list: List[str] = None) -> bool:
     """
     Process a single Dockerfile to add/update wget retry parameters.
     Returns True if file was modified.
     """
+    if warnings_list is None:
+        warnings_list = []
+    
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             lines = f.readlines()
@@ -198,24 +201,16 @@ def process_dockerfile(filepath: Path, dry_run: bool = False) -> bool:
     file_modified = False
     
     for line_num, line in enumerate(lines, start=1):
-        modified_line, was_modified = process_line(line, line_num, filepath)
+        modified_line, was_modified = process_line(line, line_num, filepath, warnings_list)
         modified_lines.append(modified_line)
         if was_modified:
             file_modified = True
     
     if file_modified and not dry_run:
         try:
-            # Backup original file
-            backup_path = filepath.with_suffix(filepath.suffix + '.backup')
-            with open(backup_path, 'w', encoding='utf-8') as f:
-                f.writelines(lines)
-            
-            # Write modified content
+            # Write modified content directly (inplace)
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.writelines(modified_lines)
-            
-            print(f"✓ Modified: {filepath}")
-            print(f"  Backup saved to: {backup_path}")
             return True
         except Exception as e:
             print(f"ERROR: Failed to write {filepath}: {e}")
@@ -252,25 +247,38 @@ def main():
         print("No .dockerfile files found")
         return 0
     
-    print(f"Found {len(dockerfiles)} Dockerfile(s)")
-    print()
-    
     if args.dry_run:
+        print(f"Found {len(dockerfiles)} Dockerfile(s)")
         print("=== DRY RUN MODE ===")
         print()
     
     modified_count = 0
+    warnings_list = []
     
     for dockerfile in dockerfiles:
-        if process_dockerfile(dockerfile, dry_run=args.dry_run):
+        if process_dockerfile(dockerfile, dry_run=args.dry_run, warnings_list=warnings_list):
             modified_count += 1
     
-    print()
+    # Print all warnings
+    if warnings_list:
+        print()
+        for warning in warnings_list:
+            print(warning)
+        print()
+    
+    # Print summary
     print("="*60)
     if args.dry_run:
+        print(f"Found {len(dockerfiles)} Dockerfile(s)")
         print(f"Would modify {modified_count} file(s)")
+        if warnings_list:
+            print(f"Found {len(warnings_list)} warning(s)")
     else:
+        print(f"Processed {len(dockerfiles)} Dockerfile(s)")
         print(f"Modified {modified_count} file(s)")
+        if warnings_list:
+            print(f"Found {len(warnings_list)} warning(s)")
+    print("="*60)
     
     return 0
 

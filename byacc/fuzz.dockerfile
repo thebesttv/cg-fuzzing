@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract byacc 20240109 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://invisible-mirror.net/archives/byacc/byacc-20240109.tgz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://invisible-mirror.net/archives/byacc/byacc-20240109.tgz && \
     tar -xzf byacc-20240109.tgz && \
     rm byacc-20240109.tgz
 
@@ -32,7 +32,7 @@ RUN cp yacc /out/yacc
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf byacc-20240109 && \
-    wget https://invisible-mirror.net/archives/byacc/byacc-20240109.tgz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://invisible-mirror.net/archives/byacc/byacc-20240109.tgz && \
     tar -xzf byacc-20240109.tgz && \
     rm byacc-20240109.tgz
 

@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract rsync v3.3.0
 WORKDIR /home/SVF-tools
-RUN wget https://download.samba.org/pub/rsync/src/rsync-3.3.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://download.samba.org/pub/rsync/src/rsync-3.3.0.tar.gz && \
     tar -xzf rsync-3.3.0.tar.gz && \
     rm rsync-3.3.0.tar.gz
 

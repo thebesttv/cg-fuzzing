@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract GNU indent 2.2.13
 WORKDIR /home/SVF-tools
-RUN wget https://ftp.gnu.org/gnu/indent/indent-2.2.13.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/indent/indent-2.2.13.tar.gz && \
     tar -xzf indent-2.2.13.tar.gz && \
     rm indent-2.2.13.tar.gz
 

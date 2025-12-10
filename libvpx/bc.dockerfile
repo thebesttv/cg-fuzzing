@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libvpx v1.14.1
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/webmproject/libvpx/archive/refs/tags/v1.14.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/webmproject/libvpx/archive/refs/tags/v1.14.1.tar.gz && \
     tar -xzf v1.14.1.tar.gz && \
     rm v1.14.1.tar.gz
 

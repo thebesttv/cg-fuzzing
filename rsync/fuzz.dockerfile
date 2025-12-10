@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract rsync v3.3.0
 WORKDIR /src
-RUN wget https://download.samba.org/pub/rsync/src/rsync-3.3.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://download.samba.org/pub/rsync/src/rsync-3.3.0.tar.gz && \
     tar -xzf rsync-3.3.0.tar.gz && \
     rm rsync-3.3.0.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp rsync /out/rsync
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf rsync-3.3.0 && \
-    wget https://download.samba.org/pub/rsync/src/rsync-3.3.0.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://download.samba.org/pub/rsync/src/rsync-3.3.0.tar.gz && \
     tar -xzf rsync-3.3.0.tar.gz && \
     rm rsync-3.3.0.tar.gz
 

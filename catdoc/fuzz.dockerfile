@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract catdoc 0.95 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget "http://ftp.wagner.pp.ru/pub/catdoc/catdoc-0.95.tar.gz" && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 "http://ftp.wagner.pp.ru/pub/catdoc/catdoc-0.95.tar.gz" && \
     tar -xzf catdoc-0.95.tar.gz && \
     rm catdoc-0.95.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp src/catdoc /out/catdoc
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf catdoc-0.95 && \
-    wget "http://ftp.wagner.pp.ru/pub/catdoc/catdoc-0.95.tar.gz" && \
+    wget --tries=3 --retry-connrefused --waitretry=5 "http://ftp.wagner.pp.ru/pub/catdoc/catdoc-0.95.tar.gz" && \
     tar -xzf catdoc-0.95.tar.gz && \
     rm catdoc-0.95.tar.gz
 

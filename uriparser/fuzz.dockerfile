@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract uriparser 0.9.9 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/uriparser/uriparser/releases/download/uriparser-0.9.9/uriparser-0.9.9.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/uriparser/uriparser/releases/download/uriparser-0.9.9/uriparser-0.9.9.tar.gz && \
     tar -xzf uriparser-0.9.9.tar.gz && \
     rm uriparser-0.9.9.tar.gz
 
@@ -37,7 +37,7 @@ RUN cp build/uriparse /out/uriparse
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf uriparser-0.9.9 && \
-    wget https://github.com/uriparser/uriparser/releases/download/uriparser-0.9.9/uriparser-0.9.9.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/uriparser/uriparser/releases/download/uriparser-0.9.9/uriparser-0.9.9.tar.gz && \
     tar -xzf uriparser-0.9.9.tar.gz && \
     rm uriparser-0.9.9.tar.gz
 

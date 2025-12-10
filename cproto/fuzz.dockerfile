@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract cproto 4.7w (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://invisible-mirror.net/archives/cproto/cproto-4.7w.tgz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://invisible-mirror.net/archives/cproto/cproto-4.7w.tgz && \
     tar -xzf cproto-4.7w.tgz && \
     rm cproto-4.7w.tgz
 
@@ -32,7 +32,7 @@ RUN cp cproto /out/cproto
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf cproto-4.7w && \
-    wget https://invisible-mirror.net/archives/cproto/cproto-4.7w.tgz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://invisible-mirror.net/archives/cproto/cproto-4.7w.tgz && \
     tar -xzf cproto-4.7w.tgz && \
     rm cproto-4.7w.tgz
 

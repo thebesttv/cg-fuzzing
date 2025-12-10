@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libcyaml 1.4.2
 WORKDIR /home/SVF-tools
-RUN wget -O libcyaml-1.4.2.tar.gz "https://api.github.com/repos/tlsa/libcyaml/tarball/v1.4.2" && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 -O libcyaml-1.4.2.tar.gz "https://api.github.com/repos/tlsa/libcyaml/tarball/v1.4.2" && \
     tar -xzf libcyaml-1.4.2.tar.gz && \
     mv tlsa-libcyaml-* libcyaml-1.4.2 && \
     rm libcyaml-1.4.2.tar.gz

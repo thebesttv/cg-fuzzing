@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract c-blosc v1.21.6 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/Blosc/c-blosc/archive/refs/tags/v1.21.6.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/Blosc/c-blosc/archive/refs/tags/v1.21.6.tar.gz && \
     tar -xzf v1.21.6.tar.gz && \
     rm v1.21.6.tar.gz
 
@@ -40,7 +40,7 @@ RUN afl-clang-lto -O2 -I/src/c-blosc-1.21.6/blosc \
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf c-blosc-1.21.6 && \
-    wget https://github.com/Blosc/c-blosc/archive/refs/tags/v1.21.6.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/Blosc/c-blosc/archive/refs/tags/v1.21.6.tar.gz && \
     tar -xzf v1.21.6.tar.gz && \
     rm v1.21.6.tar.gz
 

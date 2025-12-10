@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract libidn 1.42 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/libidn/libidn-1.42.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/libidn/libidn-1.42.tar.gz && \
     tar -xzf libidn-1.42.tar.gz && \
     rm libidn-1.42.tar.gz
 
@@ -30,7 +30,7 @@ RUN cp src/idn /out/idn
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf libidn-1.42 && \
-    wget https://ftp.gnu.org/gnu/libidn/libidn-1.42.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/libidn/libidn-1.42.tar.gz && \
     tar -xzf libidn-1.42.tar.gz && \
     rm libidn-1.42.tar.gz
 

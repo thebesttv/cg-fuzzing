@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract lz4 v1.10.0 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/lz4/lz4/releases/download/v1.10.0/lz4-1.10.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/lz4/lz4/releases/download/v1.10.0/lz4-1.10.0.tar.gz && \
     tar -xzf lz4-1.10.0.tar.gz && \
     rm lz4-1.10.0.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp lz4 /out/lz4
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf lz4-1.10.0 && \
-    wget https://github.com/lz4/lz4/releases/download/v1.10.0/lz4-1.10.0.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/lz4/lz4/releases/download/v1.10.0/lz4-1.10.0.tar.gz && \
     tar -xzf lz4-1.10.0.tar.gz && \
     rm lz4-1.10.0.tar.gz
 

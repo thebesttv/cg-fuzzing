@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract tinyexpr (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/codeplea/tinyexpr/archive/refs/heads/master.tar.gz -O tinyexpr.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/codeplea/tinyexpr/archive/refs/heads/master.tar.gz -O tinyexpr.tar.gz && \
     tar -xzf tinyexpr.tar.gz && \
     rm tinyexpr.tar.gz
 
@@ -27,7 +27,7 @@ RUN cp repl /out/repl
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf tinyexpr-master && \
-    wget https://github.com/codeplea/tinyexpr/archive/refs/heads/master.tar.gz -O tinyexpr.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/codeplea/tinyexpr/archive/refs/heads/master.tar.gz -O tinyexpr.tar.gz && \
     tar -xzf tinyexpr.tar.gz && \
     rm tinyexpr.tar.gz
 

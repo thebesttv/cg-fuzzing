@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract screen v5.0.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://ftp.gnu.org/gnu/screen/screen-5.0.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/screen/screen-5.0.1.tar.gz && \
     tar -xzf screen-5.0.1.tar.gz && \
     rm screen-5.0.1.tar.gz
 
@@ -33,7 +33,7 @@ RUN cp screen /out/screen
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf screen-5.0.1 && \
-    wget https://ftp.gnu.org/gnu/screen/screen-5.0.1.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/screen/screen-5.0.1.tar.gz && \
     tar -xzf screen-5.0.1.tar.gz && \
     rm screen-5.0.1.tar.gz
 

@@ -13,12 +13,12 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract lzop v1.04
 WORKDIR /home/SVF-tools
-RUN wget https://www.lzop.org/download/lzop-1.04.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://www.lzop.org/download/lzop-1.04.tar.gz && \
     tar -xzf lzop-1.04.tar.gz && \
     rm lzop-1.04.tar.gz
 
 # Download and build lzo library (dependency)
-RUN wget https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz && \
     tar -xzf lzo-2.10.tar.gz && \
     rm lzo-2.10.tar.gz
 

@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y wget && apt-get clean && rm -rf /var/li
 RUN mkdir -p /out
 
 WORKDIR /src
-RUN wget https://github.com/skeeto/pdjson/archive/refs/heads/master.tar.gz -O pdjson.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/skeeto/pdjson/archive/refs/heads/master.tar.gz -O pdjson.tar.gz && \
     tar -xzf pdjson.tar.gz && rm pdjson.tar.gz
 
 WORKDIR /src/pdjson-master
@@ -15,7 +15,7 @@ RUN cp pretty /out/pretty
 
 WORKDIR /src
 RUN rm -rf pdjson-master && \
-    wget https://github.com/skeeto/pdjson/archive/refs/heads/master.tar.gz -O pdjson.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/skeeto/pdjson/archive/refs/heads/master.tar.gz -O pdjson.tar.gz && \
     tar -xzf pdjson.tar.gz && rm pdjson.tar.gz
 
 WORKDIR /src/pdjson-master

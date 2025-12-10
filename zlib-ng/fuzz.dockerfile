@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract zlib-ng 2.3.1 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.3.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.3.1.tar.gz && \
     tar -xzf 2.3.1.tar.gz && \
     rm 2.3.1.tar.gz
 
@@ -36,7 +36,7 @@ RUN cp build/minigzip /out/minigzip
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf zlib-ng-2.3.1 && \
-    wget https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.3.1.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.3.1.tar.gz && \
     tar -xzf 2.3.1.tar.gz && \
     rm 2.3.1.tar.gz
 

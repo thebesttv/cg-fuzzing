@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract argon2 20190702 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/20190702.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/20190702.tar.gz && \
     tar -xzf 20190702.tar.gz && \
     rm 20190702.tar.gz
 
@@ -32,7 +32,7 @@ RUN cp argon2 /out/argon2
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf phc-winner-argon2-20190702 && \
-    wget https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/20190702.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/20190702.tar.gz && \
     tar -xzf 20190702.tar.gz && \
     rm 20190702.tar.gz
 

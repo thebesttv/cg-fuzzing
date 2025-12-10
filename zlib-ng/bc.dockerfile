@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract zlib-ng 2.3.1
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.3.1.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.3.1.tar.gz && \
     tar -xzf 2.3.1.tar.gz && \
     rm 2.3.1.tar.gz
 

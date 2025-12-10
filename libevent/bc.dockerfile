@@ -13,7 +13,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract libevent v2.1.12-stable
 WORKDIR /home/SVF-tools
-RUN wget https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz && \
     tar -xzf libevent-2.1.12-stable.tar.gz && \
     rm libevent-2.1.12-stable.tar.gz
 

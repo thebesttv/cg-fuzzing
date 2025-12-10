@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract csvquote 0.1.5 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/dbro/csvquote/archive/refs/tags/v0.1.5.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/dbro/csvquote/archive/refs/tags/v0.1.5.tar.gz && \
     tar -xzf v0.1.5.tar.gz && \
     rm v0.1.5.tar.gz
 
@@ -27,7 +27,7 @@ RUN cp csvquote /out/csvquote
 # Build CMPLOG version
 WORKDIR /src
 RUN rm -rf csvquote-0.1.5 && \
-    wget https://github.com/dbro/csvquote/archive/refs/tags/v0.1.5.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/dbro/csvquote/archive/refs/tags/v0.1.5.tar.gz && \
     tar -xzf v0.1.5.tar.gz && \
     rm v0.1.5.tar.gz
 

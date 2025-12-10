@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract mjs (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget https://github.com/cesanta/mjs/archive/refs/tags/2.20.0.tar.gz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/cesanta/mjs/archive/refs/tags/2.20.0.tar.gz && \
     tar -xzf 2.20.0.tar.gz && \
     rm 2.20.0.tar.gz
 
@@ -31,7 +31,7 @@ RUN cp build/mjs /out/mjs
 # Build CMPLOG version for better fuzzing
 WORKDIR /src
 RUN rm -rf mjs-2.20.0 && \
-    wget https://github.com/cesanta/mjs/archive/refs/tags/2.20.0.tar.gz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://github.com/cesanta/mjs/archive/refs/tags/2.20.0.tar.gz && \
     tar -xzf 2.20.0.tar.gz && \
     rm 2.20.0.tar.gz
 

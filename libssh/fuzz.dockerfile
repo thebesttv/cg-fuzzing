@@ -8,7 +8,7 @@ RUN apt-get update && \
 RUN mkdir -p /out
 
 WORKDIR /src
-RUN wget https://www.libssh.org/files/0.10/libssh-0.10.6.tar.xz && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 https://www.libssh.org/files/0.10/libssh-0.10.6.tar.xz && \
     tar -xf libssh-0.10.6.tar.xz && \
     rm libssh-0.10.6.tar.xz
 
@@ -47,7 +47,7 @@ RUN afl-clang-lto -O2 test_ssh.c -o /out/test_ssh \
 
 WORKDIR /src
 RUN rm -rf libssh-0.10.6 && \
-    wget https://www.libssh.org/files/0.10/libssh-0.10.6.tar.xz && \
+    wget --tries=3 --retry-connrefused --waitretry=5 https://www.libssh.org/files/0.10/libssh-0.10.6.tar.xz && \
     tar -xf libssh-0.10.6.tar.xz && \
     rm libssh-0.10.6.tar.xz
 

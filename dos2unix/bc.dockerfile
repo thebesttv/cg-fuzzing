@@ -14,7 +14,7 @@ ENV LLVM_COMPILER=clang
 
 # Download and extract dos2unix 7.5.2
 WORKDIR /home/SVF-tools
-RUN wget "https://downloads.sourceforge.net/project/dos2unix/dos2unix/7.5.2/dos2unix-7.5.2.tar.gz" && \
+RUN wget --tries=3 --retry-connrefused --waitretry=5 "https://downloads.sourceforge.net/project/dos2unix/dos2unix/7.5.2/dos2unix-7.5.2.tar.gz" && \
     tar -xzf dos2unix-7.5.2.tar.gz && \
     rm dos2unix-7.5.2.tar.gz
 
