@@ -1,0 +1,8 @@
+diff --git a/test.c b/test.c
+index 123..456 100644
+--- a/test.c
++++ b/test.c
+@@ -10,5 +10,6 @@
+ void func() {
++    printf("test\n");
+ }
