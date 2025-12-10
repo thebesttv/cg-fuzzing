@@ -1,0 +1,9 @@
+# SSH protocol dictionary
+"SSH-2.0-"
+"SSH-1.99-"
+"\r\n"
+"diffie-hellman-group14-sha1"
+"ssh-rsa"
+"aes128-cbc"
+"hmac-sha1"
+"\x00\x00\x00\x00"

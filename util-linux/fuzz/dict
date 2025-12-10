@@ -1,0 +1,8 @@
+# UUID format dictionary
+"-r"
+"-t"
+"-n"
+"-m"
+"--random"
+"--time"
+"--namespace"
