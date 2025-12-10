@@ -16,7 +16,7 @@ from typing import List, Tuple
 
 
 # Standard retry parameters to add
-STANDARD_RETRY_PARAMS = "--tries=3 --retry-connrefused --waitretry=5"
+STANDARD_RETRY_PARAMS = "--inet4-only --tries=3 --retry-connrefused --waitretry=5"
 
 # Regex patterns
 # Match wget commands with various patterns
@@ -55,16 +55,16 @@ def extract_wget_commands(line: str) -> List[Tuple[int, int]]:
         # Look backwards from wget position to see if it's preceded by 'install'
         before_wget = line[:match.start()].strip()
         after_wget = line[match.end():].strip()
-        
+
         # Skip if it looks like package installation
         if before_wget.endswith('install') or 'apt-get' in before_wget or 'yum install' in before_wget:
             continue
-        
+
         # Skip if 'wget' is part of a path or binary name (e.g., "src/wget", "/path/to/wget")
         # Check if the character before 'wget' is a path separator or alphanumeric
         if before_wget and before_wget[-1] in '/-_':
             continue
-        
+
         # Only process wget commands that have a URL somewhere after them
         # Split by whitespace and check if any token is a URL
         tokens = after_wget.split()
@@ -75,10 +75,10 @@ def extract_wget_commands(line: str) -> List[Tuple[int, int]]:
             if is_download_url(clean_token):
                 has_url = True
                 break
-        
+
         if not has_url:
             continue
-        
+
         positions.append(match.span())
     return positions
 
@@ -95,21 +95,21 @@ def get_wget_command_end(line: str, start_pos: int) -> int:
     """
     # Find the end of this wget command (up to && or \ or end of line)
     end_markers = []
-    
+
     # Look for && after the wget
     and_pos = line.find('&&', start_pos)
     if and_pos != -1:
         end_markers.append(and_pos)
-    
+
     # Look for \ (line continuation)
     backslash_pos = line.find('\\', start_pos)
     if backslash_pos != -1:
         end_markers.append(backslash_pos)
-    
+
     # If no markers found, command goes to end of line
     if not end_markers:
         return len(line)
-    
+
     return min(end_markers)
 
 
@@ -136,30 +136,30 @@ def process_line(line: str, line_num: int, filepath: Path, warnings_list: List[s
     """
     if 'wget' not in line:
         return line, False
-    
+
     modified = False
     result = line
     offset = 0  # Track position changes as we modify the line
-    
+
     # Find all wget commands in the line
     wget_positions = extract_wget_commands(line)
-    
+
     for wget_start, wget_end in wget_positions:
         # Adjust positions based on previous modifications
         adj_start = wget_start + offset
         adj_end = wget_end + offset
-        
+
         # Find the end of this wget command
         cmd_end = get_wget_command_end(result, adj_end)
-        
+
         # Extract the wget command segment
         wget_segment = result[adj_start:cmd_end]
-        
+
         # Check if it already has retry parameters
         if has_retry_params(wget_segment):
             existing_params = extract_existing_retry_params(wget_segment)
             existing_params_str = ' '.join(existing_params)
-            
+
             # Check if it matches our standard
             if existing_params_str != STANDARD_RETRY_PARAMS:
                 warning_msg = (
@@ -168,11 +168,11 @@ def process_line(line: str, line_num: int, filepath: Path, warnings_list: List[s
                     f"  Replacing with standard: {STANDARD_RETRY_PARAMS}"
                 )
                 warnings_list.append(warning_msg)
-                
+
                 # Remove existing retry params
                 cleaned_segment = remove_retry_params(wget_segment)
                 cleaned_segment = normalize_whitespace(cleaned_segment)
-                
+
                 # Add standard retry params after 'wget '
                 wget_match = WGET_PATTERN.search(cleaned_segment)
                 if wget_match:
@@ -183,7 +183,7 @@ def process_line(line: str, line_num: int, filepath: Path, warnings_list: List[s
                         cleaned_segment[insert_pos:]
                     )
                     new_segment = normalize_whitespace(new_segment)
-                    
+
                     # Replace in result
                     result = result[:adj_start] + new_segment + result[cmd_end:]
                     offset += len(new_segment) - len(wget_segment)
@@ -200,12 +200,12 @@ def process_line(line: str, line_num: int, filepath: Path, warnings_list: List[s
                     wget_segment[insert_pos:]
                 )
                 new_segment = normalize_whitespace(new_segment)
-                
+
                 # Replace in result
                 result = result[:adj_start] + new_segment + result[cmd_end:]
                 offset += len(new_segment) - len(wget_segment)
                 modified = True
-    
+
     return result, modified
 
 
@@ -216,23 +216,23 @@ def process_dockerfile(filepath: Path, dry_run: bool = False, warnings_list: Lis
     """
     if warnings_list is None:
         warnings_list = []
-    
+
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             lines = f.readlines()
     except Exception as e:
         print(f"ERROR: Failed to read {filepath}: {e}")
         return False
-    
+
     modified_lines = []
     file_modified = False
-    
+
     for line_num, line in enumerate(lines, start=1):
         modified_line, was_modified = process_line(line, line_num, filepath, warnings_list)
         modified_lines.append(modified_line)
         if was_modified:
             file_modified = True
-    
+
     if file_modified and not dry_run:
         try:
             # Write modified content directly (inplace)
@@ -242,14 +242,14 @@ def process_dockerfile(filepath: Path, dry_run: bool = False, warnings_list: Lis
         except Exception as e:
             print(f"ERROR: Failed to write {filepath}: {e}")
             return False
-    
+
     return file_modified
 
 
 def main():
     """Main entry point."""
     import argparse
-    
+
     parser = argparse.ArgumentParser(
         description='Add retry parameters to wget commands in Dockerfiles'
     )
@@ -264,35 +264,35 @@ def main():
         default=Path.cwd(),
         help='Root directory to search for Dockerfiles (default: current directory)'
     )
-    
+
     args = parser.parse_args()
-    
+
     # Find all Dockerfiles
     dockerfiles = find_dockerfiles(args.root_dir)
-    
+
     if not dockerfiles:
         print("No .dockerfile files found")
         return 0
-    
+
     if args.dry_run:
         print(f"Found {len(dockerfiles)} Dockerfile(s)")
         print("=== DRY RUN MODE ===")
         print()
-    
+
     modified_count = 0
     warnings_list = []
-    
+
     for dockerfile in dockerfiles:
         if process_dockerfile(dockerfile, dry_run=args.dry_run, warnings_list=warnings_list):
             modified_count += 1
-    
+
     # Print all warnings
     if warnings_list:
         print()
         for warning in warnings_list:
             print(warning)
         print()
-    
+
     # Print summary
     print("="*60)
     if args.dry_run:
@@ -306,7 +306,7 @@ def main():
         if warnings_list:
             print(f"Found {len(warnings_list)} warning(s)")
     print("="*60)
-    
+
     return 0
 
 
