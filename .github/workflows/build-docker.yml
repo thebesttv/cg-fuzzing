@@ -96,7 +96,7 @@ jobs:
           fi
 
           # Convert bash array to JSON array
-          JSON=$(printf '%s\n' "${RESULT_ARRAY[@]}" | jq -R -s -c 'split("\\n") | map(select(length > 0))')
+          JSON=$(printf '%s\n' "${RESULT_ARRAY[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
           echo "projects=$JSON" >> $GITHUB_OUTPUT
 
   build-project:
