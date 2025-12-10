@@ -35,7 +35,7 @@ jobs:
             | sed 's|^\./||' \
             | sort -u \
             | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          
+
           echo "projects=${projects}" >> $GITHUB_OUTPUT
           echo "Found projects: ${projects}"
 
@@ -247,12 +247,12 @@ jobs:
           name: Latest Build
           body: |
             Automatically built artifacts from the main branch.
-            
+
             ## Downloads
-            
+
             - `all.zip` - All projects combined (unpacked contents)
             - Individual project zips (e.g., `jq.zip`, `sqlite.zip`)
-            
+
             ## Each project zip contains:
             - `bc/` - LLVM bitcode files for static analysis
             - `fuzz/` - AFL++ fuzzing binaries and resources
