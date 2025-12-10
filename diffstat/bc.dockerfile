@@ -9,7 +9,7 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN wget https://invisible-island.net/datafiles/release/diffstat.tar.gz && tar -xzf diffstat.tar.gz && rm diffstat.tar.gz
 
-WORKDIR /home/SVF-tools/diffstat-1.66
+WORKDIR /home/SVF-tools/diffstat-1.68
 
 RUN apt-get update && apt-get install -y file && apt-get clean && rm -rf /var/lib/apt/lists/*
 
