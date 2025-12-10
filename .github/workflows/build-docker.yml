@@ -30,9 +30,9 @@ jobs:
         run: |
           # Find all unique project directories containing any dockerfile
           # (bc.dockerfile, fuzz.dockerfile, cov.dockerfile, uftrace.dockerfile)
-          projects=$(find . -maxdepth 2 -type f \( -name "bc.dockerfile" -o -name "fuzz.dockerfile" -o -name "cov.dockerfile" -o -name "uftrace.dockerfile" \) ! -path "./.git/*" \
+          projects=$(find dataset -maxdepth 2 -type f \( -name "bc.dockerfile" -o -name "fuzz.dockerfile" -o -name "cov.dockerfile" -o -name "uftrace.dockerfile" \) \
             | xargs -I{} dirname {} \
-            | sed 's|^\./||' \
+            | sed 's|^dataset/||' \
             | sort -u \
             | jq -R -s -c 'split("\n") | map(select(length > 0))')
           
@@ -71,12 +71,13 @@ jobs:
       - name: Build bc.dockerfile (if exists)
         id: build-bc
         run: |
+          cd dataset
           if [ -f "${{ matrix.project }}/bc.dockerfile" ]; then
             echo "Building ${{ matrix.project }}-bc from ${{ matrix.project }}/bc.dockerfile"
             docker build \
               -f "${{ matrix.project }}/bc.dockerfile" \
               -t "${{ matrix.project }}-bc:latest" \
-              .
+              ..
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "bc.dockerfile not found for ${{ matrix.project }}"
@@ -101,12 +102,13 @@ jobs:
       - name: Build fuzz.dockerfile (if exists)
         id: build-fuzz
         run: |
+          cd dataset
           if [ -f "${{ matrix.project }}/fuzz.dockerfile" ]; then
             echo "Building ${{ matrix.project }}-fuzz from ${{ matrix.project }}/fuzz.dockerfile"
             docker build \
               -f "${{ matrix.project }}/fuzz.dockerfile" \
               -t "${{ matrix.project }}-fuzz:latest" \
-              .
+              ..
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "fuzz.dockerfile not found for ${{ matrix.project }}"
@@ -131,12 +133,13 @@ jobs:
       - name: Build cov.dockerfile (if exists)
         id: build-cov
         run: |
+          cd dataset
           if [ -f "${{ matrix.project }}/cov.dockerfile" ]; then
             echo "Building ${{ matrix.project }}-cov from ${{ matrix.project }}/cov.dockerfile"
             docker build \
               -f "${{ matrix.project }}/cov.dockerfile" \
               -t "${{ matrix.project }}-cov:latest" \
-              .
+              ..
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "cov.dockerfile not found for ${{ matrix.project }}"
@@ -146,12 +149,13 @@ jobs:
       - name: Build uftrace.dockerfile (if exists)
         id: build-uftrace
         run: |
+          cd dataset
           if [ -f "${{ matrix.project }}/uftrace.dockerfile" ]; then
             echo "Building ${{ matrix.project }}-uftrace from ${{ matrix.project }}/uftrace.dockerfile"
             docker build \
               -f "${{ matrix.project }}/uftrace.dockerfile" \
               -t "${{ matrix.project }}-uftrace:latest" \
-              .
+              ..
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "uftrace.dockerfile not found for ${{ matrix.project }}"
