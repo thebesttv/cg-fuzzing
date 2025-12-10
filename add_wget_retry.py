@@ -36,20 +36,47 @@ def find_dockerfiles(root_dir: Path) -> List[Path]:
     return sorted(root_dir.glob("**/*.dockerfile"))
 
 
+def is_download_url(text: str) -> bool:
+    """Check if text starts with a download URL (http/https/ftp)."""
+    return text.startswith('http://') or text.startswith('https://') or text.startswith('ftp://')
+
+
 def extract_wget_commands(line: str) -> List[Tuple[int, int]]:
     """
     Extract positions of wget commands in a line.
     Returns list of (start, end) positions for each wget command.
     Filters out 'apt-get install wget' and similar package installation commands.
+    Also filters out lines where wget appears as part of a binary name (e.g., "src/wget", "extract-bc src/wget").
+    Only processes wget commands that are downloading files (i.e., have a URL).
     """
     positions = []
     for match in WGET_PATTERN.finditer(line):
         # Check if this is part of a package installation command
         # Look backwards from wget position to see if it's preceded by 'install'
         before_wget = line[:match.start()].strip()
+        after_wget = line[match.end():].strip()
         
         # Skip if it looks like package installation
         if before_wget.endswith('install') or 'apt-get' in before_wget or 'yum install' in before_wget:
+            continue
+        
+        # Skip if 'wget' is part of a path or binary name (e.g., "src/wget", "/path/to/wget")
+        # Check if the character before 'wget' is a path separator or alphanumeric
+        if before_wget and before_wget[-1] in '/-_':
+            continue
+        
+        # Only process wget commands that have a URL somewhere after them
+        # Split by whitespace and check if any token is a URL
+        tokens = after_wget.split()
+        has_url = False
+        for token in tokens:
+            # Remove common prefixes that might be stuck to the URL
+            clean_token = token.lstrip('-').split('=')[-1]
+            if is_download_url(clean_token):
+                has_url = True
+                break
+        
+        if not has_url:
             continue
         
         positions.append(match.span())
