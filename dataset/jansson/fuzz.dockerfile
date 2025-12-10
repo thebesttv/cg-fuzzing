@@ -53,10 +53,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc) && \
 RUN cp test/bin/json_process /out/json_process.cmplog
 
 # Copy fuzzing resources
-COPY jansson/fuzz/dict /out/dict
-COPY jansson/fuzz/in /out/in
-COPY jansson/fuzz/fuzz.sh /out/fuzz.sh
-COPY jansson/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/jansson/fuzz/dict /out/dict
+COPY dataset/jansson/fuzz/in /out/in
+COPY dataset/jansson/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/jansson/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/gengetopt /out/gengetopt.cmplog
 
 # Copy fuzzing resources
-COPY gengetopt/fuzz/dict /out/dict
-COPY gengetopt/fuzz/in /out/in
-COPY gengetopt/fuzz/fuzz.sh /out/fuzz.sh
-COPY gengetopt/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/gengetopt/fuzz/dict /out/dict
+COPY dataset/gengetopt/fuzz/in /out/in
+COPY dataset/gengetopt/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/gengetopt/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -50,10 +50,10 @@ RUN make CC=afl-clang-lto \
 RUN cp argon2 /out/argon2.cmplog
 
 # Copy fuzzing resources
-COPY argon2/fuzz/dict /out/dict
-COPY argon2/fuzz/in /out/in
-COPY argon2/fuzz/fuzz.sh /out/fuzz.sh
-COPY argon2/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/argon2/fuzz/dict /out/dict
+COPY dataset/argon2/fuzz/in /out/in
+COPY dataset/argon2/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/argon2/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -66,10 +66,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -static -Wl,--allow-multiple-definition -o b
 RUN cp build/brssl /out/brssl.cmplog
 
 # Copy fuzzing resources
-COPY bearssl/fuzz/dict /out/dict
-COPY bearssl/fuzz/in /out/in
-COPY bearssl/fuzz/fuzz.sh /out/fuzz.sh
-COPY bearssl/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/bearssl/fuzz/dict /out/dict
+COPY dataset/bearssl/fuzz/in /out/in
+COPY dataset/bearssl/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/bearssl/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

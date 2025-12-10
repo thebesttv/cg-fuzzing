@@ -54,10 +54,10 @@ RUN mkdir build && cd build && \
 RUN cp build/src/tools/uchardet /out/uchardet.cmplog
 
 # Copy fuzzing resources
-COPY uchardet/fuzz/dict /out/dict
-COPY uchardet/fuzz/in /out/in
-COPY uchardet/fuzz/fuzz.sh /out/fuzz.sh
-COPY uchardet/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/uchardet/fuzz/dict /out/dict
+COPY dataset/uchardet/fuzz/in /out/in
+COPY dataset/uchardet/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/uchardet/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

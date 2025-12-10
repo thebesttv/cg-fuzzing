@@ -117,10 +117,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto \
     -o /out/fuzz_reader.cmplog
 
 # Copy fuzzing resources
-COPY hiredis/fuzz/dict /out/dict
-COPY hiredis/fuzz/in /out/in
-COPY hiredis/fuzz/fuzz.sh /out/fuzz.sh
-COPY hiredis/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/hiredis/fuzz/dict /out/dict
+COPY dataset/hiredis/fuzz/in /out/in
+COPY dataset/hiredis/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/hiredis/fuzz/whatsup.sh /out/whatsup.sh
 
 # Ensure scripts are executable
 RUN chmod +x /out/fuzz.sh /out/whatsup.sh

@@ -43,10 +43,10 @@ RUN CC=afl-clang-lto \
 RUN cp hoedown /out/hoedown.cmplog
 
 # Copy fuzzing resources
-COPY hoedown/fuzz/dict /out/dict
-COPY hoedown/fuzz/in /out/in
-COPY hoedown/fuzz/fuzz.sh /out/fuzz.sh
-COPY hoedown/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/hoedown/fuzz/dict /out/dict
+COPY dataset/hoedown/fuzz/in /out/in
+COPY dataset/hoedown/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/hoedown/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

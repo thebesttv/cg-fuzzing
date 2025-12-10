@@ -29,10 +29,10 @@ RUN CC=afl-clang-lto CXX=afl-clang-lto++ CFLAGS="-O2" \
 RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp hello /out/hello.cmplog
 
-COPY hello/fuzz/dict /out/dict
-COPY hello/fuzz/in /out/in
-COPY hello/fuzz/fuzz.sh /out/fuzz.sh
-COPY hello/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/hello/fuzz/dict /out/dict
+COPY dataset/hello/fuzz/in /out/in
+COPY dataset/hello/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/hello/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

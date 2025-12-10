@@ -67,10 +67,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp binutils/readelf /out/readelf.cmplog
 
 # Copy fuzzing resources
-COPY binutils/fuzz/dict /out/dict
-COPY binutils/fuzz/in /out/in
-COPY binutils/fuzz/fuzz.sh /out/fuzz.sh
-COPY binutils/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/binutils/fuzz/dict /out/dict
+COPY dataset/binutils/fuzz/in /out/in
+COPY dataset/binutils/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/binutils/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

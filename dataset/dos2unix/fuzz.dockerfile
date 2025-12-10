@@ -44,10 +44,10 @@ RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto \
 RUN cp dos2unix /out/dos2unix.cmplog
 
 # Copy fuzzing resources
-COPY dos2unix/fuzz/dict /out/dict
-COPY dos2unix/fuzz/in /out/in
-COPY dos2unix/fuzz/fuzz.sh /out/fuzz.sh
-COPY dos2unix/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/dos2unix/fuzz/dict /out/dict
+COPY dataset/dos2unix/fuzz/in /out/in
+COPY dataset/dos2unix/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/dos2unix/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

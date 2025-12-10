@@ -58,10 +58,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto \
 RUN cp utf8proc_fuzz /out/utf8proc_fuzz.cmplog
 
 # Copy fuzzing resources
-COPY utf8proc/fuzz/dict /out/dict
-COPY utf8proc/fuzz/in /out/in
-COPY utf8proc/fuzz/fuzz.sh /out/fuzz.sh
-COPY utf8proc/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/utf8proc/fuzz/dict /out/dict
+COPY dataset/utf8proc/fuzz/in /out/in
+COPY dataset/utf8proc/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/utf8proc/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

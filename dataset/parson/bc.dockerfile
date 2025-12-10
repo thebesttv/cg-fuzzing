@@ -22,7 +22,7 @@ RUN wget https://github.com/kgabis/parson/archive/ba29f4eda9ea7703a9f6a9cf2b0532
 WORKDIR /home/SVF-tools/parson
 
 # Copy the harness
-COPY parson/fuzz/harness.c harness.c
+COPY dataset/parson/fuzz/harness.c harness.c
 
 # Build parson library and harness with WLLVM
 # Parson is a single-file library, so we compile directly

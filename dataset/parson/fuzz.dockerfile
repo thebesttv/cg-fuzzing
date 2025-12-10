@@ -19,7 +19,7 @@ RUN wget https://github.com/kgabis/parson/archive/ba29f4eda9ea7703a9f6a9cf2b0532
 WORKDIR /src/parson
 
 # Copy the harness
-COPY parson/fuzz/harness.c harness.c
+COPY dataset/parson/fuzz/harness.c harness.c
 
 # Build parson with afl-clang-lto for fuzzing
 RUN afl-clang-lto -O2 -c parson.c -o parson.o
@@ -42,7 +42,7 @@ RUN rm -rf parson && \
 WORKDIR /src/parson
 
 # Copy the harness again
-COPY parson/fuzz/harness.c harness.c
+COPY dataset/parson/fuzz/harness.c harness.c
 
 # Build CMPLOG version
 RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -c parson.c -o parson.o
@@ -54,10 +54,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I. harness.c parson.o -o parson_harness
 RUN cp parson_harness.cmplog /out/parson_harness.cmplog
 
 # Copy fuzzing resources
-COPY parson/fuzz/dict /out/dict
-COPY parson/fuzz/in /out/in
-COPY parson/fuzz/fuzz.sh /out/fuzz.sh
-COPY parson/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/parson/fuzz/dict /out/dict
+COPY dataset/parson/fuzz/in /out/in
+COPY dataset/parson/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/parson/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

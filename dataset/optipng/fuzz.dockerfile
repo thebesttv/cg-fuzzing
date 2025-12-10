@@ -49,10 +49,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/optipng/optipng /out/optipng.cmplog
 
 # Copy fuzzing resources
-COPY optipng/fuzz/dict /out/dict
-COPY optipng/fuzz/in /out/in
-COPY optipng/fuzz/fuzz.sh /out/fuzz.sh
-COPY optipng/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/optipng/fuzz/dict /out/dict
+COPY dataset/optipng/fuzz/in /out/in
+COPY dataset/optipng/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/optipng/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

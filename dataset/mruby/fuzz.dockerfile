@@ -45,10 +45,10 @@ RUN CC=afl-clang-lto \
 RUN cp build/host/bin/mruby /out/mruby.cmplog
 
 # Copy fuzzing resources
-COPY mruby/fuzz/dict /out/dict
-COPY mruby/fuzz/in /out/in
-COPY mruby/fuzz/fuzz.sh /out/fuzz.sh
-COPY mruby/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/mruby/fuzz/dict /out/dict
+COPY dataset/mruby/fuzz/in /out/in
+COPY dataset/mruby/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/mruby/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

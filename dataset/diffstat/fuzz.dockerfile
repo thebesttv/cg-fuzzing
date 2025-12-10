@@ -19,10 +19,10 @@ RUN CC=afl-clang-lto CFLAGS="-O2" LDFLAGS="-static -Wl,--allow-multiple-definiti
 RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp diffstat /out/diffstat.cmplog
 
-COPY diffstat/fuzz/dict /out/dict
-COPY diffstat/fuzz/in /out/in
-COPY diffstat/fuzz/fuzz.sh /out/fuzz.sh
-COPY diffstat/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/diffstat/fuzz/dict /out/dict
+COPY dataset/diffstat/fuzz/in /out/in
+COPY dataset/diffstat/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/diffstat/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 RUN ls -la /out/diffstat /out/diffstat.cmplog && file /out/diffstat

@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/fsck.fat /out/fsck.fat.cmplog
 
 # Copy fuzzing resources
-COPY dosfstools/fuzz/dict /out/dict
-COPY dosfstools/fuzz/in /out/in
-COPY dosfstools/fuzz/fuzz.sh /out/fuzz.sh
-COPY dosfstools/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/dosfstools/fuzz/dict /out/dict
+COPY dataset/dosfstools/fuzz/in /out/in
+COPY dataset/dosfstools/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/dosfstools/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

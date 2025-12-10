@@ -52,10 +52,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp tools/sexp-conv /out/sexp-conv.cmplog
 
 # Copy fuzzing resources
-COPY nettle/fuzz/dict /out/dict
-COPY nettle/fuzz/in /out/in
-COPY nettle/fuzz/fuzz.sh /out/fuzz.sh
-COPY nettle/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/nettle/fuzz/dict /out/dict
+COPY dataset/nettle/fuzz/in /out/in
+COPY dataset/nettle/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/nettle/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

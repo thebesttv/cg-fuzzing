@@ -54,10 +54,10 @@ RUN AFL_LLVM_CMPLOG=1 make
 RUN cp utils/recsel /out/recsel.cmplog
 
 # Copy fuzzing resources
-COPY recutils/fuzz/dict /out/dict
-COPY recutils/fuzz/in /out/in
-COPY recutils/fuzz/fuzz.sh /out/fuzz.sh
-COPY recutils/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/recutils/fuzz/dict /out/dict
+COPY dataset/recutils/fuzz/in /out/in
+COPY dataset/recutils/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/recutils/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

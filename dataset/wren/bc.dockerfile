@@ -26,7 +26,7 @@ RUN CC=wllvm \
     make config=debug_64bit wren
 
 # Copy the harness
-COPY wren/harness.c /home/SVF-tools/wren-0.4.0/harness.c
+COPY dataset/wren/harness.c /home/SVF-tools/wren-0.4.0/harness.c
 
 WORKDIR /home/SVF-tools/wren-0.4.0
 

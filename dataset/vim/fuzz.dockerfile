@@ -69,10 +69,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/vim /out/vim.cmplog
 
 # Copy fuzzing resources
-COPY vim/fuzz/dict /out/dict
-COPY vim/fuzz/in /out/in
-COPY vim/fuzz/fuzz.sh /out/fuzz.sh
-COPY vim/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/vim/fuzz/dict /out/dict
+COPY dataset/vim/fuzz/in /out/in
+COPY dataset/vim/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/vim/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

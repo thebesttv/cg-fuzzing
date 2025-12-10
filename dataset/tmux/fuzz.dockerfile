@@ -58,10 +58,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp tmux /out/tmux.cmplog
 
 # Copy fuzzing resources
-COPY tmux/fuzz/dict /out/dict
-COPY tmux/fuzz/in /out/in
-COPY tmux/fuzz/fuzz.sh /out/fuzz.sh
-COPY tmux/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/tmux/fuzz/dict /out/dict
+COPY dataset/tmux/fuzz/in /out/in
+COPY dataset/tmux/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/tmux/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

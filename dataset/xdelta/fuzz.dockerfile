@@ -56,10 +56,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp xdelta3 /out/xdelta3.cmplog
 
 # Copy fuzzing resources
-COPY xdelta/fuzz/dict /out/dict
-COPY xdelta/fuzz/in /out/in
-COPY xdelta/fuzz/fuzz.sh /out/fuzz.sh
-COPY xdelta/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/xdelta/fuzz/dict /out/dict
+COPY dataset/xdelta/fuzz/in /out/in
+COPY dataset/xdelta/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/xdelta/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

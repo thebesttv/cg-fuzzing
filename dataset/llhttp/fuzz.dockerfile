@@ -151,10 +151,10 @@ RUN printf '%s\n' '#include "llhttp.h"' \
 RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I./include -L./build -o /out/llhttp_harness.cmplog harness.c build/libllhttp.a -static -Wl,--allow-multiple-definition
 
 # Copy fuzzing resources
-COPY llhttp/fuzz/dict /out/dict
-COPY llhttp/fuzz/in /out/in
-COPY llhttp/fuzz/fuzz.sh /out/fuzz.sh
-COPY llhttp/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/llhttp/fuzz/dict /out/dict
+COPY dataset/llhttp/fuzz/in /out/in
+COPY dataset/llhttp/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/llhttp/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

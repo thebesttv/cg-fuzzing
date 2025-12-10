@@ -71,10 +71,10 @@ RUN cp build/bins/unzzip-big /out/unzzip-big.cmplog && \
     cp build/bins/unzip-mem /out/unzip-mem.cmplog
 
 # Copy fuzzing resources
-COPY zziplib/fuzz/dict /out/dict
-COPY zziplib/fuzz/in /out/in
-COPY zziplib/fuzz/fuzz.sh /out/fuzz.sh
-COPY zziplib/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/zziplib/fuzz/dict /out/dict
+COPY dataset/zziplib/fuzz/in /out/in
+COPY dataset/zziplib/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/zziplib/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

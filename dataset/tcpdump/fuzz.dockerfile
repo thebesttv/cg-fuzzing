@@ -87,10 +87,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp tcpdump /out/tcpdump.cmplog
 
 # Copy fuzzing resources
-COPY tcpdump/fuzz/dict /out/dict
-COPY tcpdump/fuzz/in /out/in
-COPY tcpdump/fuzz/fuzz.sh /out/fuzz.sh
-COPY tcpdump/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/tcpdump/fuzz/dict /out/dict
+COPY dataset/tcpdump/fuzz/in /out/in
+COPY dataset/tcpdump/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/tcpdump/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

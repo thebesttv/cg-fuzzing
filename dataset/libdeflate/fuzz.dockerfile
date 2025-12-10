@@ -61,10 +61,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/programs/libdeflate-gzip /out/libdeflate-gzip.cmplog
 
 # Copy fuzzing resources
-COPY libdeflate/fuzz/dict /out/dict
-COPY libdeflate/fuzz/in /out/in
-COPY libdeflate/fuzz/fuzz.sh /out/fuzz.sh
-COPY libdeflate/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libdeflate/fuzz/dict /out/dict
+COPY dataset/libdeflate/fuzz/in /out/in
+COPY dataset/libdeflate/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libdeflate/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

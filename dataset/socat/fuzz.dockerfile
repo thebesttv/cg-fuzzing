@@ -52,10 +52,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp socat /out/socat.cmplog
 
 # Copy fuzzing resources
-COPY socat/fuzz/dict /out/dict
-COPY socat/fuzz/in /out/in
-COPY socat/fuzz/fuzz.sh /out/fuzz.sh
-COPY socat/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/socat/fuzz/dict /out/dict
+COPY dataset/socat/fuzz/in /out/in
+COPY dataset/socat/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/socat/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

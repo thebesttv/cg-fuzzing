@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/lha /out/lha.cmplog
 
 # Copy fuzzing resources
-COPY lhasa/fuzz/dict /out/dict
-COPY lhasa/fuzz/in /out/in
-COPY lhasa/fuzz/fuzz.sh /out/fuzz.sh
-COPY lhasa/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/lhasa/fuzz/dict /out/dict
+COPY dataset/lhasa/fuzz/in /out/in
+COPY dataset/lhasa/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/lhasa/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

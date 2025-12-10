@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/gifsicle /out/gifsicle.cmplog
 
 # Copy fuzzing resources
-COPY gifsicle/fuzz/dict /out/dict
-COPY gifsicle/fuzz/in /out/in
-COPY gifsicle/fuzz/fuzz.sh /out/fuzz.sh
-COPY gifsicle/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/gifsicle/fuzz/dict /out/dict
+COPY dataset/gifsicle/fuzz/in /out/in
+COPY dataset/gifsicle/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/gifsicle/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

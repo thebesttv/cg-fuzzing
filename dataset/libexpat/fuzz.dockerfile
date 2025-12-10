@@ -53,10 +53,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp xmlwf/xmlwf /out/xmlwf.cmplog
 
 # Copy fuzzing resources
-COPY libexpat/fuzz/dict /out/dict
-COPY libexpat/fuzz/in /out/in
-COPY libexpat/fuzz/fuzz.sh /out/fuzz.sh
-COPY libexpat/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libexpat/fuzz/dict /out/dict
+COPY dataset/libexpat/fuzz/in /out/in
+COPY dataset/libexpat/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libexpat/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/bison /out/bison.cmplog
 
 # Copy fuzzing resources
-COPY bison/fuzz/dict /out/dict
-COPY bison/fuzz/in /out/in
-COPY bison/fuzz/fuzz.sh /out/fuzz.sh
-COPY bison/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/bison/fuzz/dict /out/dict
+COPY dataset/bison/fuzz/in /out/in
+COPY dataset/bison/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/bison/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

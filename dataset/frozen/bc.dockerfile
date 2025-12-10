@@ -21,7 +21,7 @@ RUN wget https://github.com/cesanta/frozen/archive/refs/tags/1.7.tar.gz && \
 WORKDIR /home/SVF-tools/frozen-1.7
 
 # Copy the fuzzing harness
-COPY frozen/fuzz_json.c .
+COPY dataset/frozen/fuzz_json.c .
 
 # Compile the fuzzing harness with WLLVM
 RUN wllvm -g -O0 -Xclang -disable-llvm-passes -static -Wl,--allow-multiple-definition -o fuzz_json fuzz_json.c frozen.c -lm

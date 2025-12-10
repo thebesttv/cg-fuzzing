@@ -55,10 +55,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/lzfse /out/lzfse.cmplog
 
 # Copy fuzzing resources
-COPY lzfse/fuzz/dict /out/dict
-COPY lzfse/fuzz/in /out/in
-COPY lzfse/fuzz/fuzz.sh /out/fuzz.sh
-COPY lzfse/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/lzfse/fuzz/dict /out/dict
+COPY dataset/lzfse/fuzz/in /out/in
+COPY dataset/lzfse/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/lzfse/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

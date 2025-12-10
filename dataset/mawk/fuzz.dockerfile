@@ -44,10 +44,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp mawk /out/mawk.cmplog
 
 # Copy fuzzing resources
-COPY mawk/fuzz/dict /out/dict
-COPY mawk/fuzz/in /out/in
-COPY mawk/fuzz/fuzz.sh /out/fuzz.sh
-COPY mawk/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/mawk/fuzz/dict /out/dict
+COPY dataset/mawk/fuzz/in /out/in
+COPY dataset/mawk/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/mawk/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -61,10 +61,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/cstool /out/cstool.cmplog
 
 # Copy fuzzing resources
-COPY capstone/fuzz/dict /out/dict
-COPY capstone/fuzz/in /out/in
-COPY capstone/fuzz/fuzz.sh /out/fuzz.sh
-COPY capstone/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/capstone/fuzz/dict /out/dict
+COPY dataset/capstone/fuzz/in /out/in
+COPY dataset/capstone/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/capstone/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

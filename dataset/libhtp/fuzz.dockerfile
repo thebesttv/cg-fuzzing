@@ -61,10 +61,10 @@ RUN cd test && AFL_LLVM_CMPLOG=1 make test_fuzz
 RUN cp test/test_fuzz /out/test_fuzz.cmplog
 
 # Copy fuzzing resources
-COPY libhtp/fuzz/dict /out/dict
-COPY libhtp/fuzz/in /out/in
-COPY libhtp/fuzz/fuzz.sh /out/fuzz.sh
-COPY libhtp/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libhtp/fuzz/dict /out/dict
+COPY dataset/libhtp/fuzz/in /out/in
+COPY dataset/libhtp/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libhtp/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

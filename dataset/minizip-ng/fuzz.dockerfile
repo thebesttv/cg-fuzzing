@@ -30,7 +30,7 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Copy harness and compile
-COPY minizip-ng/fuzz/harness/afl_unzip.c /src/afl_unzip.c
+COPY dataset/minizip-ng/fuzz/harness/afl_unzip.c /src/afl_unzip.c
 RUN afl-clang-lto -O2 -I/src/minizip-ng-4.0.10 \
     /src/afl_unzip.c \
     -o /out/minizip_unzip_fuzz \
@@ -66,10 +66,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I/src/minizip-ng-4.0.10 \
     -lz -lbz2 -llzma -lzstd -lssl -lcrypto -lpthread
 
 # Copy fuzzing resources
-COPY minizip-ng/fuzz/dict /out/dict
-COPY minizip-ng/fuzz/in /out/in
-COPY minizip-ng/fuzz/fuzz.sh /out/fuzz.sh
-COPY minizip-ng/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/minizip-ng/fuzz/dict /out/dict
+COPY dataset/minizip-ng/fuzz/in /out/in
+COPY dataset/minizip-ng/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/minizip-ng/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

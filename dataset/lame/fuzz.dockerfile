@@ -25,10 +25,10 @@ RUN CC=afl-clang-lto CFLAGS="-O2" LDFLAGS="-static -Wl,--allow-multiple-definiti
 RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp frontend/lame /out/lame.cmplog
 
-COPY lame/fuzz/dict /out/dict
-COPY lame/fuzz/in /out/in
-COPY lame/fuzz/fuzz.sh /out/fuzz.sh
-COPY lame/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/lame/fuzz/dict /out/dict
+COPY dataset/lame/fuzz/in /out/in
+COPY dataset/lame/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/lame/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 RUN ls -la /out/lame /out/lame.cmplog && file /out/lame

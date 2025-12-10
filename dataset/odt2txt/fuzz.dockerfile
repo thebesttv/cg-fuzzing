@@ -45,10 +45,10 @@ RUN CC=afl-clang-lto \
 RUN cp odt2txt /out/odt2txt.cmplog
 
 # Copy fuzzing resources
-COPY odt2txt/fuzz/dict /out/dict
-COPY odt2txt/fuzz/in /out/in
-COPY odt2txt/fuzz/fuzz.sh /out/fuzz.sh
-COPY odt2txt/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/odt2txt/fuzz/dict /out/dict
+COPY dataset/odt2txt/fuzz/in /out/in
+COPY dataset/odt2txt/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/odt2txt/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

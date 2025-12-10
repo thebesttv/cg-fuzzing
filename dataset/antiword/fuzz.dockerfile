@@ -47,10 +47,10 @@ RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto \
 RUN cp antiword /out/antiword.cmplog
 
 # Copy fuzzing resources
-COPY antiword/fuzz/dict /out/dict
-COPY antiword/fuzz/in /out/in
-COPY antiword/fuzz/fuzz.sh /out/fuzz.sh
-COPY antiword/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/antiword/fuzz/dict /out/dict
+COPY dataset/antiword/fuzz/in /out/in
+COPY dataset/antiword/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/antiword/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

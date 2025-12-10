@@ -18,7 +18,7 @@ RUN wget https://github.com/ludocode/mpack/releases/download/v1.1.1/mpack-amalga
 WORKDIR /src/mpack-amalgamation-1.1.1
 
 # Copy the fuzzing harness
-COPY mpack/fuzz_mpack.c .
+COPY dataset/mpack/fuzz_mpack.c .
 
 # Compile the fuzzing harness with afl-clang-lto
 RUN afl-clang-lto -O2 -DMPACK_READER=1 -DMPACK_EXTENSIONS=1 \
@@ -38,7 +38,7 @@ RUN rm -rf mpack-amalgamation-1.1.1 && \
 WORKDIR /src/mpack-amalgamation-1.1.1
 
 # Copy the fuzzing harness again
-COPY mpack/fuzz_mpack.c .
+COPY dataset/mpack/fuzz_mpack.c .
 
 RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -DMPACK_READER=1 -DMPACK_EXTENSIONS=1 \
     -static -Wl,--allow-multiple-definition \
@@ -48,10 +48,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -DMPACK_READER=1 -DMPACK_EXTENSIONS=1 \
 RUN cp fuzz_mpack /out/fuzz_mpack.cmplog
 
 # Copy fuzzing resources
-COPY mpack/fuzz/dict /out/dict
-COPY mpack/fuzz/in /out/in
-COPY mpack/fuzz/fuzz.sh /out/fuzz.sh
-COPY mpack/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/mpack/fuzz/dict /out/dict
+COPY dataset/mpack/fuzz/in /out/in
+COPY dataset/mpack/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/mpack/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

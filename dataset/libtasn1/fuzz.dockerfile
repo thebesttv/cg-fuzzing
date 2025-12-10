@@ -52,10 +52,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/asn1Parser /out/asn1Parser.cmplog
 
 # Copy fuzzing resources
-COPY libtasn1/fuzz/dict /out/dict
-COPY libtasn1/fuzz/in /out/in
-COPY libtasn1/fuzz/fuzz.sh /out/fuzz.sh
-COPY libtasn1/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libtasn1/fuzz/dict /out/dict
+COPY dataset/libtasn1/fuzz/in /out/in
+COPY dataset/libtasn1/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libtasn1/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

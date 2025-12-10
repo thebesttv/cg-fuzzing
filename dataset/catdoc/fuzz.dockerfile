@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto LDFLAGS="-static -Wl,--allow-multipl
 RUN cp src/catdoc /out/catdoc.cmplog
 
 # Copy fuzzing resources
-COPY catdoc/fuzz/dict /out/dict
-COPY catdoc/fuzz/in /out/in
-COPY catdoc/fuzz/fuzz.sh /out/fuzz.sh
-COPY catdoc/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/catdoc/fuzz/dict /out/dict
+COPY dataset/catdoc/fuzz/in /out/in
+COPY dataset/catdoc/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/catdoc/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

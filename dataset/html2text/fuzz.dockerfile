@@ -55,10 +55,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp html2text /out/html2text.cmplog
 
 # Copy fuzzing resources
-COPY html2text/fuzz/dict /out/dict
-COPY html2text/fuzz/in /out/in
-COPY html2text/fuzz/fuzz.sh /out/fuzz.sh
-COPY html2text/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/html2text/fuzz/dict /out/dict
+COPY dataset/html2text/fuzz/in /out/in
+COPY dataset/html2text/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/html2text/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

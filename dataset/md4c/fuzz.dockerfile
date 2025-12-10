@@ -53,10 +53,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/md2html/md2html /out/md2html.cmplog
 
 # Copy fuzzing resources
-COPY md4c/fuzz/dict /out/dict
-COPY md4c/fuzz/in /out/in
-COPY md4c/fuzz/fuzz.sh /out/fuzz.sh
-COPY md4c/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/md4c/fuzz/dict /out/dict
+COPY dataset/md4c/fuzz/in /out/in
+COPY dataset/md4c/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/md4c/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

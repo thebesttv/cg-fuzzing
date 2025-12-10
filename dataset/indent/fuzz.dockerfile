@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/indent /out/indent.cmplog
 
 # Copy fuzzing resources
-COPY indent/fuzz/dict /out/dict
-COPY indent/fuzz/in /out/in
-COPY indent/fuzz/fuzz.sh /out/fuzz.sh
-COPY indent/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/indent/fuzz/dict /out/dict
+COPY dataset/indent/fuzz/in /out/in
+COPY dataset/indent/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/indent/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

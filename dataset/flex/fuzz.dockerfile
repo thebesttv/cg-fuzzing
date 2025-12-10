@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/flex /out/flex.cmplog
 
 # Copy fuzzing resources
-COPY flex/fuzz/dict /out/dict
-COPY flex/fuzz/in /out/in
-COPY flex/fuzz/fuzz.sh /out/fuzz.sh
-COPY flex/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/flex/fuzz/dict /out/dict
+COPY dataset/flex/fuzz/in /out/in
+COPY dataset/flex/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/flex/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

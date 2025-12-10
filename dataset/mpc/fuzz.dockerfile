@@ -42,10 +42,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -ansi -pedantic -Wall \
 RUN cp maths.cmplog /out/maths.cmplog
 
 # Copy fuzzing resources
-COPY mpc/fuzz/dict /out/dict
-COPY mpc/fuzz/in /out/in
-COPY mpc/fuzz/fuzz.sh /out/fuzz.sh
-COPY mpc/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/mpc/fuzz/dict /out/dict
+COPY dataset/mpc/fuzz/in /out/in
+COPY dataset/mpc/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/mpc/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

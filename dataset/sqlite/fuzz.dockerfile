@@ -53,10 +53,10 @@ RUN AFL_LLVM_CMPLOG=1 make sqlite3 -j$(nproc)
 RUN cp sqlite3 /out/sqlite3.cmplog
 
 # Copy fuzzing resources
-COPY sqlite/fuzz/dict /out/dict
-COPY sqlite/fuzz/in /out/in
-COPY sqlite/fuzz/fuzz.sh /out/fuzz.sh
-COPY sqlite/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/sqlite/fuzz/dict /out/dict
+COPY dataset/sqlite/fuzz/in /out/in
+COPY dataset/sqlite/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/sqlite/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -71,10 +71,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/dwebp /out/dwebp.cmplog
 
 # Copy fuzzing resources
-COPY libwebp/fuzz/dict /out/dict
-COPY libwebp/fuzz/in /out/in
-COPY libwebp/fuzz/fuzz.sh /out/fuzz.sh
-COPY libwebp/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libwebp/fuzz/dict /out/dict
+COPY dataset/libwebp/fuzz/in /out/in
+COPY dataset/libwebp/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libwebp/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

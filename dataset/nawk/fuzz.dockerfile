@@ -40,10 +40,10 @@ RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto HOSTCC=afl-clang-lto \
 RUN cp a.out /out/nawk.cmplog
 
 # Copy fuzzing resources
-COPY nawk/fuzz/dict /out/dict
-COPY nawk/fuzz/in /out/in
-COPY nawk/fuzz/fuzz.sh /out/fuzz.sh
-COPY nawk/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/nawk/fuzz/dict /out/dict
+COPY dataset/nawk/fuzz/in /out/in
+COPY dataset/nawk/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/nawk/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

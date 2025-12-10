@@ -70,10 +70,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp cmd/dot/dot_static /out/dot.cmplog
 
 # Copy fuzzing resources
-COPY graphviz/fuzz/dict /out/dict
-COPY graphviz/fuzz/in /out/in
-COPY graphviz/fuzz/fuzz.sh /out/fuzz.sh
-COPY graphviz/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/graphviz/fuzz/dict /out/dict
+COPY dataset/graphviz/fuzz/in /out/in
+COPY dataset/graphviz/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/graphviz/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -55,10 +55,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/utils/ucl_tool /out/ucl_tool.cmplog
 
 # Copy fuzzing resources
-COPY libucl/fuzz/dict /out/dict
-COPY libucl/fuzz/in /out/in
-COPY libucl/fuzz/fuzz.sh /out/fuzz.sh
-COPY libucl/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libucl/fuzz/dict /out/dict
+COPY dataset/libucl/fuzz/in /out/in
+COPY dataset/libucl/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libucl/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

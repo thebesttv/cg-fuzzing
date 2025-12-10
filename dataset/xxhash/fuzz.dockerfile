@@ -50,10 +50,10 @@ RUN make clean || true && \
 RUN cp xxhsum /out/xxhsum.cmplog
 
 # Copy fuzzing resources
-COPY xxhash/fuzz/dict /out/dict
-COPY xxhash/fuzz/in /out/in
-COPY xxhash/fuzz/fuzz.sh /out/fuzz.sh
-COPY xxhash/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/xxhash/fuzz/dict /out/dict
+COPY dataset/xxhash/fuzz/in /out/in
+COPY dataset/xxhash/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/xxhash/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

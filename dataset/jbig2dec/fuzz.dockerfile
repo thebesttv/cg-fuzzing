@@ -46,10 +46,10 @@ RUN AFL_LLVM_CMPLOG=1 make -f Makefile.unix \
 RUN cp jbig2dec /out/jbig2dec.cmplog
 
 # Copy fuzzing resources
-COPY jbig2dec/fuzz/dict /out/dict
-COPY jbig2dec/fuzz/in /out/in
-COPY jbig2dec/fuzz/fuzz.sh /out/fuzz.sh
-COPY jbig2dec/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/jbig2dec/fuzz/dict /out/dict
+COPY dataset/jbig2dec/fuzz/in /out/in
+COPY dataset/jbig2dec/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/jbig2dec/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -48,10 +48,10 @@ RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto \
 RUN cp bin/cbordump /out/cbordump.cmplog
 
 # Copy fuzzing resources
-COPY tinycbor/fuzz/dict /out/dict
-COPY tinycbor/fuzz/in /out/in
-COPY tinycbor/fuzz/fuzz.sh /out/fuzz.sh
-COPY tinycbor/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/tinycbor/fuzz/dict /out/dict
+COPY dataset/tinycbor/fuzz/in /out/in
+COPY dataset/tinycbor/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/tinycbor/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -77,10 +77,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/src/zipcmp /out/zipcmp.cmplog
 
 # Copy fuzzing resources
-COPY libzip/fuzz/dict /out/dict
-COPY libzip/fuzz/in /out/in
-COPY libzip/fuzz/fuzz.sh /out/fuzz.sh
-COPY libzip/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libzip/fuzz/dict /out/dict
+COPY dataset/libzip/fuzz/in /out/in
+COPY dataset/libzip/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libzip/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

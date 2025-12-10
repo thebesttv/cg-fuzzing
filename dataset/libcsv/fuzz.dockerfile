@@ -66,10 +66,10 @@ RUN cp examples/csvinfo.cmplog /out/csvinfo.cmplog && \
     cp examples/csvvalid.cmplog /out/csvvalid.cmplog
 
 # Copy fuzzing resources
-COPY libcsv/fuzz/dict /out/dict
-COPY libcsv/fuzz/in /out/in
-COPY libcsv/fuzz/fuzz.sh /out/fuzz.sh
-COPY libcsv/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libcsv/fuzz/dict /out/dict
+COPY dataset/libcsv/fuzz/in /out/in
+COPY dataset/libcsv/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libcsv/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

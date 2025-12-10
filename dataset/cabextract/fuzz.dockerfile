@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp cabextract /out/cabextract.cmplog
 
 # Copy fuzzing resources
-COPY cabextract/fuzz/dict /out/dict
-COPY cabextract/fuzz/in /out/in
-COPY cabextract/fuzz/fuzz.sh /out/fuzz.sh
-COPY cabextract/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/cabextract/fuzz/dict /out/dict
+COPY dataset/cabextract/fuzz/in /out/in
+COPY dataset/cabextract/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/cabextract/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

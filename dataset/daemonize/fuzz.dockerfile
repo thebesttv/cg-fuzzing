@@ -19,10 +19,10 @@ RUN CC=afl-clang-lto CFLAGS="-O2" LDFLAGS="-static -Wl,--allow-multiple-definiti
 RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp daemonize /out/daemonize.cmplog
 
-COPY daemonize/fuzz/dict /out/dict
-COPY daemonize/fuzz/in /out/in
-COPY daemonize/fuzz/fuzz.sh /out/fuzz.sh
-COPY daemonize/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/daemonize/fuzz/dict /out/dict
+COPY dataset/daemonize/fuzz/in /out/in
+COPY dataset/daemonize/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/daemonize/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 RUN ls -la /out/daemonize /out/daemonize.cmplog && file /out/daemonize

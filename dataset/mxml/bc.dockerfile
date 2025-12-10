@@ -21,7 +21,7 @@ RUN wget https://github.com/michaelrsweet/mxml/releases/download/v4.0.4/mxml-4.0
 WORKDIR /home/SVF-tools/mxml-4.0.4
 
 # Copy the fuzzing harness
-COPY mxml/fuzz_mxml.c .
+COPY dataset/mxml/fuzz_mxml.c .
 
 # Configure and build mxml with WLLVM
 RUN CC=wllvm \

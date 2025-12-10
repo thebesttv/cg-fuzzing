@@ -49,10 +49,10 @@ RUN CC=afl-clang-lto \
 RUN cp unsquashfs /out/unsquashfs.cmplog
 
 # Copy fuzzing resources
-COPY squashfs-tools/fuzz/dict /out/dict
-COPY squashfs-tools/fuzz/in /out/in
-COPY squashfs-tools/fuzz/fuzz.sh /out/fuzz.sh
-COPY squashfs-tools/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/squashfs-tools/fuzz/dict /out/dict
+COPY dataset/squashfs-tools/fuzz/in /out/in
+COPY dataset/squashfs-tools/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/squashfs-tools/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

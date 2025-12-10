@@ -103,10 +103,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 \
 RUN cp test_event_cmplog /out/test_event.cmplog
 
 # Copy fuzzing resources
-COPY libevent/fuzz/dict /out/dict
-COPY libevent/fuzz/in /out/in
-COPY libevent/fuzz/fuzz.sh /out/fuzz.sh
-COPY libevent/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libevent/fuzz/dict /out/dict
+COPY dataset/libevent/fuzz/in /out/in
+COPY dataset/libevent/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libevent/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

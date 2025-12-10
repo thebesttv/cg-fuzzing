@@ -68,10 +68,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp yara /out/yara.cmplog
 
 # Copy fuzzing resources
-COPY yara/fuzz/dict /out/dict
-COPY yara/fuzz/in /out/in
-COPY yara/fuzz/fuzz.sh /out/fuzz.sh
-COPY yara/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/yara/fuzz/dict /out/dict
+COPY dataset/yara/fuzz/in /out/in
+COPY dataset/yara/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/yara/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

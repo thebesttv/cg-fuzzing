@@ -78,10 +78,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto++ -O2 \
     -o /out/jq_fuzz_compile.cmplog
 
 # Copy fuzzing resources
-COPY jq-harness/fuzz/dict /out/dict
-COPY jq-harness/fuzz/in /out/in
-COPY jq-harness/fuzz/fuzz.sh /out/fuzz.sh
-COPY jq-harness/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/jq-harness/fuzz/dict /out/dict
+COPY dataset/jq-harness/fuzz/in /out/in
+COPY dataset/jq-harness/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/jq-harness/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

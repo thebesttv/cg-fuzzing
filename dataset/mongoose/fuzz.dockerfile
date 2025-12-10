@@ -198,10 +198,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto \
 RUN cp mongoose_fuzz /out/mongoose_fuzz.cmplog
 
 # Copy fuzzing resources
-COPY mongoose/fuzz/dict /out/dict
-COPY mongoose/fuzz/in /out/in
-COPY mongoose/fuzz/fuzz.sh /out/fuzz.sh
-COPY mongoose/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/mongoose/fuzz/dict /out/dict
+COPY dataset/mongoose/fuzz/in /out/in
+COPY dataset/mongoose/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/mongoose/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

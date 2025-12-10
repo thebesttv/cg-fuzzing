@@ -50,10 +50,10 @@ RUN CC=afl-clang-lto \
 RUN cp bmake /out/bmake.cmplog
 
 # Copy fuzzing resources
-COPY bmake/fuzz/dict /out/dict
-COPY bmake/fuzz/in /out/in
-COPY bmake/fuzz/fuzz.sh /out/fuzz.sh
-COPY bmake/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/bmake/fuzz/dict /out/dict
+COPY dataset/bmake/fuzz/in /out/in
+COPY dataset/bmake/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/bmake/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

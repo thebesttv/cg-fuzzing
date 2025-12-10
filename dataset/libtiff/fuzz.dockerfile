@@ -71,10 +71,10 @@ RUN AFL_LLVM_CMPLOG=1 cd cmake_build && make -j$(nproc)
 RUN cp cmake_build/tools/tiffinfo /out/tiffinfo.cmplog
 
 # Copy fuzzing resources
-COPY libtiff/fuzz/dict /out/dict
-COPY libtiff/fuzz/in /out/in
-COPY libtiff/fuzz/fuzz.sh /out/fuzz.sh
-COPY libtiff/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libtiff/fuzz/dict /out/dict
+COPY dataset/libtiff/fuzz/in /out/in
+COPY dataset/libtiff/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libtiff/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -79,10 +79,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 test_unistring.c -o /out/test_unistring.
     -I. -I./lib lib/.libs/libunistring.a \
     -static -Wl,--allow-multiple-definition
 
-COPY libunistring/fuzz/dict /out/dict
-COPY libunistring/fuzz/in /out/in
-COPY libunistring/fuzz/fuzz.sh /out/fuzz.sh
-COPY libunistring/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libunistring/fuzz/dict /out/dict
+COPY dataset/libunistring/fuzz/in /out/in
+COPY dataset/libunistring/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libunistring/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

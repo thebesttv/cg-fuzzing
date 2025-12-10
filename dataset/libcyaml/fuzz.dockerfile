@@ -55,10 +55,10 @@ RUN cd examples/numerical && \
 RUN cp examples/numerical/numerical.cmplog /out/numerical.cmplog
 
 # Copy fuzzing resources
-COPY libcyaml/fuzz/dict /out/dict
-COPY libcyaml/fuzz/in /out/in
-COPY libcyaml/fuzz/fuzz.sh /out/fuzz.sh
-COPY libcyaml/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libcyaml/fuzz/dict /out/dict
+COPY dataset/libcyaml/fuzz/in /out/in
+COPY dataset/libcyaml/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libcyaml/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

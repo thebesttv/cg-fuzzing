@@ -47,10 +47,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp bin/fribidi /out/fribidi.cmplog
 
 # Copy fuzzing resources
-COPY fribidi/fuzz/dict /out/dict
-COPY fribidi/fuzz/in /out/in
-COPY fribidi/fuzz/fuzz.sh /out/fuzz.sh
-COPY fribidi/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/fribidi/fuzz/dict /out/dict
+COPY dataset/fribidi/fuzz/in /out/in
+COPY dataset/fribidi/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/fribidi/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -53,10 +53,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc) minigzip
 RUN cp minigzip /out/minigzip.cmplog
 
 # Copy fuzzing resources
-COPY zlib/fuzz/dict /out/dict
-COPY zlib/fuzz/in /out/in
-COPY zlib/fuzz/fuzz.sh /out/fuzz.sh
-COPY zlib/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/zlib/fuzz/dict /out/dict
+COPY dataset/zlib/fuzz/in /out/in
+COPY dataset/zlib/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/zlib/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

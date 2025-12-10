@@ -147,10 +147,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto \
 RUN cp picohttpparser_fuzz /out/picohttpparser_fuzz.cmplog
 
 # Copy fuzzing resources
-COPY picohttpparser/fuzz/dict /out/dict
-COPY picohttpparser/fuzz/in /out/in
-COPY picohttpparser/fuzz/fuzz.sh /out/fuzz.sh
-COPY picohttpparser/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/picohttpparser/fuzz/dict /out/dict
+COPY dataset/picohttpparser/fuzz/in /out/in
+COPY dataset/picohttpparser/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/picohttpparser/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

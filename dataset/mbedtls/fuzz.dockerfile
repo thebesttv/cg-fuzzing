@@ -60,10 +60,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/programs/pkey/pk_decrypt /out/pk_decrypt.cmplog
 
 # Copy fuzzing resources
-COPY mbedtls/fuzz/dict /out/dict
-COPY mbedtls/fuzz/in /out/in
-COPY mbedtls/fuzz/fuzz.sh /out/fuzz.sh
-COPY mbedtls/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/mbedtls/fuzz/dict /out/dict
+COPY dataset/mbedtls/fuzz/in /out/in
+COPY dataset/mbedtls/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/mbedtls/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

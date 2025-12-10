@@ -56,10 +56,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 ninja -j$(nproc)
 RUN cp build/upx /out/upx.cmplog
 
 # Copy fuzzing resources
-COPY upx/fuzz/dict /out/dict
-COPY upx/fuzz/in /out/in
-COPY upx/fuzz/fuzz.sh /out/fuzz.sh
-COPY upx/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/upx/fuzz/dict /out/dict
+COPY dataset/upx/fuzz/in /out/in
+COPY dataset/upx/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/upx/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

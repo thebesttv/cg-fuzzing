@@ -38,10 +38,10 @@ RUN AFL_LLVM_CMPLOG=1 make lowdown CC=afl-clang-lto CFLAGS="-O2" LDFLAGS="-stati
 RUN cp lowdown /out/lowdown.cmplog
 
 # Copy fuzzing resources (lowdown includes AFL resources)
-COPY lowdown/fuzz/dict /out/dict
-COPY lowdown/fuzz/in /out/in
-COPY lowdown/fuzz/fuzz.sh /out/fuzz.sh
-COPY lowdown/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/lowdown/fuzz/dict /out/dict
+COPY dataset/lowdown/fuzz/in /out/in
+COPY dataset/lowdown/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/lowdown/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

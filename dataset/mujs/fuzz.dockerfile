@@ -64,10 +64,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -static -Wl,--allow-multiple-definition 
 RUN cp build/release/mujs /out/mujs.cmplog
 
 # Copy fuzzing resources
-COPY mujs/fuzz/dict /out/dict
-COPY mujs/fuzz/in /out/in
-COPY mujs/fuzz/fuzz.sh /out/fuzz.sh
-COPY mujs/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/mujs/fuzz/dict /out/dict
+COPY dataset/mujs/fuzz/in /out/in
+COPY dataset/mujs/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/mujs/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

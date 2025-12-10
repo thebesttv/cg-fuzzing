@@ -57,10 +57,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp qrencode /out/qrencode.cmplog
 
 # Copy fuzzing resources
-COPY qrencode/fuzz/dict /out/dict
-COPY qrencode/fuzz/in /out/in
-COPY qrencode/fuzz/fuzz.sh /out/fuzz.sh
-COPY qrencode/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/qrencode/fuzz/dict /out/dict
+COPY dataset/qrencode/fuzz/in /out/in
+COPY dataset/qrencode/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/qrencode/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -42,10 +42,10 @@ RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto \
 RUN cp mdb_load /out/mdb_load.cmplog
 
 # Copy fuzzing resources
-COPY lmdb/fuzz/dict /out/dict
-COPY lmdb/fuzz/in /out/in
-COPY lmdb/fuzz/fuzz.sh /out/fuzz.sh
-COPY lmdb/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/lmdb/fuzz/dict /out/dict
+COPY dataset/lmdb/fuzz/in /out/in
+COPY dataset/lmdb/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/lmdb/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

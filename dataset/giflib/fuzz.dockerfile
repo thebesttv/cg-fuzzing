@@ -53,10 +53,10 @@ RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto \
 RUN cp giftext /out/giftext.cmplog
 
 # Copy fuzzing resources
-COPY giflib/fuzz/dict /out/dict
-COPY giflib/fuzz/in /out/in
-COPY giflib/fuzz/fuzz.sh /out/fuzz.sh
-COPY giflib/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/giflib/fuzz/dict /out/dict
+COPY dataset/giflib/fuzz/in /out/in
+COPY dataset/giflib/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/giflib/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

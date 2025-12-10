@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp cproto /out/cproto.cmplog
 
 # Copy fuzzing resources
-COPY cproto/fuzz/dict /out/dict
-COPY cproto/fuzz/in /out/in
-COPY cproto/fuzz/fuzz.sh /out/fuzz.sh
-COPY cproto/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/cproto/fuzz/dict /out/dict
+COPY dataset/cproto/fuzz/in /out/in
+COPY dataset/cproto/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/cproto/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

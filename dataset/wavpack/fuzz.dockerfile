@@ -61,10 +61,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make wvunpack -j$(nproc)
 RUN cp build/wvunpack /out/wvunpack.cmplog
 
 # Copy fuzzing resources
-COPY wavpack/fuzz/dict /out/dict
-COPY wavpack/fuzz/in /out/in
-COPY wavpack/fuzz/fuzz.sh /out/fuzz.sh
-COPY wavpack/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/wavpack/fuzz/dict /out/dict
+COPY dataset/wavpack/fuzz/in /out/in
+COPY dataset/wavpack/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/wavpack/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

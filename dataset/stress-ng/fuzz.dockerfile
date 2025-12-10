@@ -47,10 +47,10 @@ RUN CC=afl-clang-lto \
 RUN cp stress-ng /out/stress-ng.cmplog
 
 # Copy fuzzing resources
-COPY stress-ng/fuzz/dict /out/dict
-COPY stress-ng/fuzz/in /out/in
-COPY stress-ng/fuzz/fuzz.sh /out/fuzz.sh
-COPY stress-ng/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/stress-ng/fuzz/dict /out/dict
+COPY dataset/stress-ng/fuzz/in /out/in
+COPY dataset/stress-ng/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/stress-ng/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

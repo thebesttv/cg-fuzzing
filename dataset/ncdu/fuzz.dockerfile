@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp ncdu /out/ncdu.cmplog
 
 # Copy fuzzing resources
-COPY ncdu/fuzz/dict /out/dict
-COPY ncdu/fuzz/in /out/in
-COPY ncdu/fuzz/fuzz.sh /out/fuzz.sh
-COPY ncdu/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/ncdu/fuzz/dict /out/dict
+COPY dataset/ncdu/fuzz/in /out/in
+COPY dataset/ncdu/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/ncdu/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

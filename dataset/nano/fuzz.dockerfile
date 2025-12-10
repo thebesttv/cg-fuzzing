@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/nano /out/nano.cmplog
 
 # Copy fuzzing resources
-COPY nano/fuzz/dict /out/dict
-COPY nano/fuzz/in /out/in
-COPY nano/fuzz/fuzz.sh /out/fuzz.sh
-COPY nano/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/nano/fuzz/dict /out/dict
+COPY dataset/nano/fuzz/in /out/in
+COPY dataset/nano/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/nano/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

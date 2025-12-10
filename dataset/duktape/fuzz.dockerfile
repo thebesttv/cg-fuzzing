@@ -50,10 +50,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -std=c99 \
 RUN cp duk.cmplog /out/duk.cmplog
 
 # Copy fuzzing resources
-COPY duktape/fuzz/dict /out/dict
-COPY duktape/fuzz/in /out/in
-COPY duktape/fuzz/fuzz.sh /out/fuzz.sh
-COPY duktape/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/duktape/fuzz/dict /out/dict
+COPY dataset/duktape/fuzz/in /out/in
+COPY dataset/duktape/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/duktape/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

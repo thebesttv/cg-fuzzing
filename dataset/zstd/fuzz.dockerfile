@@ -48,10 +48,10 @@ RUN CC=afl-clang-lto \
 RUN cp programs/zstd /out/zstd.cmplog
 
 # Copy fuzzing resources
-COPY zstd/fuzz/dict /out/dict
-COPY zstd/fuzz/in /out/in
-COPY zstd/fuzz/fuzz.sh /out/fuzz.sh
-COPY zstd/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/zstd/fuzz/dict /out/dict
+COPY dataset/zstd/fuzz/in /out/in
+COPY dataset/zstd/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/zstd/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

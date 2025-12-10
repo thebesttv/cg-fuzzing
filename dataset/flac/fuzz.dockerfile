@@ -61,10 +61,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/flac/flac /out/flac.cmplog
 
 # Copy fuzzing resources
-COPY flac/fuzz/dict /out/dict
-COPY flac/fuzz/in /out/in
-COPY flac/fuzz/fuzz.sh /out/fuzz.sh
-COPY flac/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/flac/fuzz/dict /out/dict
+COPY dataset/flac/fuzz/in /out/in
+COPY dataset/flac/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/flac/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

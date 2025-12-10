@@ -66,10 +66,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I. cue_parse.c -Lbuild -lcue \
 RUN cp cue_parse.cmplog /out/cue_parse.cmplog
 
 # Copy fuzzing resources
-COPY libcue/fuzz/dict /out/dict
-COPY libcue/fuzz/in /out/in
-COPY libcue/fuzz/fuzz.sh /out/fuzz.sh
-COPY libcue/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libcue/fuzz/dict /out/dict
+COPY dataset/libcue/fuzz/in /out/in
+COPY dataset/libcue/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libcue/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

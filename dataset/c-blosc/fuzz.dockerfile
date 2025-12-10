@@ -31,7 +31,7 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Copy harness and compile
-COPY c-blosc/fuzz/harness/afl_decompress.c /src/afl_decompress.c
+COPY dataset/c-blosc/fuzz/harness/afl_decompress.c /src/afl_decompress.c
 RUN afl-clang-lto -O2 -I/src/c-blosc-1.21.6/blosc \
     /src/afl_decompress.c \
     -o /out/blosc_decompress_fuzz \
@@ -66,10 +66,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I/src/c-blosc-1.21.6/blosc \
     /src/c-blosc-1.21.6/build/blosc/libblosc.a -lpthread
 
 # Copy fuzzing resources
-COPY c-blosc/fuzz/dict /out/dict
-COPY c-blosc/fuzz/in /out/in
-COPY c-blosc/fuzz/fuzz.sh /out/fuzz.sh
-COPY c-blosc/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/c-blosc/fuzz/dict /out/dict
+COPY dataset/c-blosc/fuzz/in /out/in
+COPY dataset/c-blosc/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/c-blosc/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

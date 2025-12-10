@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp examples/asn1/asn1 /out/asn1.cmplog
 
 # Copy fuzzing resources
-COPY wolfssl/fuzz/dict /out/dict
-COPY wolfssl/fuzz/in /out/in
-COPY wolfssl/fuzz/fuzz.sh /out/fuzz.sh
-COPY wolfssl/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/wolfssl/fuzz/dict /out/dict
+COPY dataset/wolfssl/fuzz/in /out/in
+COPY dataset/wolfssl/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/wolfssl/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

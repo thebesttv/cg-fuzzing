@@ -48,10 +48,10 @@ RUN mkdir -p build && \
 RUN cp build/mjs /out/mjs.cmplog
 
 # Copy fuzzing resources
-COPY mjs/fuzz/dict /out/dict
-COPY mjs/fuzz/in /out/in
-COPY mjs/fuzz/fuzz.sh /out/fuzz.sh
-COPY mjs/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/mjs/fuzz/dict /out/dict
+COPY dataset/mjs/fuzz/in /out/in
+COPY dataset/mjs/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/mjs/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

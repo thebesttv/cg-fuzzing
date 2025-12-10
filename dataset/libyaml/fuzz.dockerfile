@@ -53,10 +53,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp tests/run-parser /out/run-parser.cmplog
 
 # Copy fuzzing resources
-COPY libyaml/fuzz/dict /out/dict
-COPY libyaml/fuzz/in /out/in
-COPY libyaml/fuzz/fuzz.sh /out/fuzz.sh
-COPY libyaml/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libyaml/fuzz/dict /out/dict
+COPY dataset/libyaml/fuzz/in /out/in
+COPY dataset/libyaml/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libyaml/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

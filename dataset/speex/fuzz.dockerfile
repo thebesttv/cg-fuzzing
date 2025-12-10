@@ -72,10 +72,10 @@ RUN cd src && \
 RUN cp src/speexdec /out/speexdec.cmplog
 
 # Copy fuzzing resources
-COPY speex/fuzz/dict /out/dict
-COPY speex/fuzz/in /out/in
-COPY speex/fuzz/fuzz.sh /out/fuzz.sh
-COPY speex/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/speex/fuzz/dict /out/dict
+COPY dataset/speex/fuzz/in /out/in
+COPY dataset/speex/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/speex/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

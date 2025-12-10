@@ -43,10 +43,10 @@ RUN CC=afl-clang-lto \
 RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/minicom /out/minicom.cmplog
 
-COPY minicom/fuzz/dict /out/dict
-COPY minicom/fuzz/in /out/in
-COPY minicom/fuzz/fuzz.sh /out/fuzz.sh
-COPY minicom/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/minicom/fuzz/dict /out/dict
+COPY dataset/minicom/fuzz/in /out/in
+COPY dataset/minicom/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/minicom/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

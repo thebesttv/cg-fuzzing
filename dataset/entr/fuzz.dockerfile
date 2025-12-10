@@ -38,10 +38,10 @@ RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto CFLAGS="-O2" LDFLAGS="-static -Wl,--
 RUN cp entr /out/entr.cmplog
 
 # Copy fuzzing resources
-COPY entr/fuzz/dict /out/dict
-COPY entr/fuzz/in /out/in
-COPY entr/fuzz/fuzz.sh /out/fuzz.sh
-COPY entr/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/entr/fuzz/dict /out/dict
+COPY dataset/entr/fuzz/in /out/in
+COPY dataset/entr/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/entr/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

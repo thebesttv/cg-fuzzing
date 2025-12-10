@@ -34,10 +34,10 @@ RUN CC=afl-clang-lto \
 
 RUN cp calc-static /out/calc.cmplog
 
-COPY calc/fuzz/dict /out/dict
-COPY calc/fuzz/in /out/in
-COPY calc/fuzz/fuzz.sh /out/fuzz.sh
-COPY calc/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/calc/fuzz/dict /out/dict
+COPY dataset/calc/fuzz/in /out/in
+COPY dataset/calc/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/calc/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

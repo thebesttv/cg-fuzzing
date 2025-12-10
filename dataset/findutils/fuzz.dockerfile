@@ -52,10 +52,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp xargs/xargs /out/xargs.cmplog
 
 # Copy fuzzing resources
-COPY findutils/fuzz/dict /out/dict
-COPY findutils/fuzz/in /out/in
-COPY findutils/fuzz/fuzz.sh /out/fuzz.sh
-COPY findutils/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/findutils/fuzz/dict /out/dict
+COPY dataset/findutils/fuzz/in /out/in
+COPY dataset/findutils/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/findutils/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

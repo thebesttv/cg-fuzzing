@@ -52,10 +52,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/iconv_no_i18n /out/iconv.cmplog
 
 # Copy fuzzing resources
-COPY libiconv/fuzz/dict /out/dict
-COPY libiconv/fuzz/in /out/in
-COPY libiconv/fuzz/fuzz.sh /out/fuzz.sh
-COPY libiconv/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libiconv/fuzz/dict /out/dict
+COPY dataset/libiconv/fuzz/in /out/in
+COPY dataset/libiconv/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libiconv/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

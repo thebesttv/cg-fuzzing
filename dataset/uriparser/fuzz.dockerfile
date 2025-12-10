@@ -61,10 +61,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/uriparse /out/uriparse.cmplog
 
 # Copy fuzzing resources
-COPY uriparser/fuzz/dict /out/dict
-COPY uriparser/fuzz/in /out/in
-COPY uriparser/fuzz/fuzz.sh /out/fuzz.sh
-COPY uriparser/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/uriparser/fuzz/dict /out/dict
+COPY dataset/uriparser/fuzz/in /out/in
+COPY dataset/uriparser/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/uriparser/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -38,10 +38,10 @@ RUN make CC=afl-clang-lto LDFLAGS="-static -Wl,--allow-multiple-definition" AFL_
 RUN cp tree /out/tree.cmplog
 
 # Copy fuzzing resources
-COPY tree/fuzz/dict /out/dict
-COPY tree/fuzz/in /out/in
-COPY tree/fuzz/fuzz.sh /out/fuzz.sh
-COPY tree/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/tree/fuzz/dict /out/dict
+COPY dataset/tree/fuzz/in /out/in
+COPY dataset/tree/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/tree/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -24,10 +24,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -c -O2 -std=c99 pdjson.c -o pdjson.o && \
     AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -static -Wl,--allow-multiple-definition -o pretty tests/pretty.o pdjson.o
 RUN cp pretty /out/pretty.cmplog
 
-COPY pdjson/fuzz/dict /out/dict
-COPY pdjson/fuzz/in /out/in
-COPY pdjson/fuzz/fuzz.sh /out/fuzz.sh
-COPY pdjson/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/pdjson/fuzz/dict /out/dict
+COPY dataset/pdjson/fuzz/in /out/in
+COPY dataset/pdjson/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/pdjson/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 RUN ls -la /out/pretty /out/pretty.cmplog && file /out/pretty

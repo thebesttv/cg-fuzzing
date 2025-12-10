@@ -75,10 +75,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto \
 RUN cp stb_image_harness /out/stb_image_harness.cmplog
 
 # Copy fuzzing resources
-COPY stb/fuzz/dict /out/dict
-COPY stb/fuzz/in /out/in
-COPY stb/fuzz/fuzz.sh /out/fuzz.sh
-COPY stb/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/stb/fuzz/dict /out/dict
+COPY dataset/stb/fuzz/in /out/in
+COPY dataset/stb/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/stb/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

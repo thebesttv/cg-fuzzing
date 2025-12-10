@@ -53,10 +53,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp sed/sed /out/sed.cmplog
 
 # Copy fuzzing resources
-COPY sed/fuzz/dict /out/dict
-COPY sed/fuzz/in /out/in
-COPY sed/fuzz/fuzz.sh /out/fuzz.sh
-COPY sed/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/sed/fuzz/dict /out/dict
+COPY dataset/sed/fuzz/in /out/in
+COPY dataset/sed/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/sed/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

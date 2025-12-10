@@ -68,10 +68,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/xmllint /out/xmllint.cmplog
 
 # Copy fuzzing resources
-COPY libxml2/fuzz/dict /out/dict
-COPY libxml2/fuzz/in /out/in
-COPY libxml2/fuzz/fuzz.sh /out/fuzz.sh
-COPY libxml2/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libxml2/fuzz/dict /out/dict
+COPY dataset/libxml2/fuzz/in /out/in
+COPY dataset/libxml2/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libxml2/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -47,10 +47,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp hxnormalize /out/hxnormalize.cmplog
 
 # Copy fuzzing resources
-COPY html-xml-utils/fuzz/dict /out/dict
-COPY html-xml-utils/fuzz/in /out/in
-COPY html-xml-utils/fuzz/fuzz.sh /out/fuzz.sh
-COPY html-xml-utils/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/html-xml-utils/fuzz/dict /out/dict
+COPY dataset/html-xml-utils/fuzz/in /out/in
+COPY dataset/html-xml-utils/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/html-xml-utils/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

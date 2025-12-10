@@ -56,10 +56,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp bsdiff /out/bsdiff.cmplog && cp bspatch /out/bspatch.cmplog
 
 # Copy fuzzing resources
-COPY bsdiff/fuzz/dict /out/dict
-COPY bsdiff/fuzz/in /out/in
-COPY bsdiff/fuzz/fuzz.sh /out/fuzz.sh
-COPY bsdiff/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/bsdiff/fuzz/dict /out/dict
+COPY dataset/bsdiff/fuzz/in /out/in
+COPY dataset/bsdiff/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/bsdiff/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

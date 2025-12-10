@@ -47,10 +47,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp tools/gdbm_load /out/gdbm_load.cmplog
 
 # Copy fuzzing resources
-COPY gdbm/fuzz/dict /out/dict
-COPY gdbm/fuzz/in /out/in
-COPY gdbm/fuzz/fuzz.sh /out/fuzz.sh
-COPY gdbm/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/gdbm/fuzz/dict /out/dict
+COPY dataset/gdbm/fuzz/in /out/in
+COPY dataset/gdbm/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/gdbm/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

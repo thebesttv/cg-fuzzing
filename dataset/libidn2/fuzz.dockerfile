@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/idn2 /out/idn2.cmplog
 
 # Copy fuzzing resources
-COPY libidn2/fuzz/dict /out/dict
-COPY libidn2/fuzz/in /out/in
-COPY libidn2/fuzz/fuzz.sh /out/fuzz.sh
-COPY libidn2/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libidn2/fuzz/dict /out/dict
+COPY dataset/libidn2/fuzz/in /out/in
+COPY dataset/libidn2/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libidn2/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

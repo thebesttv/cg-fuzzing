@@ -30,7 +30,7 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Copy harness and compile
-COPY lexbor/fuzz/harness/afl_harness.c /src/afl_harness.c
+COPY dataset/lexbor/fuzz/harness/afl_harness.c /src/afl_harness.c
 RUN afl-clang-lto -O2 -I/src/lexbor-2.6.0/source \
     /src/afl_harness.c \
     -o /out/lexbor_html_fuzz \
@@ -64,10 +64,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I/src/lexbor-2.6.0/source \
     /src/lexbor-2.6.0/build/liblexbor_static.a -lm
 
 # Copy fuzzing resources
-COPY lexbor/fuzz/dict /out/dict
-COPY lexbor/fuzz/in /out/in
-COPY lexbor/fuzz/fuzz.sh /out/fuzz.sh
-COPY lexbor/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/lexbor/fuzz/dict /out/dict
+COPY dataset/lexbor/fuzz/in /out/in
+COPY dataset/lexbor/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/lexbor/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -44,10 +44,10 @@ RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto \
 RUN cp chibicc /out/chibicc.cmplog
 
 # Copy fuzzing resources
-COPY chibicc/fuzz/dict /out/dict
-COPY chibicc/fuzz/in /out/in
-COPY chibicc/fuzz/fuzz.sh /out/fuzz.sh
-COPY chibicc/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/chibicc/fuzz/dict /out/dict
+COPY dataset/chibicc/fuzz/in /out/in
+COPY dataset/chibicc/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/chibicc/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

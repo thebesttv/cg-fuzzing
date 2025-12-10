@@ -123,10 +123,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto \
 RUN cp mjson_fuzz /out/mjson_fuzz.cmplog
 
 # Copy fuzzing resources
-COPY mjson/fuzz/dict /out/dict
-COPY mjson/fuzz/in /out/in
-COPY mjson/fuzz/fuzz.sh /out/fuzz.sh
-COPY mjson/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/mjson/fuzz/dict /out/dict
+COPY dataset/mjson/fuzz/in /out/in
+COPY dataset/mjson/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/mjson/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

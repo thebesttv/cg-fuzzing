@@ -40,10 +40,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -c -O2 -Wall tinyexpr.c -o tinyexpr.o && \
 RUN cp repl /out/repl.cmplog
 
 # Copy fuzzing resources
-COPY tinyexpr/fuzz/dict /out/dict
-COPY tinyexpr/fuzz/in /out/in
-COPY tinyexpr/fuzz/fuzz.sh /out/fuzz.sh
-COPY tinyexpr/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/tinyexpr/fuzz/dict /out/dict
+COPY dataset/tinyexpr/fuzz/in /out/in
+COPY dataset/tinyexpr/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/tinyexpr/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -60,10 +60,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/djpeg-static /out/djpeg.cmplog
 
 # Copy fuzzing resources
-COPY libjpeg-turbo/fuzz/dict /out/dict
-COPY libjpeg-turbo/fuzz/in /out/in
-COPY libjpeg-turbo/fuzz/fuzz.sh /out/fuzz.sh
-COPY libjpeg-turbo/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libjpeg-turbo/fuzz/dict /out/dict
+COPY dataset/libjpeg-turbo/fuzz/in /out/in
+COPY dataset/libjpeg-turbo/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libjpeg-turbo/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

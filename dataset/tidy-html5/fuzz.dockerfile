@@ -53,10 +53,10 @@ RUN AFL_LLVM_CMPLOG=1 cd build && make -j$(nproc)
 RUN cp build/tidy /out/tidy.cmplog
 
 # Copy fuzzing resources
-COPY tidy-html5/fuzz/dict /out/dict
-COPY tidy-html5/fuzz/in /out/in
-COPY tidy-html5/fuzz/fuzz.sh /out/fuzz.sh
-COPY tidy-html5/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/tidy-html5/fuzz/dict /out/dict
+COPY dataset/tidy-html5/fuzz/in /out/in
+COPY dataset/tidy-html5/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/tidy-html5/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

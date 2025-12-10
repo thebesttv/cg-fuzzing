@@ -61,10 +61,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc) yajl_s json_verify
 RUN find build -type f -name "json_verify" -executable -exec cp {} /out/json_verify.cmplog \;
 
 # Copy fuzzing resources
-COPY yajl/fuzz/dict /out/dict
-COPY yajl/fuzz/in /out/in
-COPY yajl/fuzz/fuzz.sh /out/fuzz.sh
-COPY yajl/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/yajl/fuzz/dict /out/dict
+COPY dataset/yajl/fuzz/in /out/in
+COPY dataset/yajl/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/yajl/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

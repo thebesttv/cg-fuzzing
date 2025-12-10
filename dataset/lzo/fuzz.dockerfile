@@ -59,10 +59,10 @@ RUN cd examples && \
 RUN cp examples/lzopack.cmplog /out/lzopack.cmplog
 
 # Copy fuzzing resources
-COPY lzo/fuzz/dict /out/dict
-COPY lzo/fuzz/in /out/in
-COPY lzo/fuzz/fuzz.sh /out/fuzz.sh
-COPY lzo/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/lzo/fuzz/dict /out/dict
+COPY dataset/lzo/fuzz/in /out/in
+COPY dataset/lzo/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/lzo/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

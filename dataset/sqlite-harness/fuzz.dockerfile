@@ -81,10 +81,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 \
     -o /out/sqlite_ossfuzz.cmplog
 
 # Copy fuzzing resources
-COPY sqlite-harness/fuzz/dict /out/dict
-COPY sqlite-harness/fuzz/in /out/in
-COPY sqlite-harness/fuzz/fuzz.sh /out/fuzz.sh
-COPY sqlite-harness/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/sqlite-harness/fuzz/dict /out/dict
+COPY dataset/sqlite-harness/fuzz/in /out/in
+COPY dataset/sqlite-harness/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/sqlite-harness/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

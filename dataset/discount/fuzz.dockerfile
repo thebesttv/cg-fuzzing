@@ -49,10 +49,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp markdown /out/markdown.cmplog
 
 # Copy fuzzing resources
-COPY discount/fuzz/dict /out/dict
-COPY discount/fuzz/in /out/in
-COPY discount/fuzz/fuzz.sh /out/fuzz.sh
-COPY discount/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/discount/fuzz/dict /out/dict
+COPY dataset/discount/fuzz/in /out/in
+COPY dataset/discount/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/discount/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

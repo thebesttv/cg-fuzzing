@@ -95,10 +95,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp exif/exif /out/exif.cmplog
 
 # Copy fuzzing resources
-COPY libexif/fuzz/dict /out/dict
-COPY libexif/fuzz/in /out/in
-COPY libexif/fuzz/fuzz.sh /out/fuzz.sh
-COPY libexif/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libexif/fuzz/dict /out/dict
+COPY dataset/libexif/fuzz/in /out/in
+COPY dataset/libexif/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libexif/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

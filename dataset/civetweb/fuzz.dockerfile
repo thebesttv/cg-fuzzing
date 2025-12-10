@@ -24,7 +24,7 @@ RUN CC=afl-clang-lto \
     make lib
 
 # Copy harness and compile (include civetweb.c directly for static functions)
-COPY civetweb/fuzz/harness/afl_http.c /src/afl_http.c
+COPY dataset/civetweb/fuzz/harness/afl_http.c /src/afl_http.c
 RUN afl-clang-lto -O2 -I/src/civetweb-1.16/include -I/src/civetweb-1.16/src \
     -D_GNU_SOURCE -DNO_SSL -DUSE_IPV6 -DUSE_WEBSOCKET -DMG_EXPERIMENTAL_INTERFACES \
     /src/afl_http.c \
@@ -54,10 +54,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I/src/civetweb-1.16/include -I/src/cive
     -lpthread -ldl
 
 # Copy fuzzing resources
-COPY civetweb/fuzz/dict /out/dict
-COPY civetweb/fuzz/in /out/in
-COPY civetweb/fuzz/fuzz.sh /out/fuzz.sh
-COPY civetweb/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/civetweb/fuzz/dict /out/dict
+COPY dataset/civetweb/fuzz/in /out/in
+COPY dataset/civetweb/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/civetweb/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -134,10 +134,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -static -Wl,--allow-multiple-definition 
     -o /out/hd_decode.cmplog
 
 # Copy fuzzing resources
-COPY nghttp2/fuzz/dict /out/dict
-COPY nghttp2/fuzz/in /out/in
-COPY nghttp2/fuzz/fuzz.sh /out/fuzz.sh
-COPY nghttp2/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/nghttp2/fuzz/dict /out/dict
+COPY dataset/nghttp2/fuzz/in /out/in
+COPY dataset/nghttp2/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/nghttp2/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

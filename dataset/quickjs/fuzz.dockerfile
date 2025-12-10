@@ -50,10 +50,10 @@ RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto \
 RUN cp qjs /out/qjs.cmplog
 
 # Copy fuzzing resources
-COPY quickjs/fuzz/dict /out/dict
-COPY quickjs/fuzz/in /out/in
-COPY quickjs/fuzz/fuzz.sh /out/fuzz.sh
-COPY quickjs/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/quickjs/fuzz/dict /out/dict
+COPY dataset/quickjs/fuzz/in /out/in
+COPY dataset/quickjs/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/quickjs/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

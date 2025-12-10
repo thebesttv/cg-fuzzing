@@ -41,10 +41,10 @@ RUN make CC=afl-clang-lto \
 RUN cp enchive /out/enchive.cmplog
 
 # Copy fuzzing resources
-COPY enchive/fuzz/dict /out/dict
-COPY enchive/fuzz/in /out/in
-COPY enchive/fuzz/fuzz.sh /out/fuzz.sh
-COPY enchive/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/enchive/fuzz/dict /out/dict
+COPY dataset/enchive/fuzz/in /out/in
+COPY dataset/enchive/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/enchive/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

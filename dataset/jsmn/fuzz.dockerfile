@@ -49,10 +49,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto \
 RUN cp jsondump /out/jsondump.cmplog
 
 # Copy fuzzing resources
-COPY jsmn/fuzz/dict /out/dict
-COPY jsmn/fuzz/in /out/in
-COPY jsmn/fuzz/fuzz.sh /out/fuzz.sh
-COPY jsmn/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/jsmn/fuzz/dict /out/dict
+COPY dataset/jsmn/fuzz/in /out/in
+COPY dataset/jsmn/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/jsmn/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

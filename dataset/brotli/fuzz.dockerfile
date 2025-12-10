@@ -57,10 +57,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/brotli /out/brotli.cmplog
 
 # Copy fuzzing resources
-COPY brotli/fuzz/dict /out/dict
-COPY brotli/fuzz/in /out/in
-COPY brotli/fuzz/fuzz.sh /out/fuzz.sh
-COPY brotli/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/brotli/fuzz/dict /out/dict
+COPY dataset/brotli/fuzz/in /out/in
+COPY dataset/brotli/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/brotli/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

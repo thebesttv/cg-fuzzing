@@ -29,7 +29,7 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Copy the harness
-COPY yyjson/harness.c harness.c
+COPY dataset/yyjson/harness.c harness.c
 
 # Build the harness
 RUN afl-clang-lto -O2 -I src \
@@ -60,7 +60,7 @@ RUN mkdir build && cd build && \
 RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
 # Copy the harness
-COPY yyjson/harness.c harness.c
+COPY dataset/yyjson/harness.c harness.c
 
 # Build the CMPLOG harness
 RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I src \
@@ -71,10 +71,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I src \
 RUN cp yyjson_parse.cmplog /out/yyjson_parse.cmplog
 
 # Copy fuzzing resources
-COPY yyjson/fuzz/dict /out/dict
-COPY yyjson/fuzz/in /out/in
-COPY yyjson/fuzz/fuzz.sh /out/fuzz.sh
-COPY yyjson/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/yyjson/fuzz/dict /out/dict
+COPY dataset/yyjson/fuzz/in /out/in
+COPY dataset/yyjson/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/yyjson/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

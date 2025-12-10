@@ -46,10 +46,10 @@ RUN CC=afl-clang-lto \
 RUN cp nnn /out/nnn.cmplog
 
 # Copy fuzzing resources
-COPY nnn/fuzz/dict /out/dict
-COPY nnn/fuzz/in /out/in
-COPY nnn/fuzz/fuzz.sh /out/fuzz.sh
-COPY nnn/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/nnn/fuzz/dict /out/dict
+COPY dataset/nnn/fuzz/in /out/in
+COPY dataset/nnn/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/nnn/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

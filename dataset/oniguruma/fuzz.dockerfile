@@ -59,10 +59,10 @@ RUN cd sample && \
 RUN cp sample/simple /out/simple.cmplog
 
 # Copy fuzzing resources
-COPY oniguruma/fuzz/dict /out/dict
-COPY oniguruma/fuzz/in /out/in
-COPY oniguruma/fuzz/fuzz.sh /out/fuzz.sh
-COPY oniguruma/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/oniguruma/fuzz/dict /out/dict
+COPY dataset/oniguruma/fuzz/in /out/in
+COPY dataset/oniguruma/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/oniguruma/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

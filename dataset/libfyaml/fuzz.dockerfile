@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/fy-tool /out/fy-tool.cmplog
 
 # Copy fuzzing resources
-COPY libfyaml/fuzz/dict /out/dict
-COPY libfyaml/fuzz/in /out/in
-COPY libfyaml/fuzz/fuzz.sh /out/fuzz.sh
-COPY libfyaml/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libfyaml/fuzz/dict /out/dict
+COPY dataset/libfyaml/fuzz/in /out/in
+COPY dataset/libfyaml/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libfyaml/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

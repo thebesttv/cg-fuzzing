@@ -54,10 +54,10 @@ RUN echo '#include <stdio.h>\n#include <libconfig.h>\nint main(int argc, char **
     AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I./lib /tmp/harness.c -L./lib/.libs -lconfig -static -Wl,--allow-multiple-definition -o /out/config_parse.cmplog
 
 # Copy fuzzing resources
-COPY libconfig/fuzz/dict /out/dict
-COPY libconfig/fuzz/in /out/in
-COPY libconfig/fuzz/fuzz.sh /out/fuzz.sh
-COPY libconfig/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libconfig/fuzz/dict /out/dict
+COPY dataset/libconfig/fuzz/in /out/in
+COPY dataset/libconfig/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libconfig/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

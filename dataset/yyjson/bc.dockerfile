@@ -32,7 +32,7 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Copy the harness
-COPY yyjson/harness.c harness.c
+COPY dataset/yyjson/harness.c harness.c
 
 # Build the harness
 RUN wllvm -g -O0 -Xclang -disable-llvm-passes -I src \

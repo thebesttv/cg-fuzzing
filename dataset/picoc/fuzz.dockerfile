@@ -47,10 +47,10 @@ RUN sed -i 's/#define USE_READLINE/\/\/ #define USE_READLINE/' platform.h && \
 RUN cp picoc /out/picoc.cmplog
 
 # Copy fuzzing resources
-COPY picoc/fuzz/dict /out/dict
-COPY picoc/fuzz/in /out/in
-COPY picoc/fuzz/fuzz.sh /out/fuzz.sh
-COPY picoc/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/picoc/fuzz/dict /out/dict
+COPY dataset/picoc/fuzz/in /out/in
+COPY dataset/picoc/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/picoc/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

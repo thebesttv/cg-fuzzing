@@ -49,10 +49,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/remind /out/remind.cmplog
 
 # Copy fuzzing resources
-COPY remind/fuzz/dict /out/dict
-COPY remind/fuzz/in /out/in
-COPY remind/fuzz/fuzz.sh /out/fuzz.sh
-COPY remind/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/remind/fuzz/dict /out/dict
+COPY dataset/remind/fuzz/in /out/in
+COPY dataset/remind/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/remind/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

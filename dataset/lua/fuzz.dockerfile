@@ -47,10 +47,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc) \
 RUN cp src/lua /out/lua.cmplog
 
 # Copy fuzzing resources
-COPY lua/fuzz/dict /out/dict
-COPY lua/fuzz/in /out/in
-COPY lua/fuzz/fuzz.sh /out/fuzz.sh
-COPY lua/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/lua/fuzz/dict /out/dict
+COPY dataset/lua/fuzz/in /out/in
+COPY dataset/lua/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/lua/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

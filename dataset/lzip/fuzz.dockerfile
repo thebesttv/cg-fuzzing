@@ -49,10 +49,10 @@ RUN AFL_LLVM_CMPLOG=1 make CXX=afl-clang-lto++ -j$(nproc)
 RUN cp lzip /out/lzip.cmplog
 
 # Copy fuzzing resources
-COPY lzip/fuzz/dict /out/dict
-COPY lzip/fuzz/in /out/in
-COPY lzip/fuzz/fuzz.sh /out/fuzz.sh
-COPY lzip/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/lzip/fuzz/dict /out/dict
+COPY dataset/lzip/fuzz/in /out/in
+COPY dataset/lzip/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/lzip/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

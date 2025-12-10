@@ -53,10 +53,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/tig /out/tig.cmplog
 
 # Copy fuzzing resources
-COPY tig/fuzz/dict /out/dict
-COPY tig/fuzz/in /out/in
-COPY tig/fuzz/fuzz.sh /out/fuzz.sh
-COPY tig/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/tig/fuzz/dict /out/dict
+COPY dataset/tig/fuzz/in /out/in
+COPY dataset/tig/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/tig/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

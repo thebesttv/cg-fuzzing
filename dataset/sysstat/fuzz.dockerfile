@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp sar /out/sar.cmplog
 
 # Copy fuzzing resources
-COPY sysstat/fuzz/dict /out/dict
-COPY sysstat/fuzz/in /out/in
-COPY sysstat/fuzz/fuzz.sh /out/fuzz.sh
-COPY sysstat/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/sysstat/fuzz/dict /out/dict
+COPY dataset/sysstat/fuzz/in /out/in
+COPY dataset/sysstat/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/sysstat/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

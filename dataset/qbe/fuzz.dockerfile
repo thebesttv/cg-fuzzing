@@ -45,10 +45,10 @@ RUN CC=afl-clang-lto \
 RUN cp qbe /out/qbe.cmplog
 
 # Copy fuzzing resources
-COPY qbe/fuzz/dict /out/dict
-COPY qbe/fuzz/in /out/in
-COPY qbe/fuzz/fuzz.sh /out/fuzz.sh
-COPY qbe/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/qbe/fuzz/dict /out/dict
+COPY dataset/qbe/fuzz/in /out/in
+COPY dataset/qbe/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/qbe/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

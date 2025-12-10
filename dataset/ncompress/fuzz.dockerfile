@@ -45,10 +45,10 @@ RUN CC=afl-clang-lto \
 RUN cp compress /out/compress.cmplog
 
 # Copy fuzzing resources
-COPY ncompress/fuzz/dict /out/dict
-COPY ncompress/fuzz/in /out/in
-COPY ncompress/fuzz/fuzz.sh /out/fuzz.sh
-COPY ncompress/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/ncompress/fuzz/dict /out/dict
+COPY dataset/ncompress/fuzz/in /out/in
+COPY dataset/ncompress/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/ncompress/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -18,7 +18,7 @@ RUN wget https://github.com/michaelrsweet/mxml/releases/download/v4.0.4/mxml-4.0
 WORKDIR /src/mxml-4.0.4
 
 # Copy the fuzzing harness
-COPY mxml/fuzz_mxml.c .
+COPY dataset/mxml/fuzz_mxml.c .
 
 # Configure mxml with static linking for AFL++
 RUN CC=afl-clang-lto \
@@ -45,7 +45,7 @@ RUN rm -rf mxml-4.0.4 && \
 WORKDIR /src/mxml-4.0.4
 
 # Copy the fuzzing harness again
-COPY mxml/fuzz_mxml.c .
+COPY dataset/mxml/fuzz_mxml.c .
 
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
@@ -62,10 +62,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I. -static -Wl,--allow-multiple-definit
 RUN cp fuzz_mxml /out/fuzz_mxml.cmplog
 
 # Copy fuzzing resources
-COPY mxml/fuzz/dict /out/dict
-COPY mxml/fuzz/in /out/in
-COPY mxml/fuzz/fuzz.sh /out/fuzz.sh
-COPY mxml/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/mxml/fuzz/dict /out/dict
+COPY dataset/mxml/fuzz/in /out/in
+COPY dataset/mxml/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/mxml/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

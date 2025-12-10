@@ -61,10 +61,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/bin/adig /out/adig.cmplog
 
 # Copy fuzzing resources
-COPY c-ares/fuzz/dict /out/dict
-COPY c-ares/fuzz/in /out/in
-COPY c-ares/fuzz/fuzz.sh /out/fuzz.sh
-COPY c-ares/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/c-ares/fuzz/dict /out/dict
+COPY dataset/c-ares/fuzz/in /out/in
+COPY dataset/c-ares/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/c-ares/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

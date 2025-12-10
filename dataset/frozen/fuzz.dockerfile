@@ -18,7 +18,7 @@ RUN wget https://github.com/cesanta/frozen/archive/refs/tags/1.7.tar.gz && \
 WORKDIR /src/frozen-1.7
 
 # Copy the fuzzing harness
-COPY frozen/fuzz_json.c .
+COPY dataset/frozen/fuzz_json.c .
 
 # Build fuzz_json with afl-clang-lto for fuzzing (main target binary)
 # Use static linking
@@ -39,7 +39,7 @@ RUN rm -rf frozen-1.7 && \
 WORKDIR /src/frozen-1.7
 
 # Copy the fuzzing harness again
-COPY frozen/fuzz_json.c .
+COPY dataset/frozen/fuzz_json.c .
 
 RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -static -Wl,--allow-multiple-definition \
     -o fuzz_json fuzz_json.c frozen.c -lm
@@ -48,10 +48,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -static -Wl,--allow-multiple-definition 
 RUN cp fuzz_json /out/fuzz_json.cmplog
 
 # Copy fuzzing resources
-COPY frozen/fuzz/dict /out/dict
-COPY frozen/fuzz/in /out/in
-COPY frozen/fuzz/fuzz.sh /out/fuzz.sh
-COPY frozen/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/frozen/fuzz/dict /out/dict
+COPY dataset/frozen/fuzz/in /out/in
+COPY dataset/frozen/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/frozen/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

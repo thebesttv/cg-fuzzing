@@ -53,10 +53,10 @@ RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto CXX=afl-clang-lto++ LDFLAGS="-all-st
 RUN cp ssdeep /out/ssdeep.cmplog
 
 # Copy fuzzing resources
-COPY ssdeep/fuzz/dict /out/dict
-COPY ssdeep/fuzz/in /out/in
-COPY ssdeep/fuzz/fuzz.sh /out/fuzz.sh
-COPY ssdeep/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/ssdeep/fuzz/dict /out/dict
+COPY dataset/ssdeep/fuzz/in /out/in
+COPY dataset/ssdeep/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/ssdeep/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -83,10 +83,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -o ini_fuzz.cmplog ini_fuzz.c ini.c \
 RUN cp ini_fuzz.cmplog /out/ini_fuzz.cmplog
 
 # Copy fuzzing resources
-COPY inih/fuzz/dict /out/dict
-COPY inih/fuzz/in /out/in
-COPY inih/fuzz/fuzz.sh /out/fuzz.sh
-COPY inih/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/inih/fuzz/dict /out/dict
+COPY dataset/inih/fuzz/in /out/in
+COPY dataset/inih/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/inih/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

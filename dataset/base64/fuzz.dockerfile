@@ -55,10 +55,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/bin/base64 /out/base64.cmplog
 
 # Copy fuzzing resources
-COPY base64/fuzz/dict /out/dict
-COPY base64/fuzz/in /out/in
-COPY base64/fuzz/fuzz.sh /out/fuzz.sh
-COPY base64/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/base64/fuzz/dict /out/dict
+COPY dataset/base64/fuzz/in /out/in
+COPY dataset/base64/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/base64/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

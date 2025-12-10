@@ -54,10 +54,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp gettext-tools/src/msgfmt /out/msgfmt.cmplog
 
 # Copy fuzzing resources
-COPY gettext/fuzz/dict /out/dict
-COPY gettext/fuzz/in /out/in
-COPY gettext/fuzz/fuzz.sh /out/fuzz.sh
-COPY gettext/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/gettext/fuzz/dict /out/dict
+COPY dataset/gettext/fuzz/in /out/in
+COPY dataset/gettext/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/gettext/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

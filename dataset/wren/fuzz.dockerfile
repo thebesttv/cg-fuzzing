@@ -23,7 +23,7 @@ RUN CC=afl-clang-lto \
     make config=release_64bit wren
 
 # Copy the harness
-COPY wren/harness.c /src/wren-0.4.0/harness.c
+COPY dataset/wren/harness.c /src/wren-0.4.0/harness.c
 
 WORKDIR /src/wren-0.4.0
 
@@ -50,7 +50,7 @@ RUN CC=afl-clang-lto \
     make config=release_64bit wren
 
 # Copy the harness
-COPY wren/harness.c /src/wren-0.4.0/harness.c
+COPY dataset/wren/harness.c /src/wren-0.4.0/harness.c
 
 WORKDIR /src/wren-0.4.0
 
@@ -63,10 +63,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I src/include \
 RUN cp wren_parse.cmplog /out/wren_parse.cmplog
 
 # Copy fuzzing resources
-COPY wren/fuzz/dict /out/dict
-COPY wren/fuzz/in /out/in
-COPY wren/fuzz/fuzz.sh /out/fuzz.sh
-COPY wren/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/wren/fuzz/dict /out/dict
+COPY dataset/wren/fuzz/in /out/in
+COPY dataset/wren/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/wren/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

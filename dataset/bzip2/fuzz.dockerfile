@@ -50,10 +50,10 @@ RUN make clean || true && \
 RUN cp bzip2 /out/bzip2.cmplog
 
 # Copy fuzzing resources
-COPY bzip2/fuzz/dict /out/dict
-COPY bzip2/fuzz/in /out/in
-COPY bzip2/fuzz/fuzz.sh /out/fuzz.sh
-COPY bzip2/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/bzip2/fuzz/dict /out/dict
+COPY dataset/bzip2/fuzz/in /out/in
+COPY dataset/bzip2/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/bzip2/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

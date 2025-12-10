@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/potrace /out/potrace.cmplog
 
 # Copy fuzzing resources
-COPY potrace/fuzz/dict /out/dict
-COPY potrace/fuzz/in /out/in
-COPY potrace/fuzz/fuzz.sh /out/fuzz.sh
-COPY potrace/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/potrace/fuzz/dict /out/dict
+COPY dataset/potrace/fuzz/in /out/in
+COPY dataset/potrace/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/potrace/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

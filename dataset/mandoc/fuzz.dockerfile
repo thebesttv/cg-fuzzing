@@ -40,10 +40,10 @@ RUN AFL_LLVM_CMPLOG=1 make mandoc -j$(nproc)
 RUN cp mandoc /out/mandoc.cmplog
 
 # Copy fuzzing resources
-COPY mandoc/fuzz/dict /out/dict
-COPY mandoc/fuzz/in /out/in
-COPY mandoc/fuzz/fuzz.sh /out/fuzz.sh
-COPY mandoc/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/mandoc/fuzz/dict /out/dict
+COPY dataset/mandoc/fuzz/in /out/in
+COPY dataset/mandoc/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/mandoc/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

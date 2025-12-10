@@ -66,10 +66,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp tools/plistutil /out/plistutil.cmplog
 
 # Copy fuzzing resources
-COPY libplist/fuzz/dict /out/dict
-COPY libplist/fuzz/in /out/in
-COPY libplist/fuzz/fuzz.sh /out/fuzz.sh
-COPY libplist/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libplist/fuzz/dict /out/dict
+COPY dataset/libplist/fuzz/in /out/in
+COPY dataset/libplist/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libplist/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

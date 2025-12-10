@@ -47,10 +47,10 @@ RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto \
 RUN cp figlet /out/figlet.cmplog
 
 # Copy fuzzing resources
-COPY figlet/fuzz/dict /out/dict
-COPY figlet/fuzz/in /out/in
-COPY figlet/fuzz/fuzz.sh /out/fuzz.sh
-COPY figlet/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/figlet/fuzz/dict /out/dict
+COPY dataset/figlet/fuzz/in /out/in
+COPY dataset/figlet/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/figlet/fuzz/whatsup.sh /out/whatsup.sh
 
 # Copy font files for figlet
 RUN cp -r fonts /out/fonts

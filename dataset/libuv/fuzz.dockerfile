@@ -110,10 +110,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 \
 RUN cp test_uv_cmplog /out/test_uv.cmplog
 
 # Copy fuzzing resources
-COPY libuv/fuzz/dict /out/dict
-COPY libuv/fuzz/in /out/in
-COPY libuv/fuzz/fuzz.sh /out/fuzz.sh
-COPY libuv/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libuv/fuzz/dict /out/dict
+COPY dataset/libuv/fuzz/in /out/in
+COPY dataset/libuv/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libuv/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

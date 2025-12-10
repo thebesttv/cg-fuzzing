@@ -59,10 +59,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/src/cmark-gfm /out/cmark-gfm.cmplog
 
 # Copy fuzzing resources
-COPY cmark-gfm/fuzz/dict /out/dict
-COPY cmark-gfm/fuzz/in /out/in
-COPY cmark-gfm/fuzz/fuzz.sh /out/fuzz.sh
-COPY cmark-gfm/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/cmark-gfm/fuzz/dict /out/dict
+COPY dataset/cmark-gfm/fuzz/in /out/in
+COPY dataset/cmark-gfm/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/cmark-gfm/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -21,7 +21,7 @@ RUN wget https://github.com/ludocode/mpack/releases/download/v1.1.1/mpack-amalga
 WORKDIR /home/SVF-tools/mpack-amalgamation-1.1.1
 
 # Copy the fuzzing harness
-COPY mpack/fuzz_mpack.c .
+COPY dataset/mpack/fuzz_mpack.c .
 
 # Compile the fuzzing harness with WLLVM and mpack library
 # mpack is a single-file library, we can compile it directly

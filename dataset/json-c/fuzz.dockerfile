@@ -55,10 +55,10 @@ RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp build/apps/json_parse /out/json_parse.cmplog
 
 # Copy fuzzing resources
-COPY json-c/fuzz/dict /out/dict
-COPY json-c/fuzz/in /out/in
-COPY json-c/fuzz/fuzz.sh /out/fuzz.sh
-COPY json-c/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/json-c/fuzz/dict /out/dict
+COPY dataset/json-c/fuzz/in /out/in
+COPY dataset/json-c/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/json-c/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

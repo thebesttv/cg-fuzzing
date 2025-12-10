@@ -47,10 +47,10 @@ RUN make clean || true && \
 RUN cp pigz /out/pigz.cmplog
 
 # Copy fuzzing resources
-COPY pigz/fuzz/dict /out/dict
-COPY pigz/fuzz/in /out/in
-COPY pigz/fuzz/fuzz.sh /out/fuzz.sh
-COPY pigz/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/pigz/fuzz/dict /out/dict
+COPY dataset/pigz/fuzz/in /out/in
+COPY dataset/pigz/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/pigz/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -50,10 +50,10 @@ RUN mkdir build && cd build && \
 RUN cp build/tgunzip /out/tgunzip.cmplog
 
 # Copy fuzzing resources
-COPY tinf/fuzz/dict /out/dict
-COPY tinf/fuzz/in /out/in
-COPY tinf/fuzz/fuzz.sh /out/fuzz.sh
-COPY tinf/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/tinf/fuzz/dict /out/dict
+COPY dataset/tinf/fuzz/in /out/in
+COPY dataset/tinf/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/tinf/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

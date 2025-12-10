@@ -55,10 +55,10 @@ RUN AFL_LLVM_CMPLOG=1 make build_lib_static -j$(nproc) && \
 RUN cp test/integration/malloc /out/malloc-test.cmplog
 
 # Copy fuzzing resources
-COPY jemalloc/fuzz/dict /out/dict
-COPY jemalloc/fuzz/in /out/in
-COPY jemalloc/fuzz/fuzz.sh /out/fuzz.sh
-COPY jemalloc/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/jemalloc/fuzz/dict /out/dict
+COPY dataset/jemalloc/fuzz/in /out/in
+COPY dataset/jemalloc/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/jemalloc/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

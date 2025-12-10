@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/iperf3 /out/iperf3.cmplog
 
 # Copy fuzzing resources
-COPY iperf3/fuzz/dict /out/dict
-COPY iperf3/fuzz/in /out/in
-COPY iperf3/fuzz/fuzz.sh /out/fuzz.sh
-COPY iperf3/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/iperf3/fuzz/dict /out/dict
+COPY dataset/iperf3/fuzz/in /out/in
+COPY dataset/iperf3/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/iperf3/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

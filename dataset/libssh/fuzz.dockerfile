@@ -85,10 +85,10 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 test_ssh.c -o /out/test_ssh.cmplog \
     -I./include -I./build/include build/src/libssh.a \
     -static -Wl,--allow-multiple-definition -lssl -lcrypto -lz -lpthread
 
-COPY libssh/fuzz/dict /out/dict
-COPY libssh/fuzz/in /out/in
-COPY libssh/fuzz/fuzz.sh /out/fuzz.sh
-COPY libssh/fuzz/whatsup.sh /out/whatsup.sh
+COPY dataset/libssh/fuzz/dict /out/dict
+COPY dataset/libssh/fuzz/in /out/in
+COPY dataset/libssh/fuzz/fuzz.sh /out/fuzz.sh
+COPY dataset/libssh/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 
