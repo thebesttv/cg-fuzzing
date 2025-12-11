@@ -8,7 +8,7 @@ RUN apt-get update && \
 
 # Install build dependencies
 RUN apt-get update && \
-    apt-get install -y wget uftrace && \
+    apt-get install -y wget uftrace ghostscript fonts-urw-base35 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
