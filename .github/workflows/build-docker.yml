@@ -2,11 +2,6 @@ name: Build Docker Images
 
 on:
   push:
-    branches:
-      - '**'
-  pull_request:
-    branches:
-      - '**'
   workflow_dispatch:
 
 env:
@@ -15,6 +10,10 @@ env:
 # Permissions for artifacts and releases
 permissions:
   contents: write
+
+defaults:
+  run:
+    working-directory: ./dataset
 
 jobs:
   find-projects:
@@ -35,18 +34,79 @@ jobs:
             | sed 's|^\./||' \
             | sort -u \
             | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          
+
           echo "projects=${projects}" >> $GITHUB_OUTPUT
           echo "Found projects: ${projects}"
 
-  build-project:
+  get-changed-projects:
     needs: find-projects
-    if: ${{ needs.find-projects.outputs.projects != '[]' && needs.find-projects.outputs.projects != 'null' }}
+    runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.set-projects.outputs.projects }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Detect changed dataset files
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            dataset:
+              - 'dataset/**'
+          list-files: json
+
+      - name: Compute changed projects
+        id: set-projects
+        run: |
+          set -euo pipefail
+          echo "GITHUB_REF=$GITHUB_REF"
+          DEFAULT_REF="refs/heads/${{ github.event.repository.default_branch }}"
+          # If this is the default branch, always run all projects
+          if [ "$GITHUB_REF" = "$DEFAULT_REF" ]; then
+            echo "Default branch detected ($GITHUB_REF) - running all projects"
+            echo "projects=${{ needs.find-projects.outputs.projects }}" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          FILES='${{ steps.changes.outputs.dataset_files }}'
+          if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
+            echo "No dataset files changed"
+            echo "projects=[]" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          ALL='${{ needs.find-projects.outputs.projects }}'
+          # Extract unique project names from changed dataset files
+          CHANGED_PROJECTS=$(echo "$FILES" | jq -r '.[] | split("/")[1]' | sort -u)
+
+          # Build final intersection between changed projects and projects that have dockerfiles
+          RESULT_ARRAY=()
+          for p in $CHANGED_PROJECTS; do
+            if echo "$ALL" | jq -e --arg p "$p" 'index($p) // empty' >/dev/null 2>&1; then
+              RESULT_ARRAY+=("$p")
+            fi
+          done
+
+          if [ ${#RESULT_ARRAY[@]} -eq 0 ]; then
+            echo "projects=[]" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Convert bash array to JSON array
+          JSON=$(printf '%s\n' "${RESULT_ARRAY[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "projects=$JSON" >> $GITHUB_OUTPUT
+
+  build-project:
+    needs: get-changed-projects
+    if: ${{ needs.get-changed-projects.outputs.projects != '[]' && needs.get-changed-projects.outputs.projects != 'null' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        project: ${{ fromJson(needs.find-projects.outputs.projects) }}
+        project: ${{ fromJson(needs.get-changed-projects.outputs.projects) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -175,7 +235,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.project }}
-          path: output/${{ matrix.project }}.zip
+          # `defaults.run.working-directory` is `./dataset` so run steps create zips under
+          # `dataset/output/...`. Actions using `uses:` run from the workspace root, so
+          # specify the dataset prefix so the uploader finds the file.
+          path: dataset/output/${{ matrix.project }}.zip
           retention-days: 30
 
       - name: Login to Docker Hub
@@ -208,7 +271,11 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          # `download-artifact` writes into the given path relative to the workspace root.
+          # We set `path: dataset/artifacts` so subsequent `run` steps (which are executed
+          # inside `dataset` due to defaults) can access the downloaded zips with
+          # `artifacts/**/*.zip`.
+          path: dataset/artifacts
 
       - name: List downloaded artifacts
         run: |
@@ -247,20 +314,22 @@ jobs:
           name: Latest Build
           body: |
             Automatically built artifacts from the main branch.
-            
+
             ## Downloads
-            
+
             - `all.zip` - All projects combined (unpacked contents)
             - Individual project zips (e.g., `jq.zip`, `sqlite.zip`)
-            
+
             ## Each project zip contains:
             - `bc/` - LLVM bitcode files for static analysis
             - `fuzz/` - AFL++ fuzzing binaries and resources
           draft: false
           prerelease: false
           files: |
-            all.zip
-            artifacts/**/*.zip
+            # Files paths are relative to the workspace root; our created zips live under
+            # `dataset/`, so reference them with the dataset prefix.
+            dataset/all.zip
+            dataset/artifacts/**/*.zip
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

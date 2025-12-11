@@ -18,5 +18,6 @@ pkgs.mkShell
     uftraceFull
     wllvm
     libllvm
+    parallel-full
   ];
 }

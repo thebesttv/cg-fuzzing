@@ -1,0 +1,29 @@
+# Fig format header
+"#FIG"
+"3.2"
+"Landscape"
+"Portrait"
+"Center"
+"Inches"
+"Metric"
+"Letter"
+"A4"
+"Single"
+
+# Object codes
+"0"
+"1"
+"2"
+"3"
+"4"
+"5"
+"6"
+
+# Common values
+"50"
+"100"
+"100.00"
+"1200"
+"-1"
+"-2"
+"0.000"
