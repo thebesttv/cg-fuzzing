@@ -166,8 +166,9 @@ RUN ./bootstrap --skip-po --gnulib-srcdir=<依赖目录>
 
 ## Bitcode 验证步骤
 
-1. 构建 Docker 镜像：
+1. 构建 Docker 镜像（在 dataset 目录下执行）：
    ```bash
+   cd dataset
    docker build -f <项目>/bc.dockerfile -t <项目>-bc .
    ```
 
@@ -254,6 +255,7 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp <binary> /out/<binary>.cmplog
 
 # 复制 fuzzing 资源（脚本已设置可执行权限）
+# 注意：Docker build context 是 /dataset 目录，所以路径是相对于 dataset/ 的
 COPY <项目>/fuzz/dict /out/dict
 COPY <项目>/fuzz/in /out/in
 COPY <项目>/fuzz/fuzz.sh /out/fuzz.sh
@@ -505,14 +507,17 @@ fi
 
 ## Usage
 
+```bash
+cd dataset
 docker build -f <项目>/fuzz.dockerfile -t <项目>-fuzz .
 docker run -it --rm <项目>-fuzz ./fuzz.sh
 ```
 
 ## Fuzzing 验证步骤
 
-1. 构建 Docker 镜像：
+1. 构建 Docker 镜像（在 dataset 目录下执行）：
    ```bash
+   cd dataset
    docker build -f <项目>/fuzz.dockerfile -t <项目>-fuzz .
    ```
 

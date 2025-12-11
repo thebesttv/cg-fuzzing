@@ -51,10 +51,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp fig2dev/fig2dev /out/fig2dev.cmplog
 
 # Copy fuzzing resources
-COPY dataset/fig2dev/fuzz/dict /out/dict
-COPY dataset/fig2dev/fuzz/in /out/in
-COPY dataset/fig2dev/fuzz/fuzz.sh /out/fuzz.sh
-COPY dataset/fig2dev/fuzz/whatsup.sh /out/whatsup.sh
+COPY fig2dev/fuzz/dict /out/dict
+COPY fig2dev/fuzz/in /out/in
+COPY fig2dev/fuzz/fuzz.sh /out/fuzz.sh
+COPY fig2dev/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 

@@ -53,10 +53,10 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp src/tools/hunspell /out/hunspell.cmplog
 
 # Copy fuzzing resources
-COPY dataset/hunspell/fuzz/dict /out/dict
-COPY dataset/hunspell/fuzz/in /out/in
-COPY dataset/hunspell/fuzz/fuzz.sh /out/fuzz.sh
-COPY dataset/hunspell/fuzz/whatsup.sh /out/whatsup.sh
+COPY hunspell/fuzz/dict /out/dict
+COPY hunspell/fuzz/in /out/in
+COPY hunspell/fuzz/fuzz.sh /out/fuzz.sh
+COPY hunspell/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 
