@@ -1,25 +1,37 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract bzip2 1.0.8 from official GitLab repository (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: bzip2" > /work/proj && \
+    echo "version: 1.0.8" >> /work/proj && \
+    echo "source: https://gitlab.com/bzip2/bzip2/-/archive/bzip2-1.0.8/bzip2-bzip2-1.0.8.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://gitlab.com/bzip2/bzip2/-/archive/bzip2-1.0.8/bzip2-bzip2-1.0.8.tar.gz && \
     tar -xzf bzip2-bzip2-1.0.8.tar.gz && \
-    rm bzip2-bzip2-1.0.8.tar.gz
+    rm bzip2-bzip2-1.0.8.tar.gz && \
+    cp -r bzip2-bzip2-1.0.8 build-fuzz && \
+    cp -r bzip2-bzip2-1.0.8 build-cmplog && \
+    cp -r bzip2-bzip2-1.0.8 build-cov && \
+    cp -r bzip2-bzip2-1.0.8 build-uftrace && \
+    rm -rf bzip2-bzip2-1.0.8
 
-WORKDIR /src/bzip2-bzip2-1.0.8
-
-# Build with afl-clang-lto for fuzzing (main target binary)
-# Use static linking
-# afl-clang-lto provides collision-free instrumentation
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN make clean || true && \
     make -j$(nproc) \
     CC=afl-clang-lto \
@@ -27,18 +39,12 @@ RUN make clean || true && \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     bzip2
 
-# Install the bzip2 binary
-RUN cp bzip2 /out/bzip2
+WORKDIR /work
+RUN ln -s build-fuzz/bzip2 bin-fuzz && \
+    /work/bin-fuzz --version || true
 
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf bzip2-bzip2-1.0.8 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://gitlab.com/bzip2/bzip2/-/archive/bzip2-1.0.8/bzip2-bzip2-1.0.8.tar.gz && \
-    tar -xzf bzip2-bzip2-1.0.8.tar.gz && \
-    rm bzip2-bzip2-1.0.8.tar.gz
-
-WORKDIR /src/bzip2-bzip2-1.0.8
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN make clean || true && \
     AFL_LLVM_CMPLOG=1 make -j$(nproc) \
     CC=afl-clang-lto \
@@ -46,21 +52,44 @@ RUN make clean || true && \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     bzip2
 
-# Install CMPLOG binary
-RUN cp bzip2 /out/bzip2.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/bzip2 bin-cmplog && \
+    /work/bin-cmplog --version || true
 
 # Copy fuzzing resources
-COPY bzip2/fuzz/dict /out/dict
-COPY bzip2/fuzz/in /out/in
-COPY bzip2/fuzz/fuzz.sh /out/fuzz.sh
-COPY bzip2/fuzz/whatsup.sh /out/whatsup.sh
+COPY bzip2/fuzz/dict /work/dict
+COPY bzip2/fuzz/in /work/in
+COPY bzip2/fuzz/fuzz.sh /work/fuzz.sh
+COPY bzip2/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN make clean || true && \
+    make -j$(nproc) \
+    CC=clang \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wall -Winline -D_FILE_OFFSET_BITS=64" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    bzip2
 
-# Verify binaries are built
-RUN ls -la /out/bzip2 /out/bzip2.cmplog && \
-    file /out/bzip2 && \
-    /out/bzip2 --version || true
+WORKDIR /work
+RUN ln -s build-cov/bzip2 bin-cov && \
+    /work/bin-cov --version || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing bzip2'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN make clean || true && \
+    make -j$(nproc) \
+    CC=clang \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer -Wall -Winline -D_FILE_OFFSET_BITS=64" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    bzip2
+
+WORKDIR /work
+RUN ln -s build-uftrace/bzip2 bin-uftrace && \
+    /work/bin-uftrace --version || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
