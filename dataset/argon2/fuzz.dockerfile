@@ -1,24 +1,37 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract argon2 20190702 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: argon2" > /work/proj && \
+    echo "version: 20190702" >> /work/proj && \
+    echo "source: https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/20190702.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/20190702.tar.gz && \
     tar -xzf 20190702.tar.gz && \
-    rm 20190702.tar.gz
+    rm 20190702.tar.gz && \
+    cp -r phc-winner-argon2-20190702 build-fuzz && \
+    cp -r phc-winner-argon2-20190702 build-cmplog && \
+    cp -r phc-winner-argon2-20190702 build-cov && \
+    cp -r phc-winner-argon2-20190702 build-uftrace && \
+    rm -rf phc-winner-argon2-20190702
 
-WORKDIR /src/phc-winner-argon2-20190702
-
-# Build argon2 with afl-clang-lto for fuzzing (main target binary)
-# Only build the CLI binary (argon2), not shared library
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN make CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2 -pthread -Iinclude -Isrc" \
@@ -26,18 +39,12 @@ RUN make CC=afl-clang-lto \
     argon2 \
     -j$(nproc)
 
-# Install the argon2 binary
-RUN cp argon2 /out/argon2
+WORKDIR /work
+RUN ln -s build-fuzz/argon2 bin-fuzz && \
+    echo "test" | /work/bin-fuzz password -t 1 -m 10 -p 1 -l 16 -e || true
 
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf phc-winner-argon2-20190702 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/20190702.tar.gz && \
-    tar -xzf 20190702.tar.gz && \
-    rm 20190702.tar.gz
-
-WORKDIR /src/phc-winner-argon2-20190702
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN make CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2 -pthread -Iinclude -Isrc" \
@@ -46,21 +53,44 @@ RUN make CC=afl-clang-lto \
     argon2 \
     -j$(nproc)
 
-# Install CMPLOG binary
-RUN cp argon2 /out/argon2.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/argon2 bin-cmplog && \
+    echo "test" | /work/bin-cmplog password -t 1 -m 10 -p 1 -l 16 -e || true
 
 # Copy fuzzing resources
-COPY argon2/fuzz/dict /out/dict
-COPY argon2/fuzz/in /out/in
-COPY argon2/fuzz/fuzz.sh /out/fuzz.sh
-COPY argon2/fuzz/whatsup.sh /out/whatsup.sh
+COPY argon2/fuzz/dict /work/dict
+COPY argon2/fuzz/in /work/in
+COPY argon2/fuzz/fuzz.sh /work/fuzz.sh
+COPY argon2/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN make CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping -pthread -Iinclude -Isrc" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition -pthread" \
+    argon2 \
+    -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/argon2 /out/argon2.cmplog && \
-    file /out/argon2 && \
-    echo "test" | /out/argon2 password -t 1 -m 10 -p 1 -l 16 -e || true
+WORKDIR /work
+RUN ln -s build-cov/argon2 bin-cov && \
+    echo "test" | /work/bin-cov password -t 1 -m 10 -p 1 -l 16 -e || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing argon2'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN make CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer -pthread -Iinclude -Isrc" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition -pthread" \
+    argon2 \
+    -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/argon2 bin-uftrace && \
+    echo "test" | /work/bin-uftrace password -t 1 -m 10 -p 1 -l 16 -e || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]

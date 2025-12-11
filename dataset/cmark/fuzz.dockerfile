@@ -1,23 +1,37 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget cmake && \
+    apt-get install -y htop vim tmux && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget cmake uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract cmark 0.31.1 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: cmark" > /work/proj && \
+    echo "version: 0.31.1" >> /work/proj && \
+    echo "source: https://github.com/commonmark/cmark/archive/refs/tags/0.31.1.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/commonmark/cmark/archive/refs/tags/0.31.1.tar.gz && \
     tar -xzf 0.31.1.tar.gz && \
-    rm 0.31.1.tar.gz
+    rm 0.31.1.tar.gz && \
+    cp -r cmark-0.31.1 build-fuzz && \
+    cp -r cmark-0.31.1 build-cmplog && \
+    cp -r cmark-0.31.1 build-cov && \
+    cp -r cmark-0.31.1 build-uftrace && \
+    rm -rf cmark-0.31.1
 
-WORKDIR /src/cmark-0.31.1
-
-# Build cmark with afl-clang-lto for fuzzing (main target binary)
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
@@ -26,22 +40,15 @@ RUN mkdir build && cd build && \
     -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
     -DBUILD_SHARED_LIBS=OFF \
     -DCMARK_STATIC=ON \
-    -DCMARK_TESTS=OFF
+    -DCMARK_TESTS=OFF && \
+    make -j$(nproc)
 
-RUN cd build && make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/build/src/cmark bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Install the cmark binary
-RUN cp build/src/cmark /out/cmark
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf cmark-0.31.1 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/commonmark/cmark/archive/refs/tags/0.31.1.tar.gz && \
-    tar -xzf 0.31.1.tar.gz && \
-    rm 0.31.1.tar.gz
-
-WORKDIR /src/cmark-0.31.1
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
@@ -51,25 +58,55 @@ RUN mkdir build && cd build && \
     -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
     -DBUILD_SHARED_LIBS=OFF \
     -DCMARK_STATIC=ON \
-    -DCMARK_TESTS=OFF
+    -DCMARK_TESTS=OFF && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 cd build && make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp build/src/cmark /out/cmark.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/build/src/cmark bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
-COPY cmark/fuzz/dict /out/dict
-COPY cmark/fuzz/in /out/in
-COPY cmark/fuzz/fuzz.sh /out/fuzz.sh
-COPY cmark/fuzz/whatsup.sh /out/whatsup.sh
+COPY cmark/fuzz/dict /work/dict
+COPY cmark/fuzz/in /work/in
+COPY cmark/fuzz/fuzz.sh /work/fuzz.sh
+COPY cmark/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN mkdir build && cd build && \
+    CC=clang \
+    CXX=clang++ \
+    cmake .. \
+    -DCMAKE_C_FLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    -DCMAKE_EXE_LINKER_FLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DCMARK_STATIC=ON \
+    -DCMARK_TESTS=OFF && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/cmark /out/cmark.cmplog && \
-    file /out/cmark && \
-    /out/cmark --version
+WORKDIR /work
+RUN ln -s build-cov/build/src/cmark bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing cmark'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN mkdir build && cd build && \
+    CC=clang \
+    CXX=clang++ \
+    cmake .. \
+    -DCMAKE_C_FLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    -DCMAKE_EXE_LINKER_FLAGS="-pg -Wl,--allow-multiple-definition" \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DCMARK_STATIC=ON \
+    -DCMARK_TESTS=OFF && \
+    make -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/build/src/cmark bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
