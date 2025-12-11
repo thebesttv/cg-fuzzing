@@ -14,13 +14,11 @@ RUN echo "project: jq" > /work/proj && \
     echo "version: 1.8.1" >> /work/proj && \
     echo "source: https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-1.8.1.tar.gz" >> /work/proj
 
-# Download source once
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-1.8.1.tar.gz && \
     tar -xzf jq-1.8.1.tar.gz && \
-    rm jq-1.8.1.tar.gz
-
-# Extract to multiple build directories
-RUN cp -r jq-1.8.1 build-fuzz && \
+    rm jq-1.8.1.tar.gz && \
+    cp -r jq-1.8.1 build-fuzz && \
     cp -r jq-1.8.1 build-cmplog && \
     cp -r jq-1.8.1 build-cov && \
     cp -r jq-1.8.1 build-uftrace && \
@@ -32,10 +30,13 @@ RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --with-oniguruma=builtin --disable-shared --enable-all-static
+    ./configure --with-oniguruma=builtin --disable-shared --enable-all-static && \
+    make -j$(nproc) && \
+    cp jq /work/jq-fuzz
 
-RUN make -j$(nproc)
-RUN cp jq /work/jq-fuzz
+WORKDIR /work
+RUN ln -s jq-fuzz bin-fuzz && \
+    /work/bin-fuzz --version
 
 # Build cmplog binary with afl-clang-lto + CMPLOG
 WORKDIR /work/build-cmplog
@@ -44,40 +45,13 @@ RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure --with-oniguruma=builtin --disable-shared --enable-all-static
+    ./configure --with-oniguruma=builtin --disable-shared --enable-all-static && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc) && \
+    cp jq /work/jq-cmplog
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-RUN cp jq /work/jq-cmplog
-
-# Build cov binary with llvm-cov instrumentation
-WORKDIR /work/build-cov
-RUN CC=clang \
-    CXX=clang++ \
-    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
-    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
-    ./configure --with-oniguruma=builtin --disable-shared --enable-all-static
-
-RUN make -j$(nproc)
-RUN cp jq /work/jq-cov
-
-# Build uftrace binary with profiling instrumentation
-WORKDIR /work/build-uftrace
-RUN CC=clang \
-    CXX=clang++ \
-    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
-    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
-    ./configure --with-oniguruma=builtin
-
-RUN make -j$(nproc)
-RUN make install && ldconfig
-RUN cp /usr/local/bin/jq /work/jq-uftrace
-
-# Create symlinks for binaries
 WORKDIR /work
-RUN ln -s jq-fuzz bin-fuzz && \
-    ln -s jq-cmplog bin-cmplog && \
-    ln -s jq-cov bin-cov && \
-    ln -s jq-uftrace bin-uftrace
+RUN ln -s jq-cmplog bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
 COPY jq/fuzz/dict /work/dict
@@ -85,15 +59,38 @@ COPY jq/fuzz/in /work/in
 COPY jq/fuzz/fuzz.sh /work/fuzz.sh
 COPY jq/fuzz/whatsup.sh /work/whatsup.sh
 
-# Verify all binaries are built
-RUN ls -la /work/jq-* /work/bin-* && \
-    file /work/bin-fuzz && \
-    /work/bin-fuzz --version
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure --with-oniguruma=builtin --disable-shared --enable-all-static && \
+    make -j$(nproc) && \
+    cp jq /work/jq-cov
 
-# Test uftrace can trace the binary
-RUN uftrace record /work/bin-uftrace --version && \
+WORKDIR /work
+RUN ln -s jq-cov bin-cov && \
+    /work/bin-cov --version && \
+    rm -rf /work/build-cov
+
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --with-oniguruma=builtin --prefix=/work/install-uftrace && \
+    make -j$(nproc) && \
+    make install && \
+    cp /work/install-uftrace/bin/jq /work/jq-uftrace
+
+WORKDIR /work
+RUN ln -s jq-uftrace bin-uftrace && \
+    /work/bin-uftrace --version && \
+    uftrace record /work/bin-uftrace --version && \
     uftrace report && \
-    rm -rf uftrace.data
+    rm -rf uftrace.data /work/build-uftrace
 
 # Default to bash in /work
 WORKDIR /work
