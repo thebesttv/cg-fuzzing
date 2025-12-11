@@ -1,68 +1,99 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget libncurses-dev && \
+    apt-get install -y htop vim tmux && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget libncurses-dev uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract screen v5.0.1 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: screen" > /work/proj && \
+    echo "version: 5.0.1" >> /work/proj && \
+    echo "source: https://ftpmirror.gnu.org/gnu/screen/screen-5.0.1.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/screen/screen-5.0.1.tar.gz && \
     tar -xzf screen-5.0.1.tar.gz && \
-    rm screen-5.0.1.tar.gz
+    rm screen-5.0.1.tar.gz && \
+    cp -r screen-5.0.1 build-fuzz && \
+    cp -r screen-5.0.1 build-cmplog && \
+    cp -r screen-5.0.1 build-cov && \
+    cp -r screen-5.0.1 build-uftrace && \
+    rm -rf screen-5.0.1
 
-WORKDIR /src/screen-5.0.1
-
-# Build screen with afl-clang-lto for fuzzing (main target binary)
-# Use static linking and disable PAM
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --disable-socket-dir --disable-pam
+    ./configure --disable-socket-dir --disable-pam && \
+    make -j$(nproc)
 
-RUN make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/screen bin-fuzz && \
+    /work/bin-fuzz -v
 
-# Install the screen binary
-RUN cp screen /out/screen
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf screen-5.0.1 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/screen/screen-5.0.1.tar.gz && \
-    tar -xzf screen-5.0.1.tar.gz && \
-    rm screen-5.0.1.tar.gz
-
-WORKDIR /src/screen-5.0.1
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure --disable-socket-dir --disable-pam
+    ./configure --disable-socket-dir --disable-pam && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp screen /out/screen.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/screen bin-cmplog && \
+    /work/bin-cmplog -v
 
 # Copy fuzzing resources
-COPY screen/fuzz/dict /out/dict
-COPY screen/fuzz/in /out/in
-COPY screen/fuzz/fuzz.sh /out/fuzz.sh
-COPY screen/fuzz/whatsup.sh /out/whatsup.sh
+COPY screen/fuzz/dict /work/dict
+COPY screen/fuzz/in /work/in
+COPY screen/fuzz/fuzz.sh /work/fuzz.sh
+COPY screen/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure --disable-socket-dir --disable-pam && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/screen /out/screen.cmplog && \
-    file /out/screen && \
-    /out/screen -v
+WORKDIR /work
+RUN ln -s build-cov/screen bin-cov && \
+    /work/bin-cov -v && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing screen'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --disable-socket-dir --disable-pam --prefix=/work/install-uftrace && \
+    make -j$(nproc) && \
+    make install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/screen bin-uftrace && \
+    /work/bin-uftrace -v && \
+    uftrace record /work/bin-uftrace -v && \
+    uftrace report && \
+    rm -rf uftrace.data gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
