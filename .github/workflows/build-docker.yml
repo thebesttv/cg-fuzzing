@@ -181,7 +181,7 @@ jobs:
           if docker exec "$container_id" test -d /work; then
             docker cp "$container_id:/work/." "output/${{ matrix.project }}/fuzz/" 2>/dev/null || true
           else
-            docker cp "$container_id:/fuzz/." "output/${{ matrix.project }}/fuzz/" 2>/dev/null || true
+            docker cp "$container_id:/out/." "output/${{ matrix.project }}/fuzz/" 2>/dev/null || true
           fi
           docker rm "$container_id"
           echo "=== fuzz artifacts ==="
