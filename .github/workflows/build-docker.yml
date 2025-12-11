@@ -177,7 +177,12 @@ jobs:
         run: |
           container_id=$(docker create "${{ matrix.project }}-fuzz:latest")
           # Copy fuzz binaries and resources from container
-          docker cp "$container_id:/work/." "output/${{ matrix.project }}/fuzz/" 2>/dev/null || true
+          # check if /work directory exists in the container
+          if docker exec "$container_id" test -d /work; then
+            docker cp "$container_id:/work/." "output/${{ matrix.project }}/fuzz/" 2>/dev/null || true
+          else
+            echo "/work directory not found in container"
+          fi
           docker rm "$container_id"
           echo "=== fuzz artifacts ==="
           ls -la "output/${{ matrix.project }}/fuzz/" || true
