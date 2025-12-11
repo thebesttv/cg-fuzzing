@@ -281,7 +281,12 @@ jobs:
           echo "=== Downloaded artifacts ==="
           find artifacts -type f -name "*.zip"
 
-      - name: Create all.zip with all project contents
+      - name: Install 7z
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y p7zip-full
+
+      - name: Create all.7z with all project contents
         run: |
           mkdir -p all_projects
           # Unzip each project zip into all_projects directory
@@ -293,11 +298,14 @@ jobs:
           done
           echo "=== all_projects structure ==="
           find all_projects -type f | head -50
-          # Create all.zip from the combined contents
+          # Create all.7z from the combined contents with maximum compression
+          # -t7z: use 7z format
+          # -mx=9: maximum compression level
+          # -ms=on: solid archive (better compression)
           cd all_projects
-          zip -r ../all.zip .
+          7z a -t7z -mx=9 -ms=on ../all.7z .
           cd ..
-          ls -la all.zip
+          ls -lh all.7z
 
       - name: Delete existing release
         run: |
@@ -316,7 +324,7 @@ jobs:
 
             ## Downloads
 
-            - `all.zip` - All projects combined (unpacked contents)
+            - `all.7z` - All projects combined (unpacked contents, 7z format with maximum compression)
             - Individual project zips (e.g., `jq.zip`, `sqlite.zip`)
 
             ## Each project zip contains:
@@ -325,9 +333,9 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            # Files paths are relative to the workspace root; our created zips live under
+            # Files paths are relative to the workspace root; our created archives live under
             # `dataset/`, so reference them with the dataset prefix.
-            dataset/all.zip
+            dataset/all.7z
             dataset/artifacts/**/*.zip
           make_latest: true
         env:
