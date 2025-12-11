@@ -224,25 +224,24 @@ jobs:
           echo "=== Final output structure ==="
           find "output/${{ matrix.project }}" -type f | head -50
 
-      - name: Install 7z for compression
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y p7zip-full
-
-      - name: Create project archive with 7z
+      - name: Create project archive with tar.xz
         run: |
           cd output
-          7z a -t7z -mx=9 -ms=on -snl "${{ matrix.project }}.7z" "${{ matrix.project }}"
-          ls -lh "${{ matrix.project }}.7z"
+          # Use tar with xz compression (maximum compression level)
+          # -c: create archive, -J: use xz compression, -f: output file
+          # --exclude-vcs: exclude version control files
+          # Set XZ_OPT for maximum compression
+          XZ_OPT="-9e -T0" tar -cJf "${{ matrix.project }}.tar.xz" "${{ matrix.project }}"
+          ls -lh "${{ matrix.project }}.tar.xz"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.project }}
-          # `defaults.run.working-directory` is `./dataset` so run steps create 7z archives under
+          # `defaults.run.working-directory` is `./dataset` so run steps create tar.xz archives under
           # `dataset/output/...`. Actions using `uses:` run from the workspace root, so
           # specify the dataset prefix so the uploader finds the file.
-          path: dataset/output/${{ matrix.project }}.7z
+          path: dataset/output/${{ matrix.project }}.tar.xz
           retention-days: 30
 
       - name: Login to Docker Hub
@@ -276,33 +275,28 @@ jobs:
         with:
           # `download-artifact` writes into the given path relative to the workspace root.
           # We set `path: dataset/artifacts` so subsequent `run` steps (which are executed
-          # inside `dataset` due to defaults) can access the downloaded 7z archives with
-          # `artifacts/**/*.7z`.
+          # inside `dataset` due to defaults) can access the downloaded tar.xz archives with
+          # `artifacts/**/*.tar.xz`.
           path: dataset/artifacts
 
       - name: List downloaded artifacts
         run: |
           echo "=== Downloaded artifacts ==="
-          find artifacts -type f -name "*.7z"
-
-      - name: Install 7z
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y p7zip-full
+          find artifacts -type f -name "*.tar.xz"
 
       - name: Unpack project artifacts
         run: |
           mkdir -p all_projects
-          # Extract each project 7z archive into all_projects directory
-          for archive in artifacts/**/*.7z; do
+          # Extract each project tar.xz archive into all_projects directory
+          for archive in artifacts/**/*.tar.xz; do
             if [ -f "$archive" ]; then
               echo "Extracting $archive..."
-              7z x "$archive" -oall_projects/ -aoa
+              tar -xJf "$archive" -C all_projects/
 
               # After extracting each archive, delete unrelated directories (e.g. fuzz) from
               # the extracted project to reduce disk usage and avoid carrying over
               # e.g. AFL++ work/ directories from the combined archive.
-              proj=$(basename "$archive" .7z)
+              proj=$(basename "$archive" .tar.xz)
               if [ -d "all_projects/$proj" ]; then
                 echo "Remove ./fuzz under all_projects/$proj ..."
                 rm -rf "all_projects/$proj/fuzz" || true
@@ -311,18 +305,18 @@ jobs:
             fi
           done
 
-      - name: List all.7z contents after cleanup
+      - name: List all.tar.xz contents after cleanup
         run: |
           tree all_projects || true
 
-      - name: Create all.7z with all project contents
+      - name: Create all.tar.xz with all project contents
         id: create
         run: |
           # Compute short commit hash and prepare target directory so the resulting
           # archive extracts to a top-level directory named all-<short_sha>/
           SHORT_SHA=$(git -C .. rev-parse --short=8 "$GITHUB_SHA")
           TARGET_DIR="all-${SHORT_SHA}"
-          ARCHIVE_NAME="${TARGET_DIR}.7z"
+          ARCHIVE_NAME="${TARGET_DIR}.tar.xz"
 
           # Make sure we have a staging directory from the unpack step
           if [ ! -d all_projects ]; then
@@ -355,13 +349,14 @@ jobs:
           # archive in the current working directory (`dataset/`) — no
           # leading `../` is necessary because we do not cd into the
           # target directory.
-          7z a -t7z -mx=9 -ms=on "${ARCHIVE_NAME}" "${TARGET_DIR}"
+          # Use maximum xz compression with multi-threading
+          XZ_OPT="-9e -T0" tar -cJf "${ARCHIVE_NAME}" --exclude-vcs "${TARGET_DIR}"
           ls -lh "${ARCHIVE_NAME}"
 
           # Expose the archive name as a step output for later steps
           echo "all_archive=${ARCHIVE_NAME}" >> "$GITHUB_OUTPUT"
 
-      - name: Upload artifact all.7z
+      - name: Upload artifact all.tar.xz
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.create.outputs.all_archive }}
@@ -387,23 +382,23 @@ jobs:
 
             ## Downloads
 
-            - `${{ steps.create.outputs.all_archive }}` - All projects combined (unpacked contents, 7z format with maximum compression)
-            - Individual project archives (e.g., `jq.7z`, `sqlite.7z`)
+            - `${{ steps.create.outputs.all_archive }}` - All projects combined (unpacked contents, tar.xz format with maximum compression)
+            - Individual project archives (e.g., `jq.tar.xz`, `sqlite.tar.xz`)
 
             ## Each project archive contains:
             - `bc/` - LLVM bitcode files for static analysis
-            - `fuzz/` - AFL++ fuzzing binaries and resources (not included in all-xxx.7z)
+            - `fuzz/` - AFL++ fuzzing binaries and resources (not included in all-xxx.tar.xz)
 
             ## Note:
-            - Individual project archives (.7z) contain both `bc/` and `fuzz/` directories
-            - The combined `all-xxx.7z` archive only contains `bc/` directories for all projects
+            - Individual project archives (.tar.xz) contain both `bc/` and `fuzz/` directories
+            - The combined `all-xxx.tar.xz` archive only contains `bc/` directories for all projects
           draft: false
           prerelease: false
           files: |
             # Files paths are relative to the workspace root; our created archives live under
             # `dataset/`, so reference them with the dataset prefix.
             dataset/${{ steps.create.outputs.all_archive }}
-            dataset/artifacts/**/*.7z
+            dataset/artifacts/**/*.tar.xz
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
