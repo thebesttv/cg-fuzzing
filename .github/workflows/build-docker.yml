@@ -286,7 +286,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y p7zip-full
 
-      - name: Create all.7z with all project contents
+      - name: Unpack project artifacts
         run: |
           mkdir -p all_projects
           # Unzip each project zip into all_projects directory
@@ -298,14 +298,52 @@ jobs:
           done
           echo "=== all_projects structure ==="
           find all_projects -type f | head -50
-          # Create all.7z from the combined contents with maximum compression
-          # -t7z: use 7z format
-          # -mx=9: maximum compression level
-          # -ms=on: solid archive (better compression)
-          cd all_projects
-          7z a -t7z -mx=9 -ms=on ../all.7z .
-          cd ..
-          ls -lh all.7z
+
+      - name: Create all.7z with all project contents
+        id: create
+        run: |
+          # Compute short commit hash and prepare target directory so the resulting
+          # archive extracts to a top-level directory named all-<short_sha>/
+          SHORT_SHA=$(git -C .. rev-parse --short=8 "$GITHUB_SHA")
+          TARGET_DIR="all-${SHORT_SHA}"
+          ARCHIVE_NAME="${TARGET_DIR}.7z"
+
+          # Make sure we have a staging directory from the unpack step
+          if [ ! -d all_projects ]; then
+            echo "Error: all_projects directory not found - nothing to archive"
+            exit 1
+          fi
+
+          # Move the extracted staging directory to the target directory so the
+          # archive extracts to a single top-level folder named ${TARGET_DIR}/
+          if [ -d "$TARGET_DIR" ]; then
+            echo "Removing existing ${TARGET_DIR}"
+            rm -rf "$TARGET_DIR"
+          fi
+
+          # Rename (move) the staging directory directly. This avoids copying and
+          # keeps inode ownership and metadata where possible.
+          mv all_projects "$TARGET_DIR" || {
+            echo "Error: failed to move all_projects to ${TARGET_DIR}"
+            exit 1
+          }
+
+          # Fail early if nothing was moved
+          if [ -z "$(ls -A "$TARGET_DIR" 2>/dev/null)" ]; then
+            echo "Error: ${TARGET_DIR} is empty after moving staging directory"
+            exit 1
+          fi
+
+          # Archive the target directory itself so extraction produces a
+          # single top-level folder (e.g. `all-<short>/`). Create the
+          # archive in the current working directory (`dataset/`) — no
+          # leading `../` is necessary because we do not cd into the
+          # target directory.
+          7z a -t7z -mx=9 -ms=on "${ARCHIVE_NAME}" "${TARGET_DIR}"
+          ls -lh "${ARCHIVE_NAME}"
+
+          # Expose the archive name as a step output for later steps
+          echo "all_archive=${ARCHIVE_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Delete existing release
         run: |
@@ -324,7 +362,7 @@ jobs:
 
             ## Downloads
 
-            - `all.7z` - All projects combined (unpacked contents, 7z format with maximum compression)
+            - `${{ steps.create.outputs.all_archive }}` - All projects combined (unpacked contents, 7z format with maximum compression)
             - Individual project zips (e.g., `jq.zip`, `sqlite.zip`)
 
             ## Each project zip contains:
@@ -335,7 +373,7 @@ jobs:
           files: |
             # Files paths are relative to the workspace root; our created archives live under
             # `dataset/`, so reference them with the dataset prefix.
-            dataset/all.7z
+            dataset/${{ steps.create.outputs.all_archive }}
             dataset/artifacts/**/*.zip
           make_latest: true
         env:
