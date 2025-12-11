@@ -1,0 +1,30 @@
+# Crypto-related dictionary for libsodium fuzzing
+# Common sizes and patterns in crypto operations
+
+# Common key/nonce sizes
+"0000000000000000"
+"00000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+
+# Small values
+"\x00"
+"\x01"
+"\xff"
+
+# Powers of 2
+"\x00\x00\x00\x10"
+"\x00\x00\x00\x20"
+"\x00\x00\x01\x00"
+
+# Common patterns
+"AAAA"
+"BBBB"
+"\x00\x00\x00\x00"
+"\xff\xff\xff\xff"
+
+# Crypto identifiers
+"aead"
+"chacha20"
+"poly1305"
+"aes256gcm"
+"xchacha20"

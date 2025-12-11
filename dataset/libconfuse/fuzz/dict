@@ -1,0 +1,34 @@
+# Configuration file dictionary for libconfuse
+
+# Common keywords
+"true"
+"false"
+"yes"
+"no"
+"on"
+"off"
+
+# Operators
+"="
+"{"
+"}"
+"["
+"]"
+
+# Common section names
+"section"
+"config"
+"options"
+"settings"
+
+# Numbers
+"0"
+"1"
+"100"
+"-1"
+
+# Strings
+'""'
+"test"
+"value"
+"name"
