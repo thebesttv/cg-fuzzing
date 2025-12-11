@@ -1,0 +1,83 @@
+# Serd (RDF/Turtle) dictionary for AFL++
+
+# RDF/Turtle prefixes
+"@prefix"
+"@base"
+"PREFIX"
+"BASE"
+
+# RDF types
+"a"
+"rdf:type"
+"rdfs:subClassOf"
+"rdfs:label"
+"rdfs:comment"
+"owl:Class"
+"owl:ObjectProperty"
+
+# Common prefixes
+"rdf:"
+"rdfs:"
+"owl:"
+"xsd:"
+"foaf:"
+"dc:"
+"dcterms:"
+
+# XSD datatypes
+"^^xsd:string"
+"^^xsd:integer"
+"^^xsd:decimal"
+"^^xsd:boolean"
+"^^xsd:date"
+"^^xsd:dateTime"
+
+# Language tags
+"@en"
+"@fr"
+"@de"
+"@es"
+
+# Turtle syntax
+"."
+";"
+","
+"["
+"]"
+"("
+")"
+"<"
+">"
+"\""
+"'"
+"_:"
+
+# Common URIs
+"<http://example.org/>"
+"<http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
+"<http://www.w3.org/2000/01/rdf-schema#>"
+"<http://www.w3.org/2002/07/owl#>"
+
+# Blank nodes
+"_:b0"
+"_:blank"
+"[]"
+
+# Literals
+"\"hello\""
+"\"test\""
+"'string'"
+"true"
+"false"
+"123"
+"3.14"
+
+# Escape sequences
+"\\n"
+"\\t"
+"\\r"
+"\\\\"
+"\\\""
+
+# Comments
+"# comment"

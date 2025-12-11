@@ -1,0 +1,63 @@
+# ReadStat dictionary for AFL++
+# Keywords and magic numbers for SAS, SPSS, Stata files
+
+# SAS magic numbers
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc2\xea\x81\x60"
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc2\xea\x81\x62"
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc2\xea\x81\x63"
+
+# SPSS magic numbers
+"$FL2"
+"$FL3"
+"$FL4"
+
+# Stata magic numbers  
+"\x00\x00\x01\x6c"
+"\x00\x00\x01\x6d"
+"\x00\x00\x01\x6e"
+"\x73\x72\x65\x6c"
+
+# Common keywords
+"data"
+"DATA"
+"variables"
+"VARIABLES"
+"observations"
+"OBSERVATIONS"
+"label"
+"LABEL"
+"format"
+"FORMAT"
+"value"
+"VALUE"
+"missing"
+"MISSING"
+"string"
+"STRING"
+"numeric"
+"NUMERIC"
+"date"
+"DATE"
+"datetime"
+"DATETIME"
+
+# Field separators
+"\t"
+","
+";"
+"|"
+"\x00"
+"\n"
+"\r\n"
+
+# Common data types
+"int8"
+"int16"
+"int32"
+"int64"
+"float"
+"double"
+"char"
+"byte"
+"long"
+"short"
