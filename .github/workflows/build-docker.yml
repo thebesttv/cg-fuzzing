@@ -224,20 +224,25 @@ jobs:
           echo "=== Final output structure ==="
           find "output/${{ matrix.project }}" -type f | head -50
 
-      - name: Create project zip
+      - name: Install 7z for compression
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y p7zip-full
+
+      - name: Create project archive with 7z
         run: |
           cd output
-          zip -r "${{ matrix.project }}.zip" "${{ matrix.project }}"
-          ls -la "${{ matrix.project }}.zip"
+          7z a -t7z -mx=9 -ms=on "${{ matrix.project }}.7z" "${{ matrix.project }}"
+          ls -lh "${{ matrix.project }}.7z"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.project }}
-          # `defaults.run.working-directory` is `./dataset` so run steps create zips under
+          # `defaults.run.working-directory` is `./dataset` so run steps create 7z archives under
           # `dataset/output/...`. Actions using `uses:` run from the workspace root, so
           # specify the dataset prefix so the uploader finds the file.
-          path: dataset/output/${{ matrix.project }}.zip
+          path: dataset/output/${{ matrix.project }}.7z
           retention-days: 30
 
       - name: Login to Docker Hub
@@ -272,14 +277,14 @@ jobs:
         with:
           # `download-artifact` writes into the given path relative to the workspace root.
           # We set `path: dataset/artifacts` so subsequent `run` steps (which are executed
-          # inside `dataset` due to defaults) can access the downloaded zips with
-          # `artifacts/**/*.zip`.
+          # inside `dataset` due to defaults) can access the downloaded 7z archives with
+          # `artifacts/**/*.7z`.
           path: dataset/artifacts
 
       - name: List downloaded artifacts
         run: |
           echo "=== Downloaded artifacts ==="
-          find artifacts -type f -name "*.zip"
+          find artifacts -type f -name "*.7z"
 
       - name: Install 7z
         run: |
@@ -289,14 +294,22 @@ jobs:
       - name: Unpack project artifacts
         run: |
           mkdir -p all_projects
-          # Unzip each project zip into all_projects directory
-          for zip_file in artifacts/**/*.zip; do
-            if [ -f "$zip_file" ]; then
-              echo "Extracting $zip_file..."
-              unzip -q "$zip_file" -d all_projects/
+          # Extract each project 7z archive into all_projects directory
+          for archive in artifacts/**/*.7z; do
+            if [ -f "$archive" ]; then
+              echo "Extracting $archive..."
+              7z x "$archive" -oall_projects/ -aoa
             fi
           done
-          echo "=== all_projects structure ==="
+          echo "=== all_projects structure (before cleanup) ==="
+          find all_projects -type d | head -20
+
+      - name: Keep only bc artifacts for all.7z
+        run: |
+          echo "=== Cleaning up for all.7z: keeping only bc/, removing fuzz/ directories ==="
+          # Remove all fuzz directories (which may contain work/ subdirectories)
+          find all_projects -type d -name "fuzz" -exec rm -rf {} + 2>/dev/null || true
+          echo "=== all_projects structure (after cleanup) ==="
           find all_projects -type f | head -50
 
       - name: Create all.7z with all project contents
@@ -363,18 +376,22 @@ jobs:
             ## Downloads
 
             - `${{ steps.create.outputs.all_archive }}` - All projects combined (unpacked contents, 7z format with maximum compression)
-            - Individual project zips (e.g., `jq.zip`, `sqlite.zip`)
+            - Individual project archives (e.g., `jq.7z`, `sqlite.7z`)
 
-            ## Each project zip contains:
+            ## Each project archive contains:
             - `bc/` - LLVM bitcode files for static analysis
-            - `fuzz/` - AFL++ fuzzing binaries and resources
+            - `fuzz/` - AFL++ fuzzing binaries and resources (not included in all-xxx.7z)
+            
+            ## Note:
+            - Individual project archives (.7z) contain both `bc/` and `fuzz/` directories
+            - The combined `all-xxx.7z` archive only contains `bc/` directories for all projects
           draft: false
           prerelease: false
           files: |
             # Files paths are relative to the workspace root; our created archives live under
             # `dataset/`, so reference them with the dataset prefix.
             dataset/${{ steps.create.outputs.all_archive }}
-            dataset/artifacts/**/*.zip
+            dataset/artifacts/**/*.7z
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
