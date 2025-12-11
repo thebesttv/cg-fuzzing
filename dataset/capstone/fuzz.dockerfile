@@ -1,25 +1,40 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget cmake && \
+    apt-get install -y htop vim tmux && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget cmake uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract capstone 5.0.3 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: capstone" > /work/proj && \
+    echo "version: 5.0.3" >> /work/proj && \
+    echo "source: https://github.com/capstone-engine/capstone/archive/refs/tags/5.0.3.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/capstone-engine/capstone/archive/refs/tags/5.0.3.tar.gz && \
     tar -xzf 5.0.3.tar.gz && \
-    rm 5.0.3.tar.gz
+    rm 5.0.3.tar.gz && \
+    cp -r capstone-5.0.3 build-fuzz && \
+    cp -r capstone-5.0.3 build-cmplog && \
+    cp -r capstone-5.0.3 build-cov && \
+    cp -r capstone-5.0.3 build-uftrace && \
+    rm -rf capstone-5.0.3
 
-WORKDIR /src/capstone-5.0.3
-
-# Build cstool with afl-clang-fast for fuzzing
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN mkdir build && cd build && \
-    CC=afl-clang-fast CXX=afl-clang-fast++ \
+    CC=afl-clang-lto \
+    CXX=afl-clang-lto++ \
     cmake .. \
         -DCMAKE_C_FLAGS="-O2" \
         -DCMAKE_EXE_LINKER_FLAGS="-Wl,--allow-multiple-definition" \
@@ -27,24 +42,18 @@ RUN mkdir build && cd build && \
         -DCAPSTONE_BUILD_STATIC=ON \
         -DCAPSTONE_BUILD_CSTOOL=ON \
         -DCAPSTONE_BUILD_TESTS=OFF \
-        -DCAPSTONE_BUILD_CSTEST=OFF
+        -DCAPSTONE_BUILD_CSTEST=OFF && \
+    make -j$(nproc)
 
-RUN cd build && make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/build/cstool bin-fuzz && \
+    /work/bin-fuzz -v
 
-# Install the cstool binary
-RUN cp build/cstool /out/cstool
-
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf capstone-5.0.3 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/capstone-engine/capstone/archive/refs/tags/5.0.3.tar.gz && \
-    tar -xzf 5.0.3.tar.gz && \
-    rm 5.0.3.tar.gz
-
-WORKDIR /src/capstone-5.0.3
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN mkdir build && cd build && \
-    CC=afl-clang-fast CXX=afl-clang-fast++ \
+    CC=afl-clang-lto \
+    CXX=afl-clang-lto++ \
     AFL_LLVM_CMPLOG=1 \
     cmake .. \
         -DCMAKE_C_FLAGS="-O2" \
@@ -53,25 +62,59 @@ RUN mkdir build && cd build && \
         -DCAPSTONE_BUILD_STATIC=ON \
         -DCAPSTONE_BUILD_CSTOOL=ON \
         -DCAPSTONE_BUILD_TESTS=OFF \
-        -DCAPSTONE_BUILD_CSTEST=OFF
+        -DCAPSTONE_BUILD_CSTEST=OFF && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp build/cstool /out/cstool.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/build/cstool bin-cmplog && \
+    /work/bin-cmplog -v
 
 # Copy fuzzing resources
-COPY capstone/fuzz/dict /out/dict
-COPY capstone/fuzz/in /out/in
-COPY capstone/fuzz/fuzz.sh /out/fuzz.sh
-COPY capstone/fuzz/whatsup.sh /out/whatsup.sh
+COPY capstone/fuzz/dict /work/dict
+COPY capstone/fuzz/in /work/in
+COPY capstone/fuzz/fuzz.sh /work/fuzz.sh
+COPY capstone/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN mkdir build && cd build && \
+    CC=clang \
+    CXX=clang++ \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+        -DCMAKE_EXE_LINKER_FLAGS="-fprofile-instr-generate -fcoverage-mapping -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DCAPSTONE_BUILD_STATIC=ON \
+        -DCAPSTONE_BUILD_CSTOOL=ON \
+        -DCAPSTONE_BUILD_TESTS=OFF \
+        -DCAPSTONE_BUILD_CSTEST=OFF && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/cstool /out/cstool.cmplog && \
-    file /out/cstool && \
-    /out/cstool -v
+WORKDIR /work
+RUN ln -s build-cov/build/cstool bin-cov && \
+    /work/bin-cov -v && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing capstone cstool'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN mkdir build && cd build && \
+    CC=clang \
+    CXX=clang++ \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+        -DCMAKE_EXE_LINKER_FLAGS="-pg -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DCAPSTONE_BUILD_STATIC=ON \
+        -DCAPSTONE_BUILD_CSTOOL=ON \
+        -DCAPSTONE_BUILD_TESTS=OFF \
+        -DCAPSTONE_BUILD_CSTEST=OFF && \
+    make -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/build/cstool bin-uftrace && \
+    /work/bin-uftrace -v && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
