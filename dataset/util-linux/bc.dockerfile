@@ -27,15 +27,17 @@ RUN ./autogen.sh
 RUN CC=wllvm \
     CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --disable-shared --enable-static --disable-all-programs --enable-libuuid
+    ./configure --disable-shared --enable-static --disable-all-programs \
+        --enable-libuuid --enable-uuidgen
 
 RUN make -j$(nproc)
 
 RUN mkdir -p ~/bc && \
-    find . -name "uuidgen" -o -name "uuidparse" -o -name "test_uuid" | while read bin; do \
-        if [ -f "$bin" ] && [ -x "$bin" ] && file "$bin" | grep -q "ELF"; then \
+    find . -type f -executable -name "uuidgen" -o -name "uuidparse" -o -name "test_uuid" | while read bin; do \
+        if [ -f "$bin" ] && file "$bin" | grep -q "ELF"; then \
             extract-bc "$bin" && \
-            mv "${bin}.bc" ~/bc/ 2>/dev/null || true; \
+            basename_bc=$(basename "$bin").bc && \
+            mv "${bin}.bc" ~/bc/"$basename_bc" 2>/dev/null || true; \
         fi; \
     done
 

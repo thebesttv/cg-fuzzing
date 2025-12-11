@@ -19,7 +19,8 @@ RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --disable-shared --enable-static --disable-all-programs --enable-libuuid
+    ./configure --disable-shared --enable-static --disable-all-programs \
+        --enable-libuuid --enable-uuidgen
 
 RUN make -j$(nproc)
 RUN find . -name "uuidgen" -executable -type f | head -1 | xargs -I {} cp {} /out/uuidgen
@@ -38,7 +39,8 @@ RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure --disable-shared --enable-static --disable-all-programs --enable-libuuid
+    ./configure --disable-shared --enable-static --disable-all-programs \
+        --enable-libuuid --enable-uuidgen
 
 RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN find . -name "uuidgen" -executable -type f | head -1 | xargs -I {} cp {} /out/uuidgen.cmplog

@@ -22,11 +22,33 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Build static versions of openssl and zlib for static linking
+RUN cd /tmp && \
+    wget https://www.openssl.org/source/openssl-3.0.15.tar.gz && \
+    tar -xzf openssl-3.0.15.tar.gz && \
+    cd openssl-3.0.15 && \
+    ./config no-shared --prefix=/usr/local/ssl && \
+    make -j$(nproc) && \
+    make install && \
+    cd /tmp && rm -rf openssl-3.0.15*
+
+RUN cd /tmp && \
+    wget https://zlib.net/zlib-1.3.1.tar.gz && \
+    tar -xzf zlib-1.3.1.tar.gz && \
+    cd zlib-1.3.1 && \
+    ./configure --prefix=/usr/local --static && \
+    make -j$(nproc) && \
+    make install && \
+    cd /tmp && rm -rf zlib-1.3.1*
+
 RUN mkdir build && cd build && \
     CC=wllvm CXX=wllvm++ \
     cmake .. \
         -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
+        -DOPENSSL_ROOT_DIR=/usr/local/ssl \
+        -DOPENSSL_USE_STATIC_LIBS=ON \
+        -DZLIB_ROOT=/usr/local \
         -DBUILD_SHARED_LIBS=OFF \
         -DBUILD_EXAMPLES=ON \
         -DBUILD_TESTING=OFF
