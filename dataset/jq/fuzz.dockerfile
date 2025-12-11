@@ -2,24 +2,32 @@ FROM aflplusplus/aflplusplus:latest
 
 # Install build dependencies
 RUN apt-get update && \
-    apt-get install -y wget autoconf automake libtool bison flex && \
+    apt-get install -y wget autoconf automake libtool bison flex uftrace && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Create working directory
+WORKDIR /work
 
-# Download and extract jq v1.8.1 (same version as bc.dockerfile)
-WORKDIR /src
+# Save project metadata
+RUN echo "project: jq" > /work/proj && \
+    echo "version: 1.8.1" >> /work/proj && \
+    echo "source: https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-1.8.1.tar.gz" >> /work/proj
+
+# Download source once
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-1.8.1.tar.gz && \
     tar -xzf jq-1.8.1.tar.gz && \
     rm jq-1.8.1.tar.gz
 
-WORKDIR /src/jq-1.8.1
+# Extract to multiple build directories
+RUN cp -r jq-1.8.1 build-fuzz && \
+    cp -r jq-1.8.1 build-cmplog && \
+    cp -r jq-1.8.1 build-cov && \
+    cp -r jq-1.8.1 build-uftrace && \
+    rm -rf jq-1.8.1
 
-# Build jq with afl-clang-lto for fuzzing (main target binary)
-# Use static linking and builtin oniguruma
-# afl-clang-lto provides collision-free instrumentation
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
@@ -27,19 +35,10 @@ RUN CC=afl-clang-lto \
     ./configure --with-oniguruma=builtin --disable-shared --enable-all-static
 
 RUN make -j$(nproc)
+RUN cp jq /work/jq-fuzz
 
-# Install the jq binary
-RUN cp jq /out/jq
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf jq-1.8.1 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-1.8.1.tar.gz && \
-    tar -xzf jq-1.8.1.tar.gz && \
-    rm jq-1.8.1.tar.gz
-
-WORKDIR /src/jq-1.8.1
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
@@ -48,22 +47,54 @@ RUN CC=afl-clang-lto \
     ./configure --with-oniguruma=builtin --disable-shared --enable-all-static
 
 RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
+RUN cp jq /work/jq-cmplog
 
-# Install CMPLOG binary
-RUN cp jq /out/jq.cmplog
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure --with-oniguruma=builtin --disable-shared --enable-all-static
+
+RUN make -j$(nproc)
+RUN cp jq /work/jq-cov
+
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --with-oniguruma=builtin
+
+RUN make -j$(nproc)
+RUN make install && ldconfig
+RUN cp /usr/local/bin/jq /work/jq-uftrace
+
+# Create symlinks for binaries
+WORKDIR /work
+RUN ln -s jq-fuzz bin-fuzz && \
+    ln -s jq-cmplog bin-cmplog && \
+    ln -s jq-cov bin-cov && \
+    ln -s jq-uftrace bin-uftrace
 
 # Copy fuzzing resources
-COPY jq/fuzz/dict /out/dict
-COPY jq/fuzz/in /out/in
-COPY jq/fuzz/fuzz.sh /out/fuzz.sh
-COPY jq/fuzz/whatsup.sh /out/whatsup.sh
+COPY jq/fuzz/dict /work/dict
+COPY jq/fuzz/in /work/in
+COPY jq/fuzz/fuzz.sh /work/fuzz.sh
+COPY jq/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Verify all binaries are built
+RUN ls -la /work/jq-* /work/bin-* && \
+    file /work/bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Verify binaries are built
-RUN ls -la /out/jq /out/jq.cmplog && \
-    file /out/jq && \
-    /out/jq --version
+# Test uftrace can trace the binary
+RUN uftrace record /work/bin-uftrace --version && \
+    uftrace report && \
+    rm -rf uftrace.data
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing jq'"]
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
