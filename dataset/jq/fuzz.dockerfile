@@ -1,5 +1,11 @@
 FROM aflplusplus/aflplusplus:latest
 
+# Install basic packages first
+RUN apt-get update && \
+    apt-get install -y htop vim tmux && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install build dependencies
 RUN apt-get update && \
     apt-get install -y wget autoconf automake libtool bison flex uftrace && \
