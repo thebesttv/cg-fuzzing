@@ -266,7 +266,6 @@ jobs:
 
   create-release:
     needs: build-project
-    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -358,7 +357,15 @@ jobs:
           # Expose the archive name as a step output for later steps
           echo "all_archive=${ARCHIVE_NAME}" >> "$GITHUB_OUTPUT"
 
+      - name: Upload artifact all.7z
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.create.outputs.all_archive }}
+          path: dataset/${{ steps.create.outputs.all_archive }}
+          retention-days: 30
+
       - name: Delete existing release
+        if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && github.event_name != 'pull_request'
         run: |
           # Delete existing release and tag if they exist
           gh release delete latest --yes --cleanup-tag 2>/dev/null || true
@@ -367,6 +374,7 @@ jobs:
 
       - name: Create release
         uses: softprops/action-gh-release@v2
+        if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && github.event_name != 'pull_request'
         with:
           tag_name: latest
           name: Latest Build
@@ -381,7 +389,7 @@ jobs:
             ## Each project archive contains:
             - `bc/` - LLVM bitcode files for static analysis
             - `fuzz/` - AFL++ fuzzing binaries and resources (not included in all-xxx.7z)
-            
+
             ## Note:
             - Individual project archives (.7z) contain both `bc/` and `fuzz/` directories
             - The combined `all-xxx.7z` archive only contains `bc/` directories for all projects
