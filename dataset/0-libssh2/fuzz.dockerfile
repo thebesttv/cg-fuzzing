@@ -76,10 +76,10 @@ WORKDIR /src/libssh2-1.11.1/build
 RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
 RUN cp example/ssh2 /out/ssh2.cmplog || cp example/direct_tcpip /out/ssh2.cmplog || cp $(find example -type f -executable | head -1) /out/ssh2.cmplog
 
-COPY libssh2/fuzz/dict /out/dict
-COPY libssh2/fuzz/in /out/in
-COPY libssh2/fuzz/fuzz.sh /out/fuzz.sh
-COPY libssh2/fuzz/whatsup.sh /out/whatsup.sh
+COPY 0-libssh2/fuzz/dict /out/dict
+COPY 0-libssh2/fuzz/in /out/in
+COPY 0-libssh2/fuzz/fuzz.sh /out/fuzz.sh
+COPY 0-libssh2/fuzz/whatsup.sh /out/whatsup.sh
 
 WORKDIR /out
 
