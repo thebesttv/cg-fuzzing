@@ -1,59 +1,87 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract chibicc (same version as bc.dockerfile - main branch)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: chibicc" > /work/proj && \
+    echo "version: main" >> /work/proj && \
+    echo "source: https://github.com/rui314/chibicc/archive/refs/heads/main.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/rui314/chibicc/archive/refs/heads/main.tar.gz -O chibicc.tar.gz && \
     tar -xzf chibicc.tar.gz && \
-    rm chibicc.tar.gz
+    rm chibicc.tar.gz && \
+    cp -r chibicc-main build-fuzz && \
+    cp -r chibicc-main build-cmplog && \
+    cp -r chibicc-main build-cov && \
+    cp -r chibicc-main build-uftrace && \
+    rm -rf chibicc-main
 
-WORKDIR /src/chibicc-main
-
-# Build chibicc with afl-clang-lto for fuzzing (main target binary)
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN make CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     -j$(nproc)
 
-# Install the chibicc binary
-RUN cp chibicc /out/chibicc
+WORKDIR /work
+RUN ln -s build-fuzz/chibicc bin-fuzz && \
+    /work/bin-fuzz --help 2>&1 | head -5 || true
 
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf chibicc-main && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/rui314/chibicc/archive/refs/heads/main.tar.gz -O chibicc.tar.gz && \
-    tar -xzf chibicc.tar.gz && \
-    rm chibicc.tar.gz
-
-WORKDIR /src/chibicc-main
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     -j$(nproc)
 
-# Install CMPLOG binary
-RUN cp chibicc /out/chibicc.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/chibicc bin-cmplog && \
+    /work/bin-cmplog --help 2>&1 | head -5 || true
 
 # Copy fuzzing resources
-COPY chibicc/fuzz/dict /out/dict
-COPY chibicc/fuzz/in /out/in
-COPY chibicc/fuzz/fuzz.sh /out/fuzz.sh
-COPY chibicc/fuzz/whatsup.sh /out/whatsup.sh
+COPY chibicc/fuzz/dict /work/dict
+COPY chibicc/fuzz/in /work/in
+COPY chibicc/fuzz/fuzz.sh /work/fuzz.sh
+COPY chibicc/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN make CC=clang \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/chibicc /out/chibicc.cmplog && \
-    file /out/chibicc
+WORKDIR /work
+RUN ln -s build-cov/chibicc bin-cov && \
+    /work/bin-cov --help 2>&1 | head -5 || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing chibicc'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN make CC=clang \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/chibicc bin-uftrace && \
+    /work/bin-uftrace --help 2>&1 | head -5 || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
