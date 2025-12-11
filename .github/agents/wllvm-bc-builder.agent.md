@@ -29,7 +29,7 @@ description: 编译开源项目，生成 LLVM bitcode (.bc) 文件和 AFL++ fuzz
 ```
 <项目>/
 ├── bc.dockerfile      # WLLVM bitcode 构建
-├── fuzz.dockerfile    # AFL++ fuzzing 构建
+├── fuzz.dockerfile    # 统一的 fuzzing 构建（包含 fuzz/cmplog/cov/uftrace）
 └── fuzz/
     ├── dict           # AFL++ 字典文件
     ├── in/            # 初始输入语料库
@@ -188,7 +188,7 @@ RUN ./bootstrap --skip-po --gnulib-srcdir=<依赖目录>
 
 ---
 
-# 第二部分：AFL++ Fuzzing 设置
+# 第二部分：AFL++ Fuzzing 设置（统一版）
 
 ## 基础镜像与工具链
 
@@ -203,71 +203,159 @@ RUN ./bootstrap --skip-po --gnulib-srcdir=<依赖目录>
 3. **启用 CMPLOG**：更好地处理比较操作
 4. **静态链接**：减少运行时开销
 
-## fuzz.dockerfile 模板
+## fuzz.dockerfile 统一模板
+
+新的 fuzz.dockerfile 将 fuzz/cmplog/cov/uftrace 的所有构建逻辑合并到一个文件中。参考 jq 项目的结构。
+
+### 核心原则
+- **一开始先安装基本包**：htop, vim, tmux，然后再安装编译依赖（包括 uftrace）
+- **所有工作在 /work 目录下进行**
+- **项目名称、版本、源码来源保存到 /work/proj 文件中**
+- **只下载一份源码**，然后解压多份到 `/work/build-{fuzz,cmplog,cov,uftrace}`
+- **在这些目录中分别编译**
+- **如果需要install**，安装到目录 `/work/install-{fuzz,cmplog,cov,uftrace}`
+- **使用 `/work/bin-{fuzz,cmplog,cov,uftrace}` 软链接到 build/install 生成的 binary**
+- **Fuzz 相关资源放到 `/work/{dict,in,fuzz.sh,whatsup.sh}` 中**
+- **进入 docker 容器的时候，默认到 /work 的 bash 中**
+- **Dockerfile 需要明确区分各个阶段**：config, make, install, 创建软链接等步骤在一个阶段内完全做好，再到另一个阶段
+
+### 模板结构（以 autotools 项目为例）
 
 ```dockerfile
 FROM aflplusplus/aflplusplus:latest
 
-# 安装构建依赖
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget <其他依赖> && \
+    apt-get install -y htop vim tmux && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# 创建输出目录
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget <其他依赖> uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# 下载源代码（与 bc.dockerfile 相同版本）
-WORKDIR /src
-RUN wget <源码URL> && \
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: <项目名>" > /work/proj && \
+    echo "version: <版本号>" >> /work/proj && \
+    echo "source: <源码URL>" >> /work/proj
+
+# Download source once and extract to multiple build directories
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 <源码URL> && \
     tar -xzf <压缩包> && \
-    rm <压缩包>
+    rm <压缩包> && \
+    cp -r <源码目录> build-fuzz && \
+    cp -r <源码目录> build-cmplog && \
+    cp -r <源码目录> build-cov && \
+    cp -r <源码目录> build-uftrace && \
+    rm -rf <源码目录>
 
-WORKDIR /src/<项目目录>
-
-# 使用 afl-clang-lto 编译主 binary
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure <配置选项>
+    ./configure <配置选项> && \
+    make -j$(nproc)
 
-RUN make -j$(nproc)
-RUN cp <binary> /out/<binary>
+WORKDIR /work
+RUN ln -s build-fuzz/<binary路径> bin-fuzz && \
+    /work/bin-fuzz --version
 
-# 构建 CMPLOG 版本
-WORKDIR /src
-RUN rm -rf <项目目录> && \
-    wget <源码URL> && \
-    tar -xzf <压缩包> && \
-    rm <压缩包>
-
-WORKDIR /src/<项目目录>
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure <配置选项>
+    ./configure <配置选项> && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-RUN cp <binary> /out/<binary>.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/<binary路径> bin-cmplog && \
+    /work/bin-cmplog --version
 
-# 复制 fuzzing 资源（脚本已设置可执行权限）
-# 注意：Docker build context 是 /dataset 目录，所以路径是相对于 dataset/ 的
-COPY <项目>/fuzz/dict /out/dict
-COPY <项目>/fuzz/in /out/in
-COPY <项目>/fuzz/fuzz.sh /out/fuzz.sh
-COPY <项目>/fuzz/whatsup.sh /out/whatsup.sh
+# Copy fuzzing resources
+COPY <项目>/fuzz/dict /work/dict
+COPY <项目>/fuzz/in /work/in
+COPY <项目>/fuzz/fuzz.sh /work/fuzz.sh
+COPY <项目>/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure <配置选项> && \
+    make -j$(nproc)
 
-# 验证
-RUN ls -la /out/<binary> /out/<binary>.cmplog && \
-    file /out/<binary>
+WORKDIR /work
+RUN ln -s build-cov/<binary路径> bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --prefix=/work/install-uftrace <其他配置选项> && \
+    make -j$(nproc) && \
+    make install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/<binary> bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
+```
+
+### CMake 项目调整
+
+对于 CMake 项目，使用相同的目录结构，但用 cmake 命令替代 configure：
+
+```dockerfile
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
+RUN mkdir build && cd build && \
+    CC=afl-clang-lto CXX=afl-clang-lto++ \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-O2" \
+        -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIBS=OFF \
+        <其他CMake选项> && \
+    make -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-fuzz/build/<binary路径> bin-fuzz
+```
+
+### Make 项目调整
+
+对于 Make 项目（如 QuickJS），直接在构建目录使用 make：
+
+```dockerfile
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
+RUN make CC=afl-clang-lto \
+    CFLAGS="-O2 <其他标志>" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
+    <目标> \
+    -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-fuzz/<binary> bin-fuzz
 ```
 
 ## Fuzzing 资源文件
@@ -296,6 +384,10 @@ CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing'"]
 - 并行模式下的进程管理和信号处理
 - 主 fuzzer (Master) 和从 fuzzer (Slaves) 的区分
 
+**重要**：使用新的统一路径结构：
+- CMPLOG_BIN 使用 `bin-cmplog` 而不是 `<binary>.cmplog`
+- TARGET_BIN 使用 `bin-fuzz` 而不是 `<binary>`
+
 ```bash
 #!/usr/bin/env bash
 # Fuzzing script for <项目> using AFL++
@@ -308,8 +400,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT_DIR="${SCRIPT_DIR}/findings"
 IN_DIR="${SCRIPT_DIR}/in"
 DICT="${SCRIPT_DIR}/dict"
-CMPLOG_BIN="${SCRIPT_DIR}/<binary>.cmplog"
-TARGET_BIN="${SCRIPT_DIR}/<binary>"
+CMPLOG_BIN="${SCRIPT_DIR}/bin-cmplog"
+TARGET_BIN="${SCRIPT_DIR}/bin-fuzz"
 PARALLEL=1
 
 # --- Usage Function ---
@@ -510,8 +602,16 @@ fi
 ```bash
 cd dataset
 docker build -f <项目>/fuzz.dockerfile -t <项目>-fuzz .
-docker run -it --rm <项目>-fuzz ./fuzz.sh
+docker run -it --rm <项目>-fuzz
 ```
+
+在容器内，可以使用：
+- `/work/bin-fuzz` - AFL++ fuzzing 二进制
+- `/work/bin-cmplog` - AFL++ CMPLOG 二进制
+- `/work/bin-cov` - LLVM coverage 二进制
+- `/work/bin-uftrace` - uftrace profiling 二进制
+- `/work/fuzz.sh` - 启动 fuzzing
+- `/work/whatsup.sh` - 监控 fuzzing 进度
 
 ## Fuzzing 验证步骤
 
@@ -523,10 +623,16 @@ docker run -it --rm <项目>-fuzz ./fuzz.sh
 
 2. 验证 binary 正常工作：
    ```bash
-   docker run --rm <项目>-fuzz /out/<binary> --version
+   docker run --rm <项目>-fuzz /work/bin-fuzz --version
+   docker run --rm <项目>-fuzz /work/bin-cmplog --version
    ```
 
-3. 启动 fuzzing（测试）：
+3. 验证容器结构：
+   ```bash
+   docker run --rm <项目>-fuzz /bin/bash -c "ls -la /work/ && cat /work/proj"
+   ```
+
+4. 启动 fuzzing（测试）：
    ```bash
    docker run -it --rm <项目>-fuzz timeout 60 ./fuzz.sh
    ```
