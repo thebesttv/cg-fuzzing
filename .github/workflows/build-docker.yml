@@ -298,18 +298,22 @@ jobs:
             if [ -f "$archive" ]; then
               echo "Extracting $archive..."
               7z x "$archive" -oall_projects/ -aoa
+
+              # After extracting each archive, delete unrelated directories (e.g. fuzz) from
+              # the extracted project to reduce disk usage and avoid carrying over
+              # e.g. AFL++ work/ directories from the combined archive.
+              proj=$(basename "$archive" .7z)
+              if [ -d "all_projects/$proj" ]; then
+                echo "Remove ./fuzz under all_projects/$proj ..."
+                rm -rfv "all_projects/$proj/fuzz" || true
+              fi
+
             fi
           done
-          echo "=== all_projects structure (before cleanup) ==="
-          find all_projects -type d | head -20
 
-      - name: Keep only bc artifacts for all.7z
+      - name: List all.7z contents after cleanup
         run: |
-          echo "=== Cleaning up for all.7z: keeping only bc/, removing fuzz/ directories ==="
-          # Remove all fuzz directories (which may contain work/ subdirectories)
-          find all_projects -type d -name "fuzz" -exec rm -rf {} + 2>/dev/null || true
-          echo "=== all_projects structure (after cleanup) ==="
-          find all_projects -type f | head -50
+          tree all_projects || true
 
       - name: Create all.7z with all project contents
         id: create
