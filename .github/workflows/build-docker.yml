@@ -232,7 +232,7 @@ jobs:
       - name: Create project archive with 7z
         run: |
           cd output
-          7z a -t7z -mx=9 -ms=on "${{ matrix.project }}.7z" "${{ matrix.project }}"
+          7z a -t7z -mx=9 -ms=on -snl "${{ matrix.project }}.7z" "${{ matrix.project }}"
           ls -lh "${{ matrix.project }}.7z"
 
       - name: Upload artifact
@@ -305,7 +305,7 @@ jobs:
               proj=$(basename "$archive" .7z)
               if [ -d "all_projects/$proj" ]; then
                 echo "Remove ./fuzz under all_projects/$proj ..."
-                rm -rfv "all_projects/$proj/fuzz" || true
+                rm -rf "all_projects/$proj/fuzz" || true
               fi
 
             fi
