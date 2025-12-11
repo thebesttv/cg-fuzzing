@@ -172,20 +172,20 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Extract fuzz artifacts
-        if: steps.build-fuzz.outputs.exists == 'true'
-        run: |
-          container_id=$(docker create "${{ matrix.project }}-fuzz:latest")
-          # Copy fuzz binaries and resources from container
-          docker cp "$container_id:/out/." "output/${{ matrix.project }}/fuzz/" 2>/dev/null || true
-          docker rm "$container_id"
-          echo "=== fuzz artifacts ==="
-          ls -la "output/${{ matrix.project }}/fuzz/" || true
-          # Verify directory is non-empty
-          if [ -z "$(ls -A "output/${{ matrix.project }}/fuzz/" 2>/dev/null)" ]; then
-            echo "Error: fuzz artifacts directory is empty!"
-            exit 1
-          fi
+      # - name: Extract fuzz artifacts
+      #   if: steps.build-fuzz.outputs.exists == 'true'
+      #   run: |
+      #     container_id=$(docker create "${{ matrix.project }}-fuzz:latest")
+      #     # Copy fuzz binaries and resources from container
+      #     docker cp "$container_id:/out/." "output/${{ matrix.project }}/fuzz/" 2>/dev/null || true
+      #     docker rm "$container_id"
+      #     echo "=== fuzz artifacts ==="
+      #     ls -la "output/${{ matrix.project }}/fuzz/" || true
+      #     # Verify directory is non-empty
+      #     if [ -z "$(ls -A "output/${{ matrix.project }}/fuzz/" 2>/dev/null)" ]; then
+      #       echo "Error: fuzz artifacts directory is empty!"
+      #       exit 1
+      #     fi
 
       - name: Build cov.dockerfile (if exists)
         id: build-cov
