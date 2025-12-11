@@ -11,7 +11,7 @@ RUN mkdir -p /out
 
 # Download and extract unifdef 2.12 (same version as bc.dockerfile)
 WORKDIR /src
-RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://dotat.at/prog/unifdef/unifdef-2.12.tar.gz && \
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp2.osuosl.org/pub/blfs/12.4/u/unifdef-2.12.tar.gz && \
     tar -xzf unifdef-2.12.tar.gz && \
     rm unifdef-2.12.tar.gz
 
@@ -26,7 +26,7 @@ RUN cp unifdef /out/unifdef
 # Build CMPLOG version for better fuzzing (comparison logging)
 WORKDIR /src
 RUN rm -rf unifdef-2.12 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://dotat.at/prog/unifdef/unifdef-2.12.tar.gz && \
+    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp2.osuosl.org/pub/blfs/12.4/u/unifdef-2.12.tar.gz && \
     tar -xzf unifdef-2.12.tar.gz && \
     rm unifdef-2.12.tar.gz
 
