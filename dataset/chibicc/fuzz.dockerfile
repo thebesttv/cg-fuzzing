@@ -24,10 +24,10 @@ RUN echo "project: chibicc" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/rui314/chibicc/archive/refs/heads/main.tar.gz -O chibicc.tar.gz && \
     tar -xzf chibicc.tar.gz && \
     rm chibicc.tar.gz && \
-    cp -r chibicc-main build-fuzz && \
-    cp -r chibicc-main build-cmplog && \
-    cp -r chibicc-main build-cov && \
-    cp -r chibicc-main build-uftrace && \
+    cp -a chibicc-main build-fuzz && \
+    cp -a chibicc-main build-cmplog && \
+    cp -a chibicc-main build-cov && \
+    cp -a chibicc-main build-uftrace && \
     rm -rf chibicc-main
 
 # Build fuzz binary with afl-clang-lto

@@ -24,10 +24,10 @@ RUN echo "project: capstone" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/capstone-engine/capstone/archive/refs/tags/5.0.3.tar.gz && \
     tar -xzf 5.0.3.tar.gz && \
     rm 5.0.3.tar.gz && \
-    cp -r capstone-5.0.3 build-fuzz && \
-    cp -r capstone-5.0.3 build-cmplog && \
-    cp -r capstone-5.0.3 build-cov && \
-    cp -r capstone-5.0.3 build-uftrace && \
+    cp -a capstone-5.0.3 build-fuzz && \
+    cp -a capstone-5.0.3 build-cmplog && \
+    cp -a capstone-5.0.3 build-cov && \
+    cp -a capstone-5.0.3 build-uftrace && \
     rm -rf capstone-5.0.3
 
 # Build fuzz binary with afl-clang-lto

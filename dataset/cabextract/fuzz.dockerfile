@@ -24,10 +24,10 @@ RUN echo "project: cabextract" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.cabextract.org.uk/cabextract-1.11.tar.gz && \
     tar -xzf cabextract-1.11.tar.gz && \
     rm cabextract-1.11.tar.gz && \
-    cp -r cabextract-1.11 build-fuzz && \
-    cp -r cabextract-1.11 build-cmplog && \
-    cp -r cabextract-1.11 build-cov && \
-    cp -r cabextract-1.11 build-uftrace && \
+    cp -a cabextract-1.11 build-fuzz && \
+    cp -a cabextract-1.11 build-cmplog && \
+    cp -a cabextract-1.11 build-cov && \
+    cp -a cabextract-1.11 build-uftrace && \
     rm -rf cabextract-1.11
 
 # Build fuzz binary with afl-clang-lto

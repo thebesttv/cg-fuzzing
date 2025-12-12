@@ -24,10 +24,10 @@ RUN echo "project: byacc" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://invisible-mirror.net/archives/byacc/byacc-20240109.tgz && \
     tar -xzf byacc-20240109.tgz && \
     rm byacc-20240109.tgz && \
-    cp -r byacc-20240109 build-fuzz && \
-    cp -r byacc-20240109 build-cmplog && \
-    cp -r byacc-20240109 build-cov && \
-    cp -r byacc-20240109 build-uftrace && \
+    cp -a byacc-20240109 build-fuzz && \
+    cp -a byacc-20240109 build-cmplog && \
+    cp -a byacc-20240109 build-cov && \
+    cp -a byacc-20240109 build-uftrace && \
     rm -rf byacc-20240109
 
 # Build fuzz binary with afl-clang-lto

@@ -24,10 +24,10 @@ RUN echo "project: calc" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/lcn2/calc/releases/download/v2.15.1.1/calc-2.15.1.1.tar.bz2 && \
     tar -xjf calc-2.15.1.1.tar.bz2 && \
     rm calc-2.15.1.1.tar.bz2 && \
-    cp -r calc-2.15.1.1 build-fuzz && \
-    cp -r calc-2.15.1.1 build-cmplog && \
-    cp -r calc-2.15.1.1 build-cov && \
-    cp -r calc-2.15.1.1 build-uftrace && \
+    cp -a calc-2.15.1.1 build-fuzz && \
+    cp -a calc-2.15.1.1 build-cmplog && \
+    cp -a calc-2.15.1.1 build-cov && \
+    cp -a calc-2.15.1.1 build-uftrace && \
     rm -rf calc-2.15.1.1
 
 # Build fuzz binary with afl-clang-lto

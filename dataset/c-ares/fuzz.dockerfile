@@ -24,10 +24,10 @@ RUN echo "project: c-ares" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/c-ares/c-ares/releases/download/v1.34.5/c-ares-1.34.5.tar.gz && \
     tar -xzf c-ares-1.34.5.tar.gz && \
     rm c-ares-1.34.5.tar.gz && \
-    cp -r c-ares-1.34.5 build-fuzz && \
-    cp -r c-ares-1.34.5 build-cmplog && \
-    cp -r c-ares-1.34.5 build-cov && \
-    cp -r c-ares-1.34.5 build-uftrace && \
+    cp -a c-ares-1.34.5 build-fuzz && \
+    cp -a c-ares-1.34.5 build-cmplog && \
+    cp -a c-ares-1.34.5 build-cov && \
+    cp -a c-ares-1.34.5 build-uftrace && \
     rm -rf c-ares-1.34.5
 
 # Build fuzz binary with afl-clang-lto

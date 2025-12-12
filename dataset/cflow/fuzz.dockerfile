@@ -24,16 +24,15 @@ RUN echo "project: cflow" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/cflow/cflow-1.7.tar.gz && \
     tar -xzf cflow-1.7.tar.gz && \
     rm cflow-1.7.tar.gz && \
-    cp -r cflow-1.7 build-fuzz && \
-    cp -r cflow-1.7 build-cmplog && \
-    cp -r cflow-1.7 build-cov && \
-    cp -r cflow-1.7 build-uftrace && \
+    cp -a cflow-1.7 build-fuzz && \
+    cp -a cflow-1.7 build-cmplog && \
+    cp -a cflow-1.7 build-cov && \
+    cp -a cflow-1.7 build-uftrace && \
     rm -rf cflow-1.7
 
 # Build fuzz binary with afl-clang-lto
 WORKDIR /work/build-fuzz
-RUN touch configure.ac aclocal.m4 configure Makefile.am Makefile.in && \
-    CC=afl-clang-lto \
+RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
@@ -46,8 +45,7 @@ RUN ln -s build-fuzz/src/cflow bin-fuzz && \
 
 # Build cmplog binary with afl-clang-lto + CMPLOG
 WORKDIR /work/build-cmplog
-RUN touch configure.ac aclocal.m4 configure Makefile.am Makefile.in && \
-    CC=afl-clang-lto \
+RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
@@ -67,8 +65,7 @@ COPY cflow/fuzz/whatsup.sh /work/whatsup.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
-RUN touch configure.ac aclocal.m4 configure Makefile.am Makefile.in && \
-    CC=clang \
+RUN CC=clang \
     CXX=clang++ \
     CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
     LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
@@ -82,8 +79,7 @@ RUN ln -s build-cov/src/cflow bin-cov && \
 
 # Build uftrace binary with profiling instrumentation
 WORKDIR /work/build-uftrace
-RUN touch configure.ac aclocal.m4 configure Makefile.am Makefile.in && \
-    CC=clang \
+RUN CC=clang \
     CXX=clang++ \
     CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
     LDFLAGS="-pg -Wl,--allow-multiple-definition" \

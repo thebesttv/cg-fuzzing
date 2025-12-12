@@ -24,10 +24,10 @@ RUN echo "project: antiword" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/grobian/antiword/archive/refs/heads/main.tar.gz -O antiword.tar.gz && \
     tar -xzf antiword.tar.gz && \
     rm antiword.tar.gz && \
-    cp -r antiword-main build-fuzz && \
-    cp -r antiword-main build-cmplog && \
-    cp -r antiword-main build-cov && \
-    cp -r antiword-main build-uftrace && \
+    cp -a antiword-main build-fuzz && \
+    cp -a antiword-main build-cmplog && \
+    cp -a antiword-main build-cov && \
+    cp -a antiword-main build-uftrace && \
     rm -rf antiword-main
 
 # Build fuzz binary with afl-clang-lto

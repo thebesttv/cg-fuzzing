@@ -24,10 +24,10 @@ RUN echo "project: bsdiff" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/mendsley/bsdiff/archive/refs/heads/master.tar.gz && \
     tar -xzf master.tar.gz && \
     rm master.tar.gz && \
-    cp -r bsdiff-master build-fuzz && \
-    cp -r bsdiff-master build-cmplog && \
-    cp -r bsdiff-master build-cov && \
-    cp -r bsdiff-master build-uftrace && \
+    cp -a bsdiff-master build-fuzz && \
+    cp -a bsdiff-master build-cmplog && \
+    cp -a bsdiff-master build-cov && \
+    cp -a bsdiff-master build-uftrace && \
     rm -rf bsdiff-master
 
 # Build fuzz binary with afl-clang-lto
