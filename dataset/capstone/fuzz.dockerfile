@@ -53,7 +53,7 @@ COPY capstone/fuzz/platform.h /work/build-fuzz/
 # Build custom fuzzing harness
 WORKDIR /work/build-fuzz
 RUN afl-clang-lto -O2 \
-    -I. \
+    -Iinclude \
     -o fuzz_harness \
     fuzz_harness.c platform.c \
     build/libcapstone.a \
@@ -87,7 +87,7 @@ COPY capstone/fuzz/platform.h /work/build-cmplog/
 # Build custom fuzzing harness with CMPLOG
 WORKDIR /work/build-cmplog
 RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 \
-    -I. \
+    -Iinclude \
     -o fuzz_harness \
     fuzz_harness.c platform.c \
     build/libcapstone.a \
@@ -126,7 +126,7 @@ COPY capstone/fuzz/platform.h /work/build-cov/
 # Build custom fuzzing harness with coverage
 WORKDIR /work/build-cov
 RUN clang -g -O0 -fprofile-instr-generate -fcoverage-mapping \
-    -I. \
+    -Iinclude \
     -o fuzz_harness \
     fuzz_harness.c platform.c \
     build/libcapstone.a \
@@ -159,7 +159,7 @@ COPY capstone/fuzz/platform.h /work/build-uftrace/
 # Build custom fuzzing harness with profiling
 WORKDIR /work/build-uftrace
 RUN clang -g -O0 -pg -fno-omit-frame-pointer \
-    -I. \
+    -Iinclude \
     -o fuzz_harness \
     fuzz_harness.c platform.c \
     build/libcapstone.a \
