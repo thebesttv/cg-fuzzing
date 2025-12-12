@@ -24,10 +24,10 @@ RUN echo "project: oniguruma" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/kkos/oniguruma/releases/download/v6.9.10/onig-6.9.10.tar.gz && \
     tar -xzf onig-6.9.10.tar.gz && \
     rm onig-6.9.10.tar.gz && \
-    cp -r onig-6.9.10 build-fuzz && \
-    cp -r onig-6.9.10 build-cmplog && \
-    cp -r onig-6.9.10 build-cov && \
-    cp -r onig-6.9.10 build-uftrace && \
+    cp -a onig-6.9.10 build-fuzz && \
+    cp -a onig-6.9.10 build-cmplog && \
+    cp -a onig-6.9.10 build-cov && \
+    cp -a onig-6.9.10 build-uftrace && \
     rm -rf onig-6.9.10
 
 # Build oniguruma with afl-clang-lto for fuzzing

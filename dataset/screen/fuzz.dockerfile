@@ -24,10 +24,10 @@ RUN echo "project: screen" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/screen/screen-5.0.1.tar.gz && \
     tar -xzf screen-5.0.1.tar.gz && \
     rm screen-5.0.1.tar.gz && \
-    cp -r screen-5.0.1 build-fuzz && \
-    cp -r screen-5.0.1 build-cmplog && \
-    cp -r screen-5.0.1 build-cov && \
-    cp -r screen-5.0.1 build-uftrace && \
+    cp -a screen-5.0.1 build-fuzz && \
+    cp -a screen-5.0.1 build-cmplog && \
+    cp -a screen-5.0.1 build-cov && \
+    cp -a screen-5.0.1 build-uftrace && \
     rm -rf screen-5.0.1
 
 # Build screen with afl-clang-lto for fuzzing

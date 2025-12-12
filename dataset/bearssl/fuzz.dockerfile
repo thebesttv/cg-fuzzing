@@ -24,10 +24,10 @@ RUN echo "project: bearssl" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://bearssl.org/bearssl-0.6.tar.gz && \
     tar -xzf bearssl-0.6.tar.gz && \
     rm bearssl-0.6.tar.gz && \
-    cp -r bearssl-0.6 build-fuzz && \
-    cp -r bearssl-0.6 build-cmplog && \
-    cp -r bearssl-0.6 build-cov && \
-    cp -r bearssl-0.6 build-uftrace && \
+    cp -a bearssl-0.6 build-fuzz && \
+    cp -a bearssl-0.6 build-cmplog && \
+    cp -a bearssl-0.6 build-cov && \
+    cp -a bearssl-0.6 build-uftrace && \
     rm -rf bearssl-0.6
 
 # Build fuzz binary with afl-clang-lto

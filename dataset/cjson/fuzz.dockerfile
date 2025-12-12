@@ -24,10 +24,10 @@ RUN echo "project: cjson" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/DaveGamble/cJSON/archive/refs/tags/v1.7.19.tar.gz && \
     tar -xzf v1.7.19.tar.gz && \
     rm v1.7.19.tar.gz && \
-    cp -r cJSON-1.7.19 build-fuzz && \
-    cp -r cJSON-1.7.19 build-cmplog && \
-    cp -r cJSON-1.7.19 build-cov && \
-    cp -r cJSON-1.7.19 build-uftrace && \
+    cp -a cJSON-1.7.19 build-fuzz && \
+    cp -a cJSON-1.7.19 build-cmplog && \
+    cp -a cJSON-1.7.19 build-cov && \
+    cp -a cJSON-1.7.19 build-uftrace && \
     rm -rf cJSON-1.7.19
 
 # Build fuzz binary with afl-clang-lto

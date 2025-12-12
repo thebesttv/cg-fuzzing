@@ -24,10 +24,10 @@ RUN echo "project: jq" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-1.8.1.tar.gz && \
     tar -xzf jq-1.8.1.tar.gz && \
     rm jq-1.8.1.tar.gz && \
-    cp -r jq-1.8.1 build-fuzz && \
-    cp -r jq-1.8.1 build-cmplog && \
-    cp -r jq-1.8.1 build-cov && \
-    cp -r jq-1.8.1 build-uftrace && \
+    cp -a jq-1.8.1 build-fuzz && \
+    cp -a jq-1.8.1 build-cmplog && \
+    cp -a jq-1.8.1 build-cov && \
+    cp -a jq-1.8.1 build-uftrace && \
     rm -rf jq-1.8.1
 
 # Build fuzz binary with afl-clang-lto

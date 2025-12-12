@@ -24,10 +24,10 @@ RUN echo "project: quickjs" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://bellard.org/quickjs/quickjs-2024-01-13.tar.xz && \
     tar -xJf quickjs-2024-01-13.tar.xz && \
     rm quickjs-2024-01-13.tar.xz && \
-    cp -r quickjs-2024-01-13 build-fuzz && \
-    cp -r quickjs-2024-01-13 build-cmplog && \
-    cp -r quickjs-2024-01-13 build-cov && \
-    cp -r quickjs-2024-01-13 build-uftrace && \
+    cp -a quickjs-2024-01-13 build-fuzz && \
+    cp -a quickjs-2024-01-13 build-cmplog && \
+    cp -a quickjs-2024-01-13 build-cov && \
+    cp -a quickjs-2024-01-13 build-uftrace && \
     rm -rf quickjs-2024-01-13
 
 # Build quickjs with afl-clang-lto for fuzzing

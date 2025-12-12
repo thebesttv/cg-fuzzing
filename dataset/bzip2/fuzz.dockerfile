@@ -24,10 +24,10 @@ RUN echo "project: bzip2" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://gitlab.com/bzip2/bzip2/-/archive/bzip2-1.0.8/bzip2-bzip2-1.0.8.tar.gz && \
     tar -xzf bzip2-bzip2-1.0.8.tar.gz && \
     rm bzip2-bzip2-1.0.8.tar.gz && \
-    cp -r bzip2-bzip2-1.0.8 build-fuzz && \
-    cp -r bzip2-bzip2-1.0.8 build-cmplog && \
-    cp -r bzip2-bzip2-1.0.8 build-cov && \
-    cp -r bzip2-bzip2-1.0.8 build-uftrace && \
+    cp -a bzip2-bzip2-1.0.8 build-fuzz && \
+    cp -a bzip2-bzip2-1.0.8 build-cmplog && \
+    cp -a bzip2-bzip2-1.0.8 build-cov && \
+    cp -a bzip2-bzip2-1.0.8 build-uftrace && \
     rm -rf bzip2-bzip2-1.0.8
 
 # Build fuzz binary with afl-clang-lto

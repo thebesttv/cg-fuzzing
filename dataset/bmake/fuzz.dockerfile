@@ -24,10 +24,10 @@ RUN echo "project: bmake" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 http://www.crufty.net/ftp/pub/sjg/bmake-20251111.tar.gz && \
     tar -xzf bmake-20251111.tar.gz && \
     rm bmake-20251111.tar.gz && \
-    cp -r bmake build-fuzz && \
-    cp -r bmake build-cmplog && \
-    cp -r bmake build-cov && \
-    cp -r bmake build-uftrace && \
+    cp -a bmake build-fuzz && \
+    cp -a bmake build-cmplog && \
+    cp -a bmake build-cov && \
+    cp -a bmake build-uftrace && \
     rm -rf bmake
 
 # Build fuzz binary with afl-clang-lto

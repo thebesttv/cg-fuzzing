@@ -24,10 +24,10 @@ RUN echo "project: jq-harness" > /work/proj && \
 # Download source once and extract to multiple build directories
 RUN git clone --depth 1 --branch jq-1.8.1 https://github.com/jqlang/jq.git jq-1.8.1 && \
     cd jq-1.8.1 && git submodule init && git submodule update && cd .. && \
-    cp -r jq-1.8.1 build-fuzz && \
-    cp -r jq-1.8.1 build-cmplog && \
-    cp -r jq-1.8.1 build-cov && \
-    cp -r jq-1.8.1 build-uftrace && \
+    cp -a jq-1.8.1 build-fuzz && \
+    cp -a jq-1.8.1 build-cmplog && \
+    cp -a jq-1.8.1 build-cov && \
+    cp -a jq-1.8.1 build-uftrace && \
     rm -rf jq-1.8.1
 
 # ==================== Build fuzz binary ====================
