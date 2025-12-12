@@ -1,60 +1,93 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract dos2unix 7.5.2 (same version as bc.dockerfile)
-WORKDIR /src
-RUN wget "https://downloads.sourceforge.net/project/dos2unix/dos2unix/7.5.2/dos2unix-7.5.2.tar.gz" && \
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: dos2unix" > /work/proj && \
+    echo "version: 7.5.2" >> /work/proj && \
+    echo "source: https://downloads.sourceforge.net/project/dos2unix/dos2unix/7.5.2/dos2unix-7.5.2.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 "https://downloads.sourceforge.net/project/dos2unix/dos2unix/7.5.2/dos2unix-7.5.2.tar.gz" && \
     tar -xzf dos2unix-7.5.2.tar.gz && \
-    rm dos2unix-7.5.2.tar.gz
+    rm dos2unix-7.5.2.tar.gz && \
+    cp -a dos2unix-7.5.2 build-fuzz && \
+    cp -a dos2unix-7.5.2 build-cmplog && \
+    cp -a dos2unix-7.5.2 build-cov && \
+    cp -a dos2unix-7.5.2 build-uftrace && \
+    rm -rf dos2unix-7.5.2
 
-WORKDIR /src/dos2unix-7.5.2
-
-# Build dos2unix with afl-clang-lto for fuzzing (main target binary)
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN make CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ENABLE_NLS=
+    ENABLE_NLS= \
+    -j$(nproc)
 
-# Install the dos2unix binary
-RUN cp dos2unix /out/dos2unix
+WORKDIR /work
+RUN ln -s build-fuzz/dos2unix bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf dos2unix-7.5.2 && \
-    wget "https://downloads.sourceforge.net/project/dos2unix/dos2unix/7.5.2/dos2unix-7.5.2.tar.gz" && \
-    tar -xzf dos2unix-7.5.2.tar.gz && \
-    rm dos2unix-7.5.2.tar.gz
-
-WORKDIR /src/dos2unix-7.5.2
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ENABLE_NLS=
+    ENABLE_NLS= \
+    -j$(nproc)
 
-# Install CMPLOG binary
-RUN cp dos2unix /out/dos2unix.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/dos2unix bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
-COPY dos2unix/fuzz/dict /out/dict
-COPY dos2unix/fuzz/in /out/in
-COPY dos2unix/fuzz/fuzz.sh /out/fuzz.sh
-COPY dos2unix/fuzz/whatsup.sh /out/whatsup.sh
+COPY dos2unix/fuzz/dict /work/dict
+COPY dos2unix/fuzz/in /work/in
+COPY dos2unix/fuzz/fuzz.sh /work/fuzz.sh
+COPY dos2unix/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN make CC=clang \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ENABLE_NLS= \
+    -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/dos2unix /out/dos2unix.cmplog && \
-    file /out/dos2unix && \
-    /out/dos2unix --version
+WORKDIR /work
+RUN ln -s build-cov/dos2unix bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing dos2unix'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN make CC=clang \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ENABLE_NLS= \
+    prefix=/work/install-uftrace \
+    -j$(nproc) && \
+    make prefix=/work/install-uftrace ENABLE_NLS= install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/dos2unix bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
