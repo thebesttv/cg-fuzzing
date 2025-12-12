@@ -30,7 +30,7 @@ RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github
     cp -a capstone-5.0.3 build-uftrace && \
     rm -rf capstone-5.0.3
 
-# Build fuzz binary with afl-clang-lto
+# Build Capstone library with afl-clang-lto (for fuzzing)
 WORKDIR /work/build-fuzz
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
@@ -40,16 +40,30 @@ RUN mkdir build && cd build && \
         -DCMAKE_EXE_LINKER_FLAGS="-Wl,--allow-multiple-definition" \
         -DBUILD_SHARED_LIBS=OFF \
         -DCAPSTONE_BUILD_STATIC=ON \
-        -DCAPSTONE_BUILD_CSTOOL=ON \
+        -DCAPSTONE_BUILD_CSTOOL=OFF \
         -DCAPSTONE_BUILD_TESTS=OFF \
         -DCAPSTONE_BUILD_CSTEST=OFF && \
     make -j$(nproc)
 
-WORKDIR /work
-RUN ln -s build-fuzz/build/cstool bin-fuzz && \
-    /work/bin-fuzz -v
+# Copy fuzzing harness source files
+COPY capstone/fuzz/fuzz_harness.c /work/build-fuzz/
+COPY capstone/fuzz/platform.c /work/build-fuzz/
+COPY capstone/fuzz/platform.h /work/build-fuzz/
 
-# Build cmplog binary with afl-clang-lto + CMPLOG
+# Build custom fuzzing harness
+WORKDIR /work/build-fuzz
+RUN afl-clang-lto -O2 \
+    -I. \
+    -o fuzz_harness \
+    fuzz_harness.c platform.c \
+    build/libcapstone.a \
+    -Wl,--allow-multiple-definition
+
+WORKDIR /work
+RUN ln -s build-fuzz/fuzz_harness bin-fuzz && \
+    echo "Built custom fuzzing harness"
+
+# Build Capstone library with afl-clang-lto + CMPLOG
 WORKDIR /work/build-cmplog
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
@@ -60,14 +74,28 @@ RUN mkdir build && cd build && \
         -DCMAKE_EXE_LINKER_FLAGS="-Wl,--allow-multiple-definition" \
         -DBUILD_SHARED_LIBS=OFF \
         -DCAPSTONE_BUILD_STATIC=ON \
-        -DCAPSTONE_BUILD_CSTOOL=ON \
+        -DCAPSTONE_BUILD_CSTOOL=OFF \
         -DCAPSTONE_BUILD_TESTS=OFF \
         -DCAPSTONE_BUILD_CSTEST=OFF && \
     AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
+# Copy fuzzing harness source files
+COPY capstone/fuzz/fuzz_harness.c /work/build-cmplog/
+COPY capstone/fuzz/platform.c /work/build-cmplog/
+COPY capstone/fuzz/platform.h /work/build-cmplog/
+
+# Build custom fuzzing harness with CMPLOG
+WORKDIR /work/build-cmplog
+RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 \
+    -I. \
+    -o fuzz_harness \
+    fuzz_harness.c platform.c \
+    build/libcapstone.a \
+    -Wl,--allow-multiple-definition
+
 WORKDIR /work
-RUN ln -s build-cmplog/build/cstool bin-cmplog && \
-    /work/bin-cmplog -v
+RUN ln -s build-cmplog/fuzz_harness bin-cmplog && \
+    echo "Built custom fuzzing harness with CMPLOG"
 
 # Copy fuzzing resources
 COPY capstone/fuzz/dict /work/dict
@@ -75,7 +103,7 @@ COPY capstone/fuzz/in /work/in
 COPY capstone/fuzz/fuzz.sh /work/fuzz.sh
 COPY capstone/fuzz/whatsup.sh /work/whatsup.sh
 
-# Build cov binary with llvm-cov instrumentation
+# Build Capstone library with llvm-cov instrumentation
 WORKDIR /work/build-cov
 RUN mkdir build && cd build && \
     CC=clang \
@@ -85,17 +113,30 @@ RUN mkdir build && cd build && \
         -DCMAKE_EXE_LINKER_FLAGS="-fprofile-instr-generate -fcoverage-mapping -Wl,--allow-multiple-definition" \
         -DBUILD_SHARED_LIBS=OFF \
         -DCAPSTONE_BUILD_STATIC=ON \
-        -DCAPSTONE_BUILD_CSTOOL=ON \
+        -DCAPSTONE_BUILD_CSTOOL=OFF \
         -DCAPSTONE_BUILD_TESTS=OFF \
         -DCAPSTONE_BUILD_CSTEST=OFF && \
     make -j$(nproc)
 
+# Copy fuzzing harness source files
+COPY capstone/fuzz/fuzz_harness.c /work/build-cov/
+COPY capstone/fuzz/platform.c /work/build-cov/
+COPY capstone/fuzz/platform.h /work/build-cov/
+
+# Build custom fuzzing harness with coverage
+WORKDIR /work/build-cov
+RUN clang -g -O0 -fprofile-instr-generate -fcoverage-mapping \
+    -I. \
+    -o fuzz_harness \
+    fuzz_harness.c platform.c \
+    build/libcapstone.a \
+    -Wl,--allow-multiple-definition
+
 WORKDIR /work
-RUN ln -s build-cov/build/cstool bin-cov && \
-    /work/bin-cov -v && \
+RUN ln -s build-cov/fuzz_harness bin-cov && \
     rm -f *.profraw
 
-# Build uftrace binary with profiling instrumentation
+# Build Capstone library with profiling instrumentation
 WORKDIR /work/build-uftrace
 RUN mkdir build && cd build && \
     CC=clang \
@@ -105,14 +146,27 @@ RUN mkdir build && cd build && \
         -DCMAKE_EXE_LINKER_FLAGS="-pg -Wl,--allow-multiple-definition" \
         -DBUILD_SHARED_LIBS=OFF \
         -DCAPSTONE_BUILD_STATIC=ON \
-        -DCAPSTONE_BUILD_CSTOOL=ON \
+        -DCAPSTONE_BUILD_CSTOOL=OFF \
         -DCAPSTONE_BUILD_TESTS=OFF \
         -DCAPSTONE_BUILD_CSTEST=OFF && \
     make -j$(nproc)
 
+# Copy fuzzing harness source files
+COPY capstone/fuzz/fuzz_harness.c /work/build-uftrace/
+COPY capstone/fuzz/platform.c /work/build-uftrace/
+COPY capstone/fuzz/platform.h /work/build-uftrace/
+
+# Build custom fuzzing harness with profiling
+WORKDIR /work/build-uftrace
+RUN clang -g -O0 -pg -fno-omit-frame-pointer \
+    -I. \
+    -o fuzz_harness \
+    fuzz_harness.c platform.c \
+    build/libcapstone.a \
+    -Wl,--allow-multiple-definition
+
 WORKDIR /work
-RUN ln -s build-uftrace/build/cstool bin-uftrace && \
-    /work/bin-uftrace -v && \
+RUN ln -s build-uftrace/fuzz_harness bin-uftrace && \
     rm -f gmon.out
 
 # Default to bash in /work
