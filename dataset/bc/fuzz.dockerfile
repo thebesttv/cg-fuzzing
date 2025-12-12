@@ -8,7 +8,7 @@ RUN apt-get update && \
 
 # Install build dependencies
 RUN apt-get update && \
-    apt-get install -y wget flex bison ed texinfo uftrace autoconf automake && \
+    apt-get install -y wget flex bison ed texinfo uftrace autoconf automake autotools-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
