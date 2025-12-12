@@ -1,67 +1,97 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract catdoc 0.95 (same version as bc.dockerfile)
-WORKDIR /src
-RUN wget "http://ftp.wagner.pp.ru/pub/catdoc/catdoc-0.95.tar.gz" && \
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: catdoc" > /work/proj && \
+    echo "version: 0.95" >> /work/proj && \
+    echo "source: http://ftp.wagner.pp.ru/pub/catdoc/catdoc-0.95.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 "http://ftp.wagner.pp.ru/pub/catdoc/catdoc-0.95.tar.gz" && \
     tar -xzf catdoc-0.95.tar.gz && \
-    rm catdoc-0.95.tar.gz
+    rm catdoc-0.95.tar.gz && \
+    cp -a catdoc-0.95 build-fuzz && \
+    cp -a catdoc-0.95 build-cmplog && \
+    cp -a catdoc-0.95 build-cov && \
+    cp -a catdoc-0.95 build-uftrace && \
+    rm -rf catdoc-0.95
 
-WORKDIR /src/catdoc-0.95
-
-# Configure and build catdoc with afl-clang-lto for fuzzing
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure
+    ./configure && \
+    make CC=afl-clang-lto LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
 
-RUN make CC=afl-clang-lto LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/src/catdoc bin-fuzz && \
+    /work/bin-fuzz -V || true
 
-# Install the catdoc binary
-RUN cp src/catdoc /out/catdoc
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf catdoc-0.95 && \
-    wget "http://ftp.wagner.pp.ru/pub/catdoc/catdoc-0.95.tar.gz" && \
-    tar -xzf catdoc-0.95.tar.gz && \
-    rm catdoc-0.95.tar.gz
-
-WORKDIR /src/catdoc-0.95
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure
+    ./configure && \
+    AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp src/catdoc /out/catdoc.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/src/catdoc bin-cmplog && \
+    /work/bin-cmplog -V || true
 
 # Copy fuzzing resources
-COPY catdoc/fuzz/dict /out/dict
-COPY catdoc/fuzz/in /out/in
-COPY catdoc/fuzz/fuzz.sh /out/fuzz.sh
-COPY catdoc/fuzz/whatsup.sh /out/whatsup.sh
+COPY catdoc/fuzz/dict /work/dict
+COPY catdoc/fuzz/in /work/in
+COPY catdoc/fuzz/fuzz.sh /work/fuzz.sh
+COPY catdoc/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure && \
+    make CC=clang LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/catdoc /out/catdoc.cmplog && \
-    file /out/catdoc && \
-    /out/catdoc -V || true
+WORKDIR /work
+RUN ln -s build-cov/src/catdoc bin-cov && \
+    /work/bin-cov -V || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing catdoc'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --prefix=/work/install-uftrace && \
+    make CC=clang LDFLAGS="-pg -Wl,--allow-multiple-definition" -j$(nproc) && \
+    make install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/catdoc bin-uftrace && \
+    /work/bin-uftrace -V || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]

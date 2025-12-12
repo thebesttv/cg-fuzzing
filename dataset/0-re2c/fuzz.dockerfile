@@ -1,67 +1,101 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget xz-utils && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget xz-utils uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download re2c 4.3 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: re2c" > /work/proj && \
+    echo "version: 4.3" >> /work/proj && \
+    echo "source: https://github.com/skvadrik/re2c/releases/download/4.3/re2c-4.3.tar.xz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/skvadrik/re2c/releases/download/4.3/re2c-4.3.tar.xz && \
     tar -xf re2c-4.3.tar.xz && \
-    rm re2c-4.3.tar.xz
+    rm re2c-4.3.tar.xz && \
+    cp -a re2c-4.3 build-fuzz && \
+    cp -a re2c-4.3 build-cmplog && \
+    cp -a re2c-4.3 build-cov && \
+    cp -a re2c-4.3 build-uftrace && \
+    rm -rf re2c-4.3
 
-WORKDIR /src/re2c-4.3
-
-# Build re2c with afl-clang-lto for fuzzing
-RUN CC=afl-clang-lto CXX=afl-clang-lto++ \
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
+RUN CC=afl-clang-lto \
+    CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     CXXFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --disable-shared
+    ./configure --disable-shared && \
+    make -j$(nproc)
 
-RUN make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/re2c bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Install the binary
-RUN cp re2c /out/re2c
-
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf re2c-4.3 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/skvadrik/re2c/releases/download/4.3/re2c-4.3.tar.xz && \
-    tar -xf re2c-4.3.tar.xz && \
-    rm re2c-4.3.tar.xz
-
-WORKDIR /src/re2c-4.3
-
-RUN CC=afl-clang-lto CXX=afl-clang-lto++ \
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
+RUN CC=afl-clang-lto \
+    CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     CXXFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure --disable-shared
+    ./configure --disable-shared && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp re2c /out/re2c.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/re2c bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
-COPY 0-re2c/fuzz/dict /out/dict
-COPY 0-re2c/fuzz/in /out/in
-COPY 0-re2c/fuzz/fuzz.sh /out/fuzz.sh
-COPY 0-re2c/fuzz/whatsup.sh /out/whatsup.sh
+COPY 0-re2c/fuzz/dict /work/dict
+COPY 0-re2c/fuzz/in /work/in
+COPY 0-re2c/fuzz/fuzz.sh /work/fuzz.sh
+COPY 0-re2c/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    CXXFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/re2c /out/re2c.cmplog && \
-    file /out/re2c && \
-    /out/re2c --version
+WORKDIR /work
+RUN ln -s build-cov/re2c bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing re2c'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    CXXFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --prefix=/work/install-uftrace && \
+    make -j$(nproc) && \
+    make install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/re2c bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
