@@ -8,7 +8,7 @@ RUN apt-get update && \
 
 # Install build dependencies
 RUN apt-get update && \
-    apt-get install -y wget flex bison ed texinfo uftrace autoconf automake autotools-dev && \
+    apt-get install -y wget flex bison ed texinfo uftrace && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -24,10 +24,10 @@ RUN echo "project: bc" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/bc/bc-1.08.2.tar.gz && \
     tar -xzf bc-1.08.2.tar.gz && \
     rm bc-1.08.2.tar.gz && \
-    cp -r bc-1.08.2 build-fuzz && \
-    cp -r bc-1.08.2 build-cmplog && \
-    cp -r bc-1.08.2 build-cov && \
-    cp -r bc-1.08.2 build-uftrace && \
+    cp -a bc-1.08.2 build-fuzz && \
+    cp -a bc-1.08.2 build-cmplog && \
+    cp -a bc-1.08.2 build-cov && \
+    cp -a bc-1.08.2 build-uftrace && \
     rm -rf bc-1.08.2
 
 # Build fuzz binary with afl-clang-lto
