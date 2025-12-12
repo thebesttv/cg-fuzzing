@@ -1,53 +1,87 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract entr 5.6 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: entr" > /work/proj && \
+    echo "version: 5.6" >> /work/proj && \
+    echo "source: https://github.com/eradman/entr/archive/refs/tags/5.6.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/eradman/entr/archive/refs/tags/5.6.tar.gz && \
     tar -xzf 5.6.tar.gz && \
-    rm 5.6.tar.gz
+    rm 5.6.tar.gz && \
+    cp -a entr-5.6 build-fuzz && \
+    cp -a entr-5.6 build-cmplog && \
+    cp -a entr-5.6 build-cov && \
+    cp -a entr-5.6 build-uftrace && \
+    rm -rf entr-5.6
 
-WORKDIR /src/entr-5.6
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
+RUN ./configure && \
+    make CC=afl-clang-lto CFLAGS="-O2" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
 
-# Configure and build entr with afl-clang-lto for fuzzing
-RUN ./configure
+WORKDIR /work
+RUN ln -s build-fuzz/entr bin-fuzz && \
+    /work/bin-fuzz -h || true
 
-RUN make CC=afl-clang-lto CFLAGS="-O2" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
-RUN cp entr /out/entr
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
+RUN ./configure && \
+    AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto CFLAGS="-O2" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
 
-# Build CMPLOG version
-WORKDIR /src
-RUN rm -rf entr-5.6 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/eradman/entr/archive/refs/tags/5.6.tar.gz && \
-    tar -xzf 5.6.tar.gz && \
-    rm 5.6.tar.gz
-
-WORKDIR /src/entr-5.6
-
-RUN ./configure
-
-RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto CFLAGS="-O2" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
-RUN cp entr /out/entr.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/entr bin-cmplog && \
+    /work/bin-cmplog -h || true
 
 # Copy fuzzing resources
-COPY entr/fuzz/dict /out/dict
-COPY entr/fuzz/in /out/in
-COPY entr/fuzz/fuzz.sh /out/fuzz.sh
-COPY entr/fuzz/whatsup.sh /out/whatsup.sh
+COPY entr/fuzz/dict /work/dict
+COPY entr/fuzz/in /work/in
+COPY entr/fuzz/fuzz.sh /work/fuzz.sh
+COPY entr/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN ./configure && \
+    make CC=clang \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/entr /out/entr.cmplog && \
-    file /out/entr
+WORKDIR /work
+RUN ln -s build-cov/entr bin-cov && \
+    /work/bin-cov -h || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing entr'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN ./configure && \
+    make CC=clang \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    PREFIX=/work/install-uftrace \
+    -j$(nproc) && \
+    make PREFIX=/work/install-uftrace install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/entr bin-uftrace && \
+    /work/bin-uftrace -h || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
