@@ -1,70 +1,101 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract gperf 3.1 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: gperf" > /work/proj && \
+    echo "version: 3.1" >> /work/proj && \
+    echo "source: https://ftpmirror.gnu.org/gnu/gperf/gperf-3.1.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/gperf/gperf-3.1.tar.gz && \
     tar -xzf gperf-3.1.tar.gz && \
-    rm gperf-3.1.tar.gz
+    rm gperf-3.1.tar.gz && \
+    cp -a gperf-3.1 build-fuzz && \
+    cp -a gperf-3.1 build-cmplog && \
+    cp -a gperf-3.1 build-cov && \
+    cp -a gperf-3.1 build-uftrace && \
+    rm -rf gperf-3.1
 
-WORKDIR /src/gperf-3.1
-
-# Build gperf with afl-clang-lto for fuzzing (main target binary)
-# -Wno-register to suppress C++17 register keyword error
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     CXXFLAGS="-O2 -Wno-register" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure
+    ./configure && \
+    make -j$(nproc)
 
-RUN make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/src/gperf bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Install the gperf binary
-RUN cp src/gperf /out/gperf
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf gperf-3.1 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/gperf/gperf-3.1.tar.gz && \
-    tar -xzf gperf-3.1.tar.gz && \
-    rm gperf-3.1.tar.gz
-
-WORKDIR /src/gperf-3.1
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     CXXFLAGS="-O2 -Wno-register" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure
+    ./configure && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp src/gperf /out/gperf.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/src/gperf bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
-COPY gperf/fuzz/dict /out/dict
-COPY gperf/fuzz/in /out/in
-COPY gperf/fuzz/fuzz.sh /out/fuzz.sh
-COPY gperf/fuzz/whatsup.sh /out/whatsup.sh
+COPY gperf/fuzz/dict /work/dict
+COPY gperf/fuzz/in /work/in
+COPY gperf/fuzz/fuzz.sh /work/fuzz.sh
+COPY gperf/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    CXXFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wno-register" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/gperf /out/gperf.cmplog && \
-    file /out/gperf && \
-    /out/gperf --version
+WORKDIR /work
+RUN ln -s build-cov/src/gperf bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing gperf'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    CXXFLAGS="-g -O0 -pg -fno-omit-frame-pointer -Wno-register" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --prefix=/work/install-uftrace && \
+    make -j$(nproc) && \
+    make install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/gperf bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
