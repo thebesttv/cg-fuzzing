@@ -24,10 +24,10 @@ RUN echo "project: base64" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/aklomp/base64/archive/refs/tags/v0.5.2.tar.gz && \
     tar -xzf v0.5.2.tar.gz && \
     rm v0.5.2.tar.gz && \
-    cp -r base64-0.5.2 build-fuzz && \
-    cp -r base64-0.5.2 build-cmplog && \
-    cp -r base64-0.5.2 build-cov && \
-    cp -r base64-0.5.2 build-uftrace && \
+    cp -a base64-0.5.2 build-fuzz && \
+    cp -a base64-0.5.2 build-cmplog && \
+    cp -a base64-0.5.2 build-cov && \
+    cp -a base64-0.5.2 build-uftrace && \
     rm -rf base64-0.5.2
 
 # Build fuzz binary with afl-clang-lto

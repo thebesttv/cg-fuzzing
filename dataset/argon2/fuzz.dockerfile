@@ -24,10 +24,10 @@ RUN echo "project: argon2" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/20190702.tar.gz && \
     tar -xzf 20190702.tar.gz && \
     rm 20190702.tar.gz && \
-    cp -r phc-winner-argon2-20190702 build-fuzz && \
-    cp -r phc-winner-argon2-20190702 build-cmplog && \
-    cp -r phc-winner-argon2-20190702 build-cov && \
-    cp -r phc-winner-argon2-20190702 build-uftrace && \
+    cp -a phc-winner-argon2-20190702 build-fuzz && \
+    cp -a phc-winner-argon2-20190702 build-cmplog && \
+    cp -a phc-winner-argon2-20190702 build-cov && \
+    cp -a phc-winner-argon2-20190702 build-uftrace && \
     rm -rf phc-winner-argon2-20190702
 
 # Build fuzz binary with afl-clang-lto

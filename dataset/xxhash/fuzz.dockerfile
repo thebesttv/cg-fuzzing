@@ -24,10 +24,10 @@ RUN echo "project: xxhash" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.3.tar.gz && \
     tar -xzf v0.8.3.tar.gz && \
     rm v0.8.3.tar.gz && \
-    cp -r xxHash-0.8.3 build-fuzz && \
-    cp -r xxHash-0.8.3 build-cmplog && \
-    cp -r xxHash-0.8.3 build-cov && \
-    cp -r xxHash-0.8.3 build-uftrace && \
+    cp -a xxHash-0.8.3 build-fuzz && \
+    cp -a xxHash-0.8.3 build-cmplog && \
+    cp -a xxHash-0.8.3 build-cov && \
+    cp -a xxHash-0.8.3 build-uftrace && \
     rm -rf xxHash-0.8.3
 
 # Build fuzz binary with afl-clang-lto

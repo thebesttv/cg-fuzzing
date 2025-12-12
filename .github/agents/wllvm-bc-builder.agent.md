@@ -248,10 +248,10 @@ RUN echo "project: <项目名>" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 <源码URL> && \
     tar -xzf <压缩包> && \
     rm <压缩包> && \
-    cp -r <源码目录> build-fuzz && \
-    cp -r <源码目录> build-cmplog && \
-    cp -r <源码目录> build-cov && \
-    cp -r <源码目录> build-uftrace && \
+    cp -a <源码目录> build-fuzz && \
+    cp -a <源码目录> build-cmplog && \
+    cp -a <源码目录> build-cov && \
+    cp -a <源码目录> build-uftrace && \
     rm -rf <源码目录>
 
 # Build fuzz binary with afl-clang-lto

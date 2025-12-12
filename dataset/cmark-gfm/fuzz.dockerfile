@@ -24,10 +24,10 @@ RUN echo "project: cmark-gfm" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/github/cmark-gfm/archive/refs/tags/0.29.0.gfm.13.tar.gz && \
     tar -xzf 0.29.0.gfm.13.tar.gz && \
     rm 0.29.0.gfm.13.tar.gz && \
-    cp -r cmark-gfm-0.29.0.gfm.13 build-fuzz && \
-    cp -r cmark-gfm-0.29.0.gfm.13 build-cmplog && \
-    cp -r cmark-gfm-0.29.0.gfm.13 build-cov && \
-    cp -r cmark-gfm-0.29.0.gfm.13 build-uftrace && \
+    cp -a cmark-gfm-0.29.0.gfm.13 build-fuzz && \
+    cp -a cmark-gfm-0.29.0.gfm.13 build-cmplog && \
+    cp -a cmark-gfm-0.29.0.gfm.13 build-cov && \
+    cp -a cmark-gfm-0.29.0.gfm.13 build-uftrace && \
     rm -rf cmark-gfm-0.29.0.gfm.13
 
 # Build cmark-gfm with afl-clang-lto for fuzzing

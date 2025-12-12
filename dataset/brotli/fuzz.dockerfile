@@ -24,10 +24,10 @@ RUN echo "project: brotli" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/google/brotli/archive/refs/tags/v1.2.0.tar.gz && \
     tar -xzf v1.2.0.tar.gz && \
     rm v1.2.0.tar.gz && \
-    cp -r brotli-1.2.0 build-fuzz && \
-    cp -r brotli-1.2.0 build-cmplog && \
-    cp -r brotli-1.2.0 build-cov && \
-    cp -r brotli-1.2.0 build-uftrace && \
+    cp -a brotli-1.2.0 build-fuzz && \
+    cp -a brotli-1.2.0 build-cmplog && \
+    cp -a brotli-1.2.0 build-cov && \
+    cp -a brotli-1.2.0 build-uftrace && \
     rm -rf brotli-1.2.0
 
 # Build fuzz binary with afl-clang-lto

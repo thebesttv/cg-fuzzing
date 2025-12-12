@@ -24,10 +24,10 @@ RUN echo "project: cmark" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/commonmark/cmark/archive/refs/tags/0.31.1.tar.gz && \
     tar -xzf 0.31.1.tar.gz && \
     rm 0.31.1.tar.gz && \
-    cp -r cmark-0.31.1 build-fuzz && \
-    cp -r cmark-0.31.1 build-cmplog && \
-    cp -r cmark-0.31.1 build-cov && \
-    cp -r cmark-0.31.1 build-uftrace && \
+    cp -a cmark-0.31.1 build-fuzz && \
+    cp -a cmark-0.31.1 build-cmplog && \
+    cp -a cmark-0.31.1 build-cov && \
+    cp -a cmark-0.31.1 build-uftrace && \
     rm -rf cmark-0.31.1
 
 # Build fuzz binary with afl-clang-lto
