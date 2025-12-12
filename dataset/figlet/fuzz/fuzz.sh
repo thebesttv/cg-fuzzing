@@ -9,8 +9,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT_DIR="${SCRIPT_DIR}/findings"
 IN_DIR="${SCRIPT_DIR}/in"
 DICT="${SCRIPT_DIR}/dict"
-CMPLOG_BIN="${SCRIPT_DIR}/figlet.cmplog"
-TARGET_BIN="${SCRIPT_DIR}/figlet"
+CMPLOG_BIN="${SCRIPT_DIR}/bin-cmplog"
+TARGET_BIN="${SCRIPT_DIR}/bin-fuzz"
 FONTS_DIR="${SCRIPT_DIR}/fonts"
 PARALLEL=1
 
