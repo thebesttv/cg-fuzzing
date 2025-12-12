@@ -1,30 +1,95 @@
 FROM aflplusplus/aflplusplus:latest
 
-RUN apt-get update && apt-get install -y wget && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN mkdir -p /out
+# Install basic packages first
+RUN apt-get update && \
+    apt-get install -y htop vim tmux parallel && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-WORKDIR /src
-RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://invisible-island.net/datafiles/release/diffstat.tar.gz && tar -xzf diffstat.tar.gz && rm diffstat.tar.gz
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-WORKDIR /src/diffstat-1.68
-RUN CC=afl-clang-lto CFLAGS="-O2" LDFLAGS="-static -Wl,--allow-multiple-definition" ./configure
-RUN make -j$(nproc)
-RUN cp diffstat /out/diffstat
+# Create working directory
+WORKDIR /work
 
-WORKDIR /src
-RUN rm -rf diffstat-1.68 && wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://invisible-island.net/datafiles/release/diffstat.tar.gz && tar -xzf diffstat.tar.gz && rm diffstat.tar.gz
+# Save project metadata
+RUN echo "project: diffstat" > /work/proj && \
+    echo "version: 1.68" >> /work/proj && \
+    echo "source: https://invisible-island.net/datafiles/release/diffstat.tar.gz" >> /work/proj
 
-WORKDIR /src/diffstat-1.68
-RUN CC=afl-clang-lto CFLAGS="-O2" LDFLAGS="-static -Wl,--allow-multiple-definition" AFL_LLVM_CMPLOG=1 ./configure
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-RUN cp diffstat /out/diffstat.cmplog
+# Download source once and extract to multiple build directories
+RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://invisible-island.net/datafiles/release/diffstat.tar.gz && \
+    tar -xzf diffstat.tar.gz && \
+    rm diffstat.tar.gz && \
+    cp -a diffstat-1.68 build-fuzz && \
+    cp -a diffstat-1.68 build-cmplog && \
+    cp -a diffstat-1.68 build-cov && \
+    cp -a diffstat-1.68 build-uftrace && \
+    rm -rf diffstat-1.68
 
-COPY diffstat/fuzz/dict /out/dict
-COPY diffstat/fuzz/in /out/in
-COPY diffstat/fuzz/fuzz.sh /out/fuzz.sh
-COPY diffstat/fuzz/whatsup.sh /out/whatsup.sh
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
+RUN CC=afl-clang-lto \
+    CFLAGS="-O2" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
+    ./configure && \
+    make -j$(nproc)
 
-WORKDIR /out
-RUN ls -la /out/diffstat /out/diffstat.cmplog && file /out/diffstat
+WORKDIR /work
+RUN ln -s build-fuzz/diffstat bin-fuzz && \
+    /work/bin-fuzz -V
 
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing diffstat'"]
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
+RUN CC=afl-clang-lto \
+    CFLAGS="-O2" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
+    AFL_LLVM_CMPLOG=1 \
+    ./configure && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-cmplog/diffstat bin-cmplog && \
+    /work/bin-cmplog -V
+
+# Copy fuzzing resources
+COPY diffstat/fuzz/dict /work/dict
+COPY diffstat/fuzz/in /work/in
+COPY diffstat/fuzz/fuzz.sh /work/fuzz.sh
+COPY diffstat/fuzz/whatsup.sh /work/whatsup.sh
+
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure && \
+    make -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-cov/diffstat bin-cov && \
+    /work/bin-cov -V && \
+    rm -f *.profraw
+
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --prefix=/work/install-uftrace && \
+    make -j$(nproc) && \
+    make install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/diffstat bin-uftrace && \
+    /work/bin-uftrace -V && \
+    uftrace record /work/bin-uftrace -V && \
+    uftrace report && \
+    rm -rf uftrace.data gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
