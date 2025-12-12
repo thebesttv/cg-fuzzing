@@ -1,25 +1,37 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget libz-dev autoconf && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget libz-dev autoconf uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract git v2.52.0 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: git" > /work/proj && \
+    echo "version: 2.52.0" >> /work/proj && \
+    echo "source: https://github.com/git/git/archive/refs/tags/v2.52.0.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/git/git/archive/refs/tags/v2.52.0.tar.gz && \
     tar -xzf v2.52.0.tar.gz && \
-    rm v2.52.0.tar.gz
+    rm v2.52.0.tar.gz && \
+    cp -a git-2.52.0 build-fuzz && \
+    cp -a git-2.52.0 build-cmplog && \
+    cp -a git-2.52.0 build-cov && \
+    cp -a git-2.52.0 build-uftrace && \
+    rm -rf git-2.52.0
 
-WORKDIR /src/git-2.52.0
-
-# Build git with afl-clang-lto for fuzzing (main target binary)
-# Use static linking and disable optional features for cleaner build
-# afl-clang-lto provides collision-free instrumentation
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN make -j$(nproc) \
     CC=afl-clang-lto \
     CFLAGS="-O2" \
@@ -35,18 +47,12 @@ RUN make -j$(nproc) \
     NEEDS_LIBICONV= \
     git
 
-# Install the git binary
-RUN cp git /out/git
+WORKDIR /work
+RUN ln -s build-fuzz/git bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf git-2.52.0 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/git/git/archive/refs/tags/v2.52.0.tar.gz && \
-    tar -xzf v2.52.0.tar.gz && \
-    rm v2.52.0.tar.gz
-
-WORKDIR /src/git-2.52.0
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN AFL_LLVM_CMPLOG=1 make -j$(nproc) \
     CC=afl-clang-lto \
     CFLAGS="-O2" \
@@ -62,21 +68,72 @@ RUN AFL_LLVM_CMPLOG=1 make -j$(nproc) \
     NEEDS_LIBICONV= \
     git
 
-# Install CMPLOG binary
-RUN cp git /out/git.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/git bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
-COPY git/fuzz/dict /out/dict
-COPY git/fuzz/in /out/in
-COPY git/fuzz/fuzz.sh /out/fuzz.sh
-COPY git/fuzz/whatsup.sh /out/whatsup.sh
+COPY git/fuzz/dict /work/dict
+COPY git/fuzz/in /work/in
+COPY git/fuzz/fuzz.sh /work/fuzz.sh
+COPY git/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN make -j$(nproc) \
+    CC=clang \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    NO_OPENSSL=1 \
+    NO_CURL=1 \
+    NO_EXPAT=1 \
+    NO_TCLTK=1 \
+    NO_PERL=1 \
+    NO_PYTHON=1 \
+    NO_GETTEXT=1 \
+    NO_ICONV=1 \
+    NEEDS_LIBICONV= \
+    git
 
-# Verify binaries are built
-RUN ls -la /out/git /out/git.cmplog && \
-    file /out/git && \
-    /out/git --version
+WORKDIR /work
+RUN ln -s build-cov/git bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing git'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN make -j$(nproc) \
+    CC=clang \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    NO_OPENSSL=1 \
+    NO_CURL=1 \
+    NO_EXPAT=1 \
+    NO_TCLTK=1 \
+    NO_PERL=1 \
+    NO_PYTHON=1 \
+    NO_GETTEXT=1 \
+    NO_ICONV=1 \
+    NEEDS_LIBICONV= \
+    prefix=/work/install-uftrace \
+    git && \
+    make install \
+    prefix=/work/install-uftrace \
+    NO_OPENSSL=1 \
+    NO_CURL=1 \
+    NO_EXPAT=1 \
+    NO_TCLTK=1 \
+    NO_PERL=1 \
+    NO_PYTHON=1 \
+    NO_GETTEXT=1 \
+    NO_ICONV=1 \
+    NEEDS_LIBICONV=
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/git bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
