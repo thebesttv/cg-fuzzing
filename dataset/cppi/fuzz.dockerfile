@@ -1,71 +1,101 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget xz-utils && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget xz-utils uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract cppi v1.18 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: cppi" > /work/proj && \
+    echo "version: 1.18" >> /work/proj && \
+    echo "source: https://mirror.keystealth.org/gnu/cppi/cppi-1.18.tar.xz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 --no-check-certificate https://mirror.keystealth.org/gnu/cppi/cppi-1.18.tar.xz && \
     tar -xf cppi-1.18.tar.xz && \
-    rm cppi-1.18.tar.xz
+    rm cppi-1.18.tar.xz && \
+    cp -a cppi-1.18 build-fuzz && \
+    cp -a cppi-1.18 build-cmplog && \
+    cp -a cppi-1.18 build-cov && \
+    cp -a cppi-1.18 build-uftrace && \
+    rm -rf cppi-1.18
 
-WORKDIR /src/cppi-1.18
-
-# Build cppi with afl-clang-lto for fuzzing (main target binary)
-# Use static linking
-# afl-clang-lto provides collision-free instrumentation
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     FORCE_UNSAFE_CONFIGURE=1 \
-    ./configure
+    ./configure && \
+    make -j$(nproc)
 
-RUN make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/src/cppi bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Install the cppi binary
-RUN cp src/cppi /out/cppi
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf cppi-1.18 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 --no-check-certificate https://mirror.keystealth.org/gnu/cppi/cppi-1.18.tar.xz && \
-    tar -xf cppi-1.18.tar.xz && \
-    rm cppi-1.18.tar.xz
-
-WORKDIR /src/cppi-1.18
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
     FORCE_UNSAFE_CONFIGURE=1 \
-    ./configure
+    ./configure && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp src/cppi /out/cppi.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/src/cppi bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
-COPY cppi/fuzz/dict /out/dict
-COPY cppi/fuzz/in /out/in
-COPY cppi/fuzz/fuzz.sh /out/fuzz.sh
-COPY cppi/fuzz/whatsup.sh /out/whatsup.sh
+COPY cppi/fuzz/dict /work/dict
+COPY cppi/fuzz/in /work/in
+COPY cppi/fuzz/fuzz.sh /work/fuzz.sh
+COPY cppi/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    FORCE_UNSAFE_CONFIGURE=1 \
+    ./configure && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/cppi /out/cppi.cmplog && \
-    file /out/cppi && \
-    /out/cppi --version
+WORKDIR /work
+RUN ln -s build-cov/src/cppi bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing cppi'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    FORCE_UNSAFE_CONFIGURE=1 \
+    ./configure --prefix=/work/install-uftrace && \
+    make -j$(nproc) && \
+    make install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/cppi bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
