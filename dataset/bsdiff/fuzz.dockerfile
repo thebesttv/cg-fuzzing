@@ -1,72 +1,100 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget autoconf automake libtool libbz2-dev && \
+    apt-get install -y htop vim tmux && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget autoconf automake libtool libbz2-dev uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download bsdiff from GitHub (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: bsdiff" > /work/proj && \
+    echo "version: master" >> /work/proj && \
+    echo "source: https://github.com/mendsley/bsdiff/archive/refs/heads/master.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/mendsley/bsdiff/archive/refs/heads/master.tar.gz && \
     tar -xzf master.tar.gz && \
-    rm master.tar.gz
+    rm master.tar.gz && \
+    cp -r bsdiff-master build-fuzz && \
+    cp -r bsdiff-master build-cmplog && \
+    cp -r bsdiff-master build-cov && \
+    cp -r bsdiff-master build-uftrace && \
+    rm -rf bsdiff-master
 
-WORKDIR /src/bsdiff-master
-
-# Generate configure script
-RUN ./autogen.sh
-
-# Build bsdiff with afl-clang-lto for fuzzing (main target binary)
-RUN CC=afl-clang-lto \
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
+RUN ./autogen.sh && \
+    CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2 -DBSDIFF_EXECUTABLE -DBSPATCH_EXECUTABLE" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure
+    ./configure && \
+    make -j$(nproc)
 
-RUN make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/bspatch bin-fuzz && \
+    /work/bin-fuzz || true
 
-# Install the binaries
-RUN cp bsdiff /out/bsdiff && cp bspatch /out/bspatch
-
-# Build CMPLOG versions for better fuzzing
-WORKDIR /src
-RUN rm -rf bsdiff-master && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/mendsley/bsdiff/archive/refs/heads/master.tar.gz && \
-    tar -xzf master.tar.gz && \
-    rm master.tar.gz
-
-WORKDIR /src/bsdiff-master
-
-RUN ./autogen.sh
-
-RUN CC=afl-clang-lto \
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
+RUN ./autogen.sh && \
+    CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2 -DBSDIFF_EXECUTABLE -DBSPATCH_EXECUTABLE" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure
+    ./configure && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binaries
-RUN cp bsdiff /out/bsdiff.cmplog && cp bspatch /out/bspatch.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/bspatch bin-cmplog && \
+    /work/bin-cmplog || true
 
 # Copy fuzzing resources
-COPY bsdiff/fuzz/dict /out/dict
-COPY bsdiff/fuzz/in /out/in
-COPY bsdiff/fuzz/fuzz.sh /out/fuzz.sh
-COPY bsdiff/fuzz/whatsup.sh /out/whatsup.sh
+COPY bsdiff/fuzz/dict /work/dict
+COPY bsdiff/fuzz/in /work/in
+COPY bsdiff/fuzz/fuzz.sh /work/fuzz.sh
+COPY bsdiff/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN ./autogen.sh && \
+    CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -DBSDIFF_EXECUTABLE -DBSPATCH_EXECUTABLE -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/bsdiff /out/bsdiff.cmplog /out/bspatch /out/bspatch.cmplog && \
-    file /out/bsdiff && \
-    file /out/bspatch
+WORKDIR /work
+RUN ln -s build-cov/bspatch bin-cov && \
+    /work/bin-cov || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing bsdiff/bspatch'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN ./autogen.sh && \
+    CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -DBSDIFF_EXECUTABLE -DBSPATCH_EXECUTABLE -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure && \
+    make -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/bspatch bin-uftrace && \
+    /work/bin-uftrace || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
