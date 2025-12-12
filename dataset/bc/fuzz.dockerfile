@@ -8,7 +8,7 @@ RUN apt-get update && \
 
 # Install build dependencies
 RUN apt-get update && \
-    apt-get install -y wget flex bison ed texinfo uftrace && \
+    apt-get install -y wget flex bison ed texinfo uftrace autoconf automake && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -65,8 +65,7 @@ COPY bc/fuzz/whatsup.sh /work/whatsup.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
-RUN touch configure.ac aclocal.m4 configure Makefile.am Makefile.in && \
-    CC=clang \
+RUN CC=clang \
     CXX=clang++ \
     CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
     LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
@@ -80,8 +79,7 @@ RUN ln -s build-cov/bc/bc bin-cov && \
 
 # Build uftrace binary with profiling instrumentation
 WORKDIR /work/build-uftrace
-RUN touch configure.ac aclocal.m4 configure Makefile.am Makefile.in && \
-    CC=clang \
+RUN CC=clang \
     CXX=clang++ \
     CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
     LDFLAGS="-pg -Wl,--allow-multiple-definition" \
