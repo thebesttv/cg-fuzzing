@@ -37,7 +37,7 @@ RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-nls && \
-    make -C src -j$(nproc)
+    make -j$(nproc)
 
 WORKDIR /work
 RUN ln -s build-fuzz/src/cflow bin-fuzz && \
@@ -51,7 +51,7 @@ RUN CC=afl-clang-lto \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
     ./configure --disable-nls && \
-    AFL_LLVM_CMPLOG=1 make -C src -j$(nproc)
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
 WORKDIR /work
 RUN ln -s build-cmplog/src/cflow bin-cmplog && \
@@ -70,7 +70,7 @@ RUN CC=clang \
     CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
     LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
     ./configure --disable-nls && \
-    make -C src -j$(nproc)
+    make -j$(nproc)
 
 WORKDIR /work
 RUN ln -s build-cov/src/cflow bin-cov && \
@@ -84,7 +84,7 @@ RUN CC=clang \
     CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
     LDFLAGS="-pg -Wl,--allow-multiple-definition" \
     ./configure --disable-nls && \
-    make -C src -j$(nproc)
+    make -j$(nproc)
 
 WORKDIR /work
 RUN ln -s build-uftrace/src/cflow bin-uftrace && \
