@@ -1,69 +1,101 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract gzip 1.14 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: gzip" > /work/proj && \
+    echo "version: 1.14" >> /work/proj && \
+    echo "source: https://ftpmirror.gnu.org/gnu/gzip/gzip-1.14.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/gzip/gzip-1.14.tar.gz && \
     tar -xzf gzip-1.14.tar.gz && \
-    rm gzip-1.14.tar.gz
+    rm gzip-1.14.tar.gz && \
+    cp -a gzip-1.14 build-fuzz && \
+    cp -a gzip-1.14 build-cmplog && \
+    cp -a gzip-1.14 build-cov && \
+    cp -a gzip-1.14 build-uftrace && \
+    rm -rf gzip-1.14
 
-WORKDIR /src/gzip-1.14
-
-# Build gzip with afl-clang-lto for fuzzing (main target binary)
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     FORCE_UNSAFE_CONFIGURE=1 \
-    ./configure --disable-shared
+    ./configure --disable-shared && \
+    make -j$(nproc)
 
-RUN make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/gzip bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Install the gzip binary
-RUN cp gzip /out/gzip
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf gzip-1.14 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/gzip/gzip-1.14.tar.gz && \
-    tar -xzf gzip-1.14.tar.gz && \
-    rm gzip-1.14.tar.gz
-
-WORKDIR /src/gzip-1.14
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     FORCE_UNSAFE_CONFIGURE=1 \
     AFL_LLVM_CMPLOG=1 \
-    ./configure --disable-shared
+    ./configure --disable-shared && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp gzip /out/gzip.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/gzip bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
-COPY gzip/fuzz/dict /out/dict
-COPY gzip/fuzz/in /out/in
-COPY gzip/fuzz/fuzz.sh /out/fuzz.sh
-COPY gzip/fuzz/whatsup.sh /out/whatsup.sh
+COPY gzip/fuzz/dict /work/dict
+COPY gzip/fuzz/in /work/in
+COPY gzip/fuzz/fuzz.sh /work/fuzz.sh
+COPY gzip/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    FORCE_UNSAFE_CONFIGURE=1 \
+    ./configure --disable-shared && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/gzip /out/gzip.cmplog && \
-    file /out/gzip && \
-    /out/gzip --version
+WORKDIR /work
+RUN ln -s build-cov/gzip bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing gzip'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    FORCE_UNSAFE_CONFIGURE=1 \
+    ./configure --disable-shared --prefix=/work/install-uftrace && \
+    make -j$(nproc) && \
+    make install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/gzip bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
