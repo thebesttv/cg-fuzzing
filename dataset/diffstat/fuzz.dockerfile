@@ -40,7 +40,7 @@ RUN CC=afl-clang-lto \
 
 WORKDIR /work
 RUN ln -s build-fuzz/diffstat bin-fuzz && \
-    /work/bin-fuzz -V | head -3
+    /work/bin-fuzz -V
 
 # Build cmplog binary with afl-clang-lto + CMPLOG
 WORKDIR /work/build-cmplog
@@ -53,7 +53,7 @@ RUN CC=afl-clang-lto \
 
 WORKDIR /work
 RUN ln -s build-cmplog/diffstat bin-cmplog && \
-    /work/bin-cmplog -V | head -3
+    /work/bin-cmplog -V
 
 # Copy fuzzing resources
 COPY diffstat/fuzz/dict /work/dict
@@ -71,7 +71,7 @@ RUN CC=clang \
 
 WORKDIR /work
 RUN ln -s build-cov/diffstat bin-cov && \
-    /work/bin-cov -V | head -3 && \
+    /work/bin-cov -V && \
     rm -f *.profraw
 
 # Build uftrace binary with profiling instrumentation
@@ -79,13 +79,16 @@ WORKDIR /work/build-uftrace
 RUN CC=clang \
     CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
     LDFLAGS="-pg -Wl,--allow-multiple-definition" \
-    ./configure && \
-    make -j$(nproc)
+    ./configure --prefix=/work/install-uftrace && \
+    make -j$(nproc) && \
+    make install
 
 WORKDIR /work
-RUN ln -s build-uftrace/diffstat bin-uftrace && \
-    /work/bin-uftrace -V | head -3 && \
-    rm -f gmon.out
+RUN ln -s install-uftrace/bin/diffstat bin-uftrace && \
+    /work/bin-uftrace -V && \
+    uftrace record /work/bin-uftrace -V && \
+    uftrace report && \
+    rm -rf uftrace.data gmon.out
 
 # Default to bash in /work
 WORKDIR /work

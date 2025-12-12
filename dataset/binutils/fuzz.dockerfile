@@ -115,13 +115,17 @@ RUN CC=clang \
         --disable-gdb \
         --disable-libdecnumber \
         --disable-readline \
-        --disable-sim && \
-    make -j$(nproc)
+        --disable-sim \
+        --prefix=/work/install-uftrace && \
+    make -j$(nproc) && \
+    make install
 
 WORKDIR /work
-RUN ln -s build-uftrace/binutils/readelf bin-uftrace && \
+RUN ln -s install-uftrace/bin/readelf bin-uftrace && \
     /work/bin-uftrace --version | head -3 && \
-    rm -f gmon.out
+    uftrace record /work/bin-uftrace --version && \
+    uftrace report && \
+    rm -rf uftrace.data gmon.out
 
 # Default to bash in /work
 WORKDIR /work
