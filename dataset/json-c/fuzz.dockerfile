@@ -1,70 +1,104 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget cmake && \
+    apt-get install -y htop vim tmux && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget cmake uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract json-c 0.18 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: json-c" > /work/proj && \
+    echo "version: 0.18-20240915" >> /work/proj && \
+    echo "source: https://github.com/json-c/json-c/archive/refs/tags/json-c-0.18-20240915.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/json-c/json-c/archive/refs/tags/json-c-0.18-20240915.tar.gz && \
     tar -xzf json-c-0.18-20240915.tar.gz && \
-    rm json-c-0.18-20240915.tar.gz
+    rm json-c-0.18-20240915.tar.gz && \
+    cp -a json-c-json-c-0.18-20240915 build-fuzz && \
+    cp -a json-c-json-c-0.18-20240915 build-cmplog && \
+    cp -a json-c-json-c-0.18-20240915 build-cov && \
+    cp -a json-c-json-c-0.18-20240915 build-uftrace && \
+    rm -rf json-c-json-c-0.18-20240915
 
-WORKDIR /src/json-c-json-c-0.18-20240915
-
-# Build json-c with afl-clang-lto for fuzzing
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
     cmake .. \
-    -DCMAKE_C_FLAGS="-O2" \
-    -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
-    -DBUILD_SHARED_LIBS=OFF \
-    -DBUILD_APPS=ON
+        -DCMAKE_C_FLAGS="-O2" \
+        -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DBUILD_APPS=ON && \
+    make -j$(nproc)
 
-RUN cd build && make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/build/apps/json_parse bin-fuzz && \
+    /work/bin-fuzz --help || true
 
-# Install the json_parse binary
-RUN cp build/apps/json_parse /out/json_parse
-
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf json-c-json-c-0.18-20240915 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/json-c/json-c/archive/refs/tags/json-c-0.18-20240915.tar.gz && \
-    tar -xzf json-c-0.18-20240915.tar.gz && \
-    rm json-c-0.18-20240915.tar.gz
-
-WORKDIR /src/json-c-json-c-0.18-20240915
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
     AFL_LLVM_CMPLOG=1 \
     cmake .. \
-    -DCMAKE_C_FLAGS="-O2" \
-    -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
-    -DBUILD_SHARED_LIBS=OFF \
-    -DBUILD_APPS=ON
+        -DCMAKE_C_FLAGS="-O2" \
+        -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DBUILD_APPS=ON && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp build/apps/json_parse /out/json_parse.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/build/apps/json_parse bin-cmplog && \
+    /work/bin-cmplog --help || true
 
 # Copy fuzzing resources
-COPY json-c/fuzz/dict /out/dict
-COPY json-c/fuzz/in /out/in
-COPY json-c/fuzz/fuzz.sh /out/fuzz.sh
-COPY json-c/fuzz/whatsup.sh /out/whatsup.sh
+COPY json-c/fuzz/dict /work/dict
+COPY json-c/fuzz/in /work/in
+COPY json-c/fuzz/fuzz.sh /work/fuzz.sh
+COPY json-c/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN mkdir build && cd build && \
+    CC=clang \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wno-unused-command-line-argument" \
+        -DCMAKE_EXE_LINKER_FLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DBUILD_APPS=ON && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/json_parse /out/json_parse.cmplog && \
-    file /out/json_parse
+WORKDIR /work
+RUN ln -s build-cov/build/apps/json_parse bin-cov && \
+    /work/bin-cov --help || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing json-c'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN mkdir build && cd build && \
+    CC=clang \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -pg -fno-omit-frame-pointer -Wno-unused-command-line-argument" \
+        -DCMAKE_EXE_LINKER_FLAGS="-pg -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DBUILD_APPS=ON && \
+    make -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/build/apps/json_parse bin-uftrace && \
+    /work/bin-uftrace --help || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
