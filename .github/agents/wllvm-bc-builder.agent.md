@@ -226,7 +226,7 @@ FROM aflplusplus/aflplusplus:latest
 
 # Install basic packages first
 RUN apt-get update && \
-    apt-get install -y htop vim tmux && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
