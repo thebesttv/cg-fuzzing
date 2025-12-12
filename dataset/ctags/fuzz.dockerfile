@@ -1,24 +1,37 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget autoconf automake pkg-config && \
+    apt-get install -y htop vim tmux && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget autoconf automake pkg-config uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract ctags v6.2.1 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: ctags" > /work/proj && \
+    echo "version: 6.2.1" >> /work/proj && \
+    echo "source: https://github.com/universal-ctags/ctags/releases/download/v6.2.1/universal-ctags-6.2.1.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/universal-ctags/ctags/releases/download/v6.2.1/universal-ctags-6.2.1.tar.gz && \
     tar -xzf universal-ctags-6.2.1.tar.gz && \
-    rm universal-ctags-6.2.1.tar.gz
+    rm universal-ctags-6.2.1.tar.gz && \
+    cp -a universal-ctags-6.2.1 build-fuzz && \
+    cp -a universal-ctags-6.2.1 build-cmplog && \
+    cp -a universal-ctags-6.2.1 build-cov && \
+    cp -a universal-ctags-6.2.1 build-uftrace && \
+    rm -rf universal-ctags-6.2.1
 
-WORKDIR /src/universal-ctags-6.2.1
-
-# Build ctags with afl-clang-lto for fuzzing (main target binary)
-# Disable optional features to simplify static linking
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
@@ -29,22 +42,15 @@ RUN CC=afl-clang-lto \
         --disable-json \
         --disable-yaml \
         --disable-seccomp \
-        --disable-pcre2
+        --disable-pcre2 && \
+    make -j$(nproc)
 
-RUN make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/ctags bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Install the ctags binary
-RUN cp ctags /out/ctags
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf universal-ctags-6.2.1 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/universal-ctags/ctags/releases/download/v6.2.1/universal-ctags-6.2.1.tar.gz && \
-    tar -xzf universal-ctags-6.2.1.tar.gz && \
-    rm universal-ctags-6.2.1.tar.gz
-
-WORKDIR /src/universal-ctags-6.2.1
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
@@ -56,25 +62,59 @@ RUN CC=afl-clang-lto \
         --disable-json \
         --disable-yaml \
         --disable-seccomp \
-        --disable-pcre2
+        --disable-pcre2 && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp ctags /out/ctags.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/ctags bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
-COPY ctags/fuzz/dict /out/dict
-COPY ctags/fuzz/in /out/in
-COPY ctags/fuzz/fuzz.sh /out/fuzz.sh
-COPY ctags/fuzz/whatsup.sh /out/whatsup.sh
+COPY ctags/fuzz/dict /work/dict
+COPY ctags/fuzz/in /work/in
+COPY ctags/fuzz/fuzz.sh /work/fuzz.sh
+COPY ctags/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure \
+        --disable-shared \
+        --disable-xml \
+        --disable-json \
+        --disable-yaml \
+        --disable-seccomp \
+        --disable-pcre2 && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/ctags /out/ctags.cmplog && \
-    file /out/ctags && \
-    /out/ctags --version
+WORKDIR /work
+RUN ln -s build-cov/ctags bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing ctags'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure \
+        --disable-shared \
+        --disable-xml \
+        --disable-json \
+        --disable-yaml \
+        --disable-seccomp \
+        --disable-pcre2 && \
+    make -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/ctags bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
