@@ -30,13 +30,15 @@ RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github
     cp -a flac-1.5.0 build-uftrace && \
     rm -rf flac-1.5.0
 
-# Build fuzz binary with afl-clang-fast
-WORKDIR /work/build-fuzz
-RUN echo 'int alloc_check_threshold = 2147483647, alloc_check_counter = 0, alloc_check_keep_failing = 0;' > /tmp/alloc_check_fuzz.c && \
-    afl-clang-fast -c /tmp/alloc_check_fuzz.c -o /tmp/alloc_check_fuzz.o
+# Create alloc_check symbols for fuzzing mode
+RUN echo 'int alloc_check_threshold = 2147483647, alloc_check_counter = 0, alloc_check_keep_failing = 0;' > /tmp/alloc_check.c
 
-RUN CC=afl-clang-fast \
-    CXX=afl-clang-fast++ \
+# Build fuzz binary with afl-clang-lto
+RUN afl-clang-lto -c /tmp/alloc_check.c -o /tmp/alloc_check_fuzz.o
+
+WORKDIR /work/build-fuzz
+RUN CC=afl-clang-lto \
+    CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     CXXFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition /tmp/alloc_check_fuzz.o" \
@@ -47,13 +49,12 @@ WORKDIR /work
 RUN ln -s build-fuzz/src/flac/flac bin-fuzz && \
     /work/bin-fuzz --version
 
-# Build cmplog binary with afl-clang-fast + CMPLOG
-WORKDIR /work/build-cmplog
-RUN echo 'int alloc_check_threshold = 2147483647, alloc_check_counter = 0, alloc_check_keep_failing = 0;' > /tmp/alloc_check_cmplog.c && \
-    afl-clang-fast -c /tmp/alloc_check_cmplog.c -o /tmp/alloc_check_cmplog.o
+# Build cmplog binary with afl-clang-lto + CMPLOG
+RUN afl-clang-lto -c /tmp/alloc_check.c -o /tmp/alloc_check_cmplog.o
 
-RUN CC=afl-clang-fast \
-    CXX=afl-clang-fast++ \
+WORKDIR /work/build-cmplog
+RUN CC=afl-clang-lto \
+    CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     CXXFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition /tmp/alloc_check_cmplog.o" \
@@ -72,10 +73,9 @@ COPY flac/fuzz/fuzz.sh /work/fuzz.sh
 COPY flac/fuzz/whatsup.sh /work/whatsup.sh
 
 # Build cov binary with llvm-cov instrumentation
-WORKDIR /work/build-cov
-RUN echo 'int alloc_check_threshold = 2147483647, alloc_check_counter = 0, alloc_check_keep_failing = 0;' > /tmp/alloc_check_cov.c && \
-    clang -c /tmp/alloc_check_cov.c -o /tmp/alloc_check_cov.o
+RUN clang -c /tmp/alloc_check.c -o /tmp/alloc_check_cov.o
 
+WORKDIR /work/build-cov
 RUN CC=clang \
     CXX=clang++ \
     CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
@@ -90,25 +90,21 @@ RUN ln -s build-cov/src/flac/flac bin-cov && \
     rm -f *.profraw
 
 # Build uftrace binary with profiling instrumentation
-WORKDIR /work/build-uftrace
-RUN echo 'int alloc_check_threshold = 2147483647, alloc_check_counter = 0, alloc_check_keep_failing = 0;' > /tmp/alloc_check_uftrace.c && \
-    clang -c /tmp/alloc_check_uftrace.c -o /tmp/alloc_check_uftrace.o
+RUN clang -c /tmp/alloc_check.c -o /tmp/alloc_check_uftrace.o
 
+WORKDIR /work/build-uftrace
 RUN CC=clang \
     CXX=clang++ \
     CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
     CXXFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
     LDFLAGS="-pg -Wl,--allow-multiple-definition /tmp/alloc_check_uftrace.o" \
-    ./configure --disable-shared --enable-static --disable-ogg --prefix=/work/install-uftrace && \
-    make -j$(nproc) && \
-    make install
+    ./configure --disable-shared --enable-static --disable-ogg && \
+    make -j$(nproc)
 
 WORKDIR /work
-RUN ln -s install-uftrace/bin/flac bin-uftrace && \
+RUN ln -s build-uftrace/src/flac/flac bin-uftrace && \
     /work/bin-uftrace --version && \
-    uftrace record /work/bin-uftrace --version && \
-    uftrace report && \
-    rm -rf uftrace.data gmon.out
+    rm -f gmon.out
 
 # Default to bash in /work
 WORKDIR /work
