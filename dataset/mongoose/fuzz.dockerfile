@@ -1,212 +1,89 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract mongoose 7.20 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: mongoose" > /work/proj && \
+    echo "version: 7.20" >> /work/proj && \
+    echo "source: https://github.com/cesanta/mongoose/archive/refs/tags/7.20.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/cesanta/mongoose/archive/refs/tags/7.20.tar.gz && \
     tar -xzf 7.20.tar.gz && \
-    rm 7.20.tar.gz
+    rm 7.20.tar.gz && \
+    cp -a mongoose-7.20 build-fuzz && \
+    cp -a mongoose-7.20 build-cmplog && \
+    cp -a mongoose-7.20 build-cov && \
+    cp -a mongoose-7.20 build-uftrace && \
+    rm -rf mongoose-7.20
 
-WORKDIR /src/mongoose-7.20
+# Copy harness source to all build directories
+COPY mongoose/fuzz_harness.c /work/build-fuzz/
+COPY mongoose/fuzz_harness.c /work/build-cmplog/
+COPY mongoose/fuzz_harness.c /work/build-cov/
+COPY mongoose/fuzz_harness.c /work/build-uftrace/
 
-# Create fuzzing harness that reads HTTP data from file and parses it
-RUN echo '#include <stdio.h>' > fuzz_harness.c && \
-    echo '#include <stdlib.h>' >> fuzz_harness.c && \
-    echo '#include <string.h>' >> fuzz_harness.c && \
-    echo '#include "mongoose.h"' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '#define MAX_INPUT_SIZE (1024 * 1024)' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo 'int main(int argc, char *argv[]) {' >> fuzz_harness.c && \
-    echo '    FILE *f;' >> fuzz_harness.c && \
-    echo '    char *input = NULL;' >> fuzz_harness.c && \
-    echo '    size_t input_size;' >> fuzz_harness.c && \
-    echo '    struct mg_http_message hm;' >> fuzz_harness.c && \
-    echo '    struct mg_str body;' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    if (argc < 2) {' >> fuzz_harness.c && \
-    echo '        fprintf(stderr, "Usage: %s <input_file>\\n", argv[0]);' >> fuzz_harness.c && \
-    echo '        return 1;' >> fuzz_harness.c && \
-    echo '    }' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    f = fopen(argv[1], "rb");' >> fuzz_harness.c && \
-    echo '    if (!f) {' >> fuzz_harness.c && \
-    echo '        fprintf(stderr, "Cannot open file: %s\\n", argv[1]);' >> fuzz_harness.c && \
-    echo '        return 1;' >> fuzz_harness.c && \
-    echo '    }' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    fseek(f, 0, SEEK_END);' >> fuzz_harness.c && \
-    echo '    input_size = ftell(f);' >> fuzz_harness.c && \
-    echo '    rewind(f);' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    if (input_size == 0 || input_size > MAX_INPUT_SIZE) {' >> fuzz_harness.c && \
-    echo '        fclose(f);' >> fuzz_harness.c && \
-    echo '        return 0;' >> fuzz_harness.c && \
-    echo '    }' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    input = (char *)malloc(input_size + 1);' >> fuzz_harness.c && \
-    echo '    if (!input) {' >> fuzz_harness.c && \
-    echo '        fclose(f);' >> fuzz_harness.c && \
-    echo '        return 1;' >> fuzz_harness.c && \
-    echo '    }' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    if (fread(input, 1, input_size, f) != input_size) {' >> fuzz_harness.c && \
-    echo '        free(input);' >> fuzz_harness.c && \
-    echo '        fclose(f);' >> fuzz_harness.c && \
-    echo '        return 1;' >> fuzz_harness.c && \
-    echo '    }' >> fuzz_harness.c && \
-    echo '    input[input_size] = 0;' >> fuzz_harness.c && \
-    echo '    fclose(f);' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    /* Parse as HTTP request */' >> fuzz_harness.c && \
-    echo '    memset(&hm, 0, sizeof(hm));' >> fuzz_harness.c && \
-    echo '    mg_http_parse(input, input_size, &hm);' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    /* Try to get various headers */' >> fuzz_harness.c && \
-    echo '    mg_http_get_header(&hm, "Content-Type");' >> fuzz_harness.c && \
-    echo '    mg_http_get_header(&hm, "Content-Length");' >> fuzz_harness.c && \
-    echo '    mg_http_get_header(&hm, "Host");' >> fuzz_harness.c && \
-    echo '    mg_http_get_header(&hm, "User-Agent");' >> fuzz_harness.c && \
-    echo '    mg_http_get_header(&hm, "Accept");' >> fuzz_harness.c && \
-    echo '    mg_http_get_header(&hm, "Connection");' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    /* Try to get request body */' >> fuzz_harness.c && \
-    echo '    body = hm.body;' >> fuzz_harness.c && \
-    echo '    (void)body;' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    /* Try URL parsing */' >> fuzz_harness.c && \
-    echo '    if (hm.uri.len > 0) {' >> fuzz_harness.c && \
-    echo '        struct mg_str query = hm.query;' >> fuzz_harness.c && \
-    echo '        (void)query;' >> fuzz_harness.c && \
-    echo '    }' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    free(input);' >> fuzz_harness.c && \
-    echo '    return 0;' >> fuzz_harness.c && \
-    echo '}' >> fuzz_harness.c
-
-# Build mongoose with afl-clang-lto
-RUN afl-clang-lto \
-    -O2 \
-    -DMG_ENABLE_LINES=1 \
-    -I. \
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
+RUN afl-clang-lto -O2 -DMG_ENABLE_LINES=1 -I. \
     -static -Wl,--allow-multiple-definition \
-    -o mongoose_fuzz \
-    fuzz_harness.c mongoose.c
+    -o mongoose_fuzz fuzz_harness.c mongoose.c
 
-RUN cp mongoose_fuzz /out/mongoose_fuzz
+WORKDIR /work
+RUN ln -s build-fuzz/mongoose_fuzz bin-fuzz && \
+    /work/bin-fuzz || true
 
-# Build CMPLOG version
-WORKDIR /src
-RUN rm -rf mongoose-7.20 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/cesanta/mongoose/archive/refs/tags/7.20.tar.gz && \
-    tar -xzf 7.20.tar.gz && \
-    rm 7.20.tar.gz
-
-WORKDIR /src/mongoose-7.20
-
-# Create the same harness for CMPLOG build
-RUN echo '#include <stdio.h>' > fuzz_harness.c && \
-    echo '#include <stdlib.h>' >> fuzz_harness.c && \
-    echo '#include <string.h>' >> fuzz_harness.c && \
-    echo '#include "mongoose.h"' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '#define MAX_INPUT_SIZE (1024 * 1024)' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo 'int main(int argc, char *argv[]) {' >> fuzz_harness.c && \
-    echo '    FILE *f;' >> fuzz_harness.c && \
-    echo '    char *input = NULL;' >> fuzz_harness.c && \
-    echo '    size_t input_size;' >> fuzz_harness.c && \
-    echo '    struct mg_http_message hm;' >> fuzz_harness.c && \
-    echo '    struct mg_str body;' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    if (argc < 2) {' >> fuzz_harness.c && \
-    echo '        fprintf(stderr, "Usage: %s <input_file>\\n", argv[0]);' >> fuzz_harness.c && \
-    echo '        return 1;' >> fuzz_harness.c && \
-    echo '    }' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    f = fopen(argv[1], "rb");' >> fuzz_harness.c && \
-    echo '    if (!f) {' >> fuzz_harness.c && \
-    echo '        fprintf(stderr, "Cannot open file: %s\\n", argv[1]);' >> fuzz_harness.c && \
-    echo '        return 1;' >> fuzz_harness.c && \
-    echo '    }' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    fseek(f, 0, SEEK_END);' >> fuzz_harness.c && \
-    echo '    input_size = ftell(f);' >> fuzz_harness.c && \
-    echo '    rewind(f);' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    if (input_size == 0 || input_size > MAX_INPUT_SIZE) {' >> fuzz_harness.c && \
-    echo '        fclose(f);' >> fuzz_harness.c && \
-    echo '        return 0;' >> fuzz_harness.c && \
-    echo '    }' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    input = (char *)malloc(input_size + 1);' >> fuzz_harness.c && \
-    echo '    if (!input) {' >> fuzz_harness.c && \
-    echo '        fclose(f);' >> fuzz_harness.c && \
-    echo '        return 1;' >> fuzz_harness.c && \
-    echo '    }' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    if (fread(input, 1, input_size, f) != input_size) {' >> fuzz_harness.c && \
-    echo '        free(input);' >> fuzz_harness.c && \
-    echo '        fclose(f);' >> fuzz_harness.c && \
-    echo '        return 1;' >> fuzz_harness.c && \
-    echo '    }' >> fuzz_harness.c && \
-    echo '    input[input_size] = 0;' >> fuzz_harness.c && \
-    echo '    fclose(f);' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    /* Parse as HTTP request */' >> fuzz_harness.c && \
-    echo '    memset(&hm, 0, sizeof(hm));' >> fuzz_harness.c && \
-    echo '    mg_http_parse(input, input_size, &hm);' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    /* Try to get various headers */' >> fuzz_harness.c && \
-    echo '    mg_http_get_header(&hm, "Content-Type");' >> fuzz_harness.c && \
-    echo '    mg_http_get_header(&hm, "Content-Length");' >> fuzz_harness.c && \
-    echo '    mg_http_get_header(&hm, "Host");' >> fuzz_harness.c && \
-    echo '    mg_http_get_header(&hm, "User-Agent");' >> fuzz_harness.c && \
-    echo '    mg_http_get_header(&hm, "Accept");' >> fuzz_harness.c && \
-    echo '    mg_http_get_header(&hm, "Connection");' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    /* Try to get request body */' >> fuzz_harness.c && \
-    echo '    body = hm.body;' >> fuzz_harness.c && \
-    echo '    (void)body;' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    /* Try URL parsing */' >> fuzz_harness.c && \
-    echo '    if (hm.uri.len > 0) {' >> fuzz_harness.c && \
-    echo '        struct mg_str query = hm.query;' >> fuzz_harness.c && \
-    echo '        (void)query;' >> fuzz_harness.c && \
-    echo '    }' >> fuzz_harness.c && \
-    echo '' >> fuzz_harness.c && \
-    echo '    free(input);' >> fuzz_harness.c && \
-    echo '    return 0;' >> fuzz_harness.c && \
-    echo '}' >> fuzz_harness.c
-
-RUN AFL_LLVM_CMPLOG=1 afl-clang-lto \
-    -O2 \
-    -DMG_ENABLE_LINES=1 \
-    -I. \
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
+RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -DMG_ENABLE_LINES=1 -I. \
     -static -Wl,--allow-multiple-definition \
-    -o mongoose_fuzz \
-    fuzz_harness.c mongoose.c
+    -o mongoose_fuzz fuzz_harness.c mongoose.c
 
-RUN cp mongoose_fuzz /out/mongoose_fuzz.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/mongoose_fuzz bin-cmplog && \
+    /work/bin-cmplog || true
 
 # Copy fuzzing resources
-COPY mongoose/fuzz/dict /out/dict
-COPY mongoose/fuzz/in /out/in
-COPY mongoose/fuzz/fuzz.sh /out/fuzz.sh
-COPY mongoose/fuzz/whatsup.sh /out/whatsup.sh
+COPY mongoose/fuzz/dict /work/dict
+COPY mongoose/fuzz/in /work/in
+COPY mongoose/fuzz/fuzz.sh /work/fuzz.sh
+COPY mongoose/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN clang -g -O0 -fprofile-instr-generate -fcoverage-mapping -DMG_ENABLE_LINES=1 -I. \
+    -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition \
+    -o mongoose_fuzz fuzz_harness.c mongoose.c
 
-# Verify binaries are built
-RUN ls -la /out/mongoose_fuzz /out/mongoose_fuzz.cmplog && \
-    file /out/mongoose_fuzz
+WORKDIR /work
+RUN ln -s build-cov/mongoose_fuzz bin-cov && \
+    /work/bin-cov || true && \
+    rm -f *.profraw
 
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing mongoose'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN clang -g -O0 -pg -fno-omit-frame-pointer -DMG_ENABLE_LINES=1 -I. \
+    -pg -Wl,--allow-multiple-definition \
+    -o mongoose_fuzz fuzz_harness.c mongoose.c
+
+WORKDIR /work
+RUN ln -s build-uftrace/mongoose_fuzz bin-uftrace && \
+    /work/bin-uftrace || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
