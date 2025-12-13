@@ -1,125 +1,142 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget autoconf automake libtool && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget autoconf automake libtool uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract libuv v1.48.0 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: libuv" > /work/proj && \
+    echo "version: 1.48.0" >> /work/proj && \
+    echo "source: https://github.com/libuv/libuv/archive/refs/tags/v1.48.0.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libuv/libuv/archive/refs/tags/v1.48.0.tar.gz && \
     tar -xzf v1.48.0.tar.gz && \
-    rm v1.48.0.tar.gz
+    rm v1.48.0.tar.gz && \
+    cp -a libuv-1.48.0 build-fuzz && \
+    cp -a libuv-1.48.0 build-cmplog && \
+    cp -a libuv-1.48.0 build-cov && \
+    cp -a libuv-1.48.0 build-uftrace && \
+    rm -rf libuv-1.48.0
 
-WORKDIR /src/libuv-1.48.0
+# Create test program source (used for all builds)
+RUN cat > /work/test_uv.c <<'EOF'
+#include <uv.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
 
-# Generate configure script
-RUN ./autogen.sh
+int main(int argc, char **argv) {
+    if (argc < 2) return 1;
+    int fd = open(argv[1], O_RDONLY);
+    if (fd < 0) return 1;
+    char buf[4096];
+    ssize_t n = read(fd, buf, sizeof(buf));
+    close(fd);
+    if (n <= 0) return 1;
+    uv_loop_t *loop = uv_default_loop();
+    if (!loop) return 1;
+    uv_run(loop, UV_RUN_DEFAULT);
+    uv_loop_close(loop);
+    return 0;
+}
+EOF
 
-# Build libuv with afl-clang-lto for fuzzing (main target binary)
-RUN CC=afl-clang-lto \
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
+RUN ./autogen.sh && \
+    CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --disable-shared --enable-static
-
-RUN make -j$(nproc)
-
-# Build a simple test program for fuzzing
-RUN echo '#include <uv.h>' > test_uv.c && \
-    echo '#include <stdio.h>' >> test_uv.c && \
-    echo '#include <stdlib.h>' >> test_uv.c && \
-    echo '#include <string.h>' >> test_uv.c && \
-    echo '#include <fcntl.h>' >> test_uv.c && \
-    echo '#include <unistd.h>' >> test_uv.c && \
-    echo 'int main(int argc, char **argv) {' >> test_uv.c && \
-    echo '    if (argc < 2) return 1;' >> test_uv.c && \
-    echo '    int fd = open(argv[1], O_RDONLY);' >> test_uv.c && \
-    echo '    if (fd < 0) return 1;' >> test_uv.c && \
-    echo '    char buf[4096];' >> test_uv.c && \
-    echo '    ssize_t n = read(fd, buf, sizeof(buf));' >> test_uv.c && \
-    echo '    close(fd);' >> test_uv.c && \
-    echo '    if (n <= 0) return 1;' >> test_uv.c && \
-    echo '    uv_loop_t *loop = uv_default_loop();' >> test_uv.c && \
-    echo '    if (!loop) return 1;' >> test_uv.c && \
-    echo '    uv_run(loop, UV_RUN_DEFAULT);' >> test_uv.c && \
-    echo '    uv_loop_close(loop);' >> test_uv.c && \
-    echo '    return 0;' >> test_uv.c && \
-    echo '}' >> test_uv.c
-
-RUN afl-clang-lto -O2 \
-    test_uv.c -o test_uv \
+    ./configure --disable-shared --enable-static && \
+    make -j$(nproc) && \
+    afl-clang-lto -O2 \
+    /work/test_uv.c -o test_uv \
     -I./include -I./src \
     .libs/libuv.a \
     -static -Wl,--allow-multiple-definition -lpthread
 
-RUN cp test_uv /out/test_uv
+WORKDIR /work
+RUN ln -s build-fuzz/test_uv bin-fuzz
 
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf libuv-1.48.0 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libuv/libuv/archive/refs/tags/v1.48.0.tar.gz && \
-    tar -xzf v1.48.0.tar.gz && \
-    rm v1.48.0.tar.gz
-
-WORKDIR /src/libuv-1.48.0
-
-RUN ./autogen.sh
-
-RUN CC=afl-clang-lto \
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
+RUN ./autogen.sh && \
+    CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure --disable-shared --enable-static
-
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Build CMPLOG test program
-RUN echo '#include <uv.h>' > test_uv.c && \
-    echo '#include <stdio.h>' >> test_uv.c && \
-    echo '#include <stdlib.h>' >> test_uv.c && \
-    echo '#include <string.h>' >> test_uv.c && \
-    echo '#include <fcntl.h>' >> test_uv.c && \
-    echo '#include <unistd.h>' >> test_uv.c && \
-    echo 'int main(int argc, char **argv) {' >> test_uv.c && \
-    echo '    if (argc < 2) return 1;' >> test_uv.c && \
-    echo '    int fd = open(argv[1], O_RDONLY);' >> test_uv.c && \
-    echo '    if (fd < 0) return 1;' >> test_uv.c && \
-    echo '    char buf[4096];' >> test_uv.c && \
-    echo '    ssize_t n = read(fd, buf, sizeof(buf));' >> test_uv.c && \
-    echo '    close(fd);' >> test_uv.c && \
-    echo '    if (n <= 0) return 1;' >> test_uv.c && \
-    echo '    uv_loop_t *loop = uv_default_loop();' >> test_uv.c && \
-    echo '    if (!loop) return 1;' >> test_uv.c && \
-    echo '    uv_run(loop, UV_RUN_DEFAULT);' >> test_uv.c && \
-    echo '    uv_loop_close(loop);' >> test_uv.c && \
-    echo '    return 0;' >> test_uv.c && \
-    echo '}' >> test_uv.c
-
-RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 \
-    test_uv.c -o test_uv_cmplog \
+    ./configure --disable-shared --enable-static && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc) && \
+    AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 \
+    /work/test_uv.c -o test_uv \
     -I./include -I./src \
     .libs/libuv.a \
     -static -Wl,--allow-multiple-definition -lpthread
 
-RUN cp test_uv_cmplog /out/test_uv.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/test_uv bin-cmplog
 
 # Copy fuzzing resources
-COPY libuv/fuzz/dict /out/dict
-COPY libuv/fuzz/in /out/in
-COPY libuv/fuzz/fuzz.sh /out/fuzz.sh
-COPY libuv/fuzz/whatsup.sh /out/whatsup.sh
+COPY libuv/fuzz/dict /work/dict
+COPY libuv/fuzz/in /work/in
+COPY libuv/fuzz/fuzz.sh /work/fuzz.sh
+COPY libuv/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN ./autogen.sh && \
+    CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared --enable-static && \
+    make -j$(nproc) && \
+    clang -g -O0 -fprofile-instr-generate -fcoverage-mapping \
+    /work/test_uv.c -o test_uv \
+    -I./include -I./src \
+    .libs/libuv.a \
+    -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition -lpthread
 
-# Verify binaries are built
-RUN ls -la /out/test_uv /out/test_uv.cmplog && \
-    file /out/test_uv
+WORKDIR /work
+RUN ln -s build-cov/test_uv bin-cov && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing libuv'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN ./autogen.sh && \
+    CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared --prefix=/work/install-uftrace && \
+    make -j$(nproc) && \
+    make install && \
+    clang -g -O0 -pg -fno-omit-frame-pointer \
+    /work/test_uv.c -o test_uv \
+    -I./include -I./src \
+    .libs/libuv.a \
+    -pg -Wl,--allow-multiple-definition -lpthread
+
+WORKDIR /work
+RUN ln -s build-uftrace/test_uv bin-uftrace && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
