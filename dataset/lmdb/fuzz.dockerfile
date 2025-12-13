@@ -1,56 +1,83 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract lmdb 0.9.31 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: lmdb" > /work/proj && \
+    echo "version: 0.9.31" >> /work/proj && \
+    echo "source: https://github.com/LMDB/lmdb/archive/refs/tags/LMDB_0.9.31.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/LMDB/lmdb/archive/refs/tags/LMDB_0.9.31.tar.gz && \
     tar -xzf LMDB_0.9.31.tar.gz && \
-    rm LMDB_0.9.31.tar.gz
+    rm LMDB_0.9.31.tar.gz && \
+    cp -a lmdb-LMDB_0.9.31 build-fuzz && \
+    cp -a lmdb-LMDB_0.9.31 build-cmplog && \
+    cp -a lmdb-LMDB_0.9.31 build-cov && \
+    cp -a lmdb-LMDB_0.9.31 build-uftrace && \
+    rm -rf lmdb-LMDB_0.9.31
 
-WORKDIR /src/lmdb-LMDB_0.9.31/libraries/liblmdb
-
-# Build lmdb with afl-clang-lto for fuzzing
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz/libraries/liblmdb
 RUN make CC=afl-clang-lto \
     CFLAGS="-O2 -pthread" \
     LDFLAGS="-static -Wl,--allow-multiple-definition -pthread" \
     mdb_load -j$(nproc)
 
-RUN cp mdb_load /out/mdb_load
+WORKDIR /work
+RUN ln -s build-fuzz/libraries/liblmdb/mdb_load bin-fuzz
 
-# Build CMPLOG version
-WORKDIR /src
-RUN rm -rf lmdb-LMDB_0.9.31 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/LMDB/lmdb/archive/refs/tags/LMDB_0.9.31.tar.gz && \
-    tar -xzf LMDB_0.9.31.tar.gz && \
-    rm LMDB_0.9.31.tar.gz
-
-WORKDIR /src/lmdb-LMDB_0.9.31/libraries/liblmdb
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog/libraries/liblmdb
 RUN AFL_LLVM_CMPLOG=1 make CC=afl-clang-lto \
     CFLAGS="-O2 -pthread" \
     LDFLAGS="-static -Wl,--allow-multiple-definition -pthread" \
     mdb_load -j$(nproc)
 
-RUN cp mdb_load /out/mdb_load.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/libraries/liblmdb/mdb_load bin-cmplog
 
 # Copy fuzzing resources
-COPY lmdb/fuzz/dict /out/dict
-COPY lmdb/fuzz/in /out/in
-COPY lmdb/fuzz/fuzz.sh /out/fuzz.sh
-COPY lmdb/fuzz/whatsup.sh /out/whatsup.sh
+COPY lmdb/fuzz/dict /work/dict
+COPY lmdb/fuzz/in /work/in
+COPY lmdb/fuzz/fuzz.sh /work/fuzz.sh
+COPY lmdb/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov/libraries/liblmdb
+RUN make CC=clang \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping -pthread" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition -pthread" \
+    mdb_load -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/mdb_load /out/mdb_load.cmplog && \
-    file /out/mdb_load
+WORKDIR /work
+RUN ln -s build-cov/libraries/liblmdb/mdb_load bin-cov && \
+    rm -f *.profraw
 
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing mdb_load'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace/libraries/liblmdb
+RUN make CC=clang \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer -pthread" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition -pthread" \
+    mdb_load -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/libraries/liblmdb/mdb_load bin-uftrace && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
