@@ -1,135 +1,185 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget cmake && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget cmake uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract hiredis 1.3.0 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: hiredis" > /work/proj && \
+    echo "version: 1.3.0" >> /work/proj && \
+    echo "source: https://github.com/redis/hiredis/archive/refs/tags/v1.3.0.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/redis/hiredis/archive/refs/tags/v1.3.0.tar.gz && \
     tar -xzf v1.3.0.tar.gz && \
-    rm v1.3.0.tar.gz
+    rm v1.3.0.tar.gz && \
+    cp -a hiredis-1.3.0 build-fuzz && \
+    cp -a hiredis-1.3.0 build-cmplog && \
+    cp -a hiredis-1.3.0 build-cov && \
+    cp -a hiredis-1.3.0 build-uftrace && \
+    rm -rf hiredis-1.3.0
 
-WORKDIR /src/hiredis-1.3.0
+# Create fuzzing harness in all build directories
+RUN printf '%s\n' \
+    '/* AFL++ fuzzer harness for hiredis RESP protocol reader */' \
+    '#include <stdio.h>' \
+    '#include <stdlib.h>' \
+    '#include <string.h>' \
+    '#include <unistd.h>' \
+    '#include "hiredis.h"' \
+    '#include "read.h"' \
+    '' \
+    'int main(int argc, char **argv) {' \
+    '    char buf[65536];' \
+    '    ssize_t len;' \
+    '    redisReader *reader;' \
+    '    void *reply;' \
+    '' \
+    '    if (argc > 1) {' \
+    '        FILE *f = fopen(argv[1], "rb");' \
+    '        if (!f) return 1;' \
+    '        len = fread(buf, 1, sizeof(buf), f);' \
+    '        fclose(f);' \
+    '    } else {' \
+    '        len = read(0, buf, sizeof(buf));' \
+    '    }' \
+    '' \
+    '    if (len <= 0) return 0;' \
+    '' \
+    '    reader = redisReaderCreate();' \
+    '    if (!reader) return 1;' \
+    '' \
+    '    if (redisReaderFeed(reader, buf, len) != REDIS_OK) {' \
+    '        redisReaderFree(reader);' \
+    '        return 0;' \
+    '    }' \
+    '' \
+    '    while (redisReaderGetReply(reader, &reply) == REDIS_OK) {' \
+    '        if (reply == NULL) break;' \
+    '        freeReplyObject(reply);' \
+    '    }' \
+    '' \
+    '    redisReaderFree(reader);' \
+    '    return 0;' \
+    '}' > /tmp/fuzz_reader.c
 
-# Create a harness for fuzzing the RESP protocol reader
-# Save to /tmp for reuse in CMPLOG build
-RUN echo '/* AFL++ fuzzer harness for hiredis RESP protocol reader */' > /tmp/fuzz_reader.c && \
-    echo '#include <stdio.h>' >> /tmp/fuzz_reader.c && \
-    echo '#include <stdlib.h>' >> /tmp/fuzz_reader.c && \
-    echo '#include <string.h>' >> /tmp/fuzz_reader.c && \
-    echo '#include <unistd.h>' >> /tmp/fuzz_reader.c && \
-    echo '#include "hiredis.h"' >> /tmp/fuzz_reader.c && \
-    echo '#include "read.h"' >> /tmp/fuzz_reader.c && \
-    echo '' >> /tmp/fuzz_reader.c && \
-    echo 'int main(int argc, char **argv) {' >> /tmp/fuzz_reader.c && \
-    echo '    char buf[65536];' >> /tmp/fuzz_reader.c && \
-    echo '    ssize_t len;' >> /tmp/fuzz_reader.c && \
-    echo '    redisReader *reader;' >> /tmp/fuzz_reader.c && \
-    echo '    void *reply;' >> /tmp/fuzz_reader.c && \
-    echo '' >> /tmp/fuzz_reader.c && \
-    echo '    if (argc > 1) {' >> /tmp/fuzz_reader.c && \
-    echo '        FILE *f = fopen(argv[1], "rb");' >> /tmp/fuzz_reader.c && \
-    echo '        if (!f) return 1;' >> /tmp/fuzz_reader.c && \
-    echo '        len = fread(buf, 1, sizeof(buf), f);' >> /tmp/fuzz_reader.c && \
-    echo '        fclose(f);' >> /tmp/fuzz_reader.c && \
-    echo '    } else {' >> /tmp/fuzz_reader.c && \
-    echo '        len = read(0, buf, sizeof(buf));' >> /tmp/fuzz_reader.c && \
-    echo '    }' >> /tmp/fuzz_reader.c && \
-    echo '' >> /tmp/fuzz_reader.c && \
-    echo '    if (len <= 0) return 0;' >> /tmp/fuzz_reader.c && \
-    echo '' >> /tmp/fuzz_reader.c && \
-    echo '    reader = redisReaderCreate();' >> /tmp/fuzz_reader.c && \
-    echo '    if (!reader) return 1;' >> /tmp/fuzz_reader.c && \
-    echo '' >> /tmp/fuzz_reader.c && \
-    echo '    if (redisReaderFeed(reader, buf, len) != REDIS_OK) {' >> /tmp/fuzz_reader.c && \
-    echo '        redisReaderFree(reader);' >> /tmp/fuzz_reader.c && \
-    echo '        return 0;' >> /tmp/fuzz_reader.c && \
-    echo '    }' >> /tmp/fuzz_reader.c && \
-    echo '' >> /tmp/fuzz_reader.c && \
-    echo '    while (redisReaderGetReply(reader, &reply) == REDIS_OK) {' >> /tmp/fuzz_reader.c && \
-    echo '        if (reply == NULL) break;' >> /tmp/fuzz_reader.c && \
-    echo '        freeReplyObject(reply);' >> /tmp/fuzz_reader.c && \
-    echo '    }' >> /tmp/fuzz_reader.c && \
-    echo '' >> /tmp/fuzz_reader.c && \
-    echo '    redisReaderFree(reader);' >> /tmp/fuzz_reader.c && \
-    echo '    return 0;' >> /tmp/fuzz_reader.c && \
-    echo '}' >> /tmp/fuzz_reader.c
+# Copy harness to all build directories
+RUN for dir in build-fuzz build-cmplog build-cov build-uftrace; do \
+      cp /tmp/fuzz_reader.c /work/$dir/; \
+    done
 
-# Copy harness to source directory
-RUN cp /tmp/fuzz_reader.c .
-
-# Build hiredis with afl-clang-lto for fuzzing
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
     cmake .. \
-    -DCMAKE_C_FLAGS="-O2" \
-    -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
-    -DBUILD_SHARED_LIBS=OFF \
-    -DDISABLE_TESTS=ON
+        -DCMAKE_C_FLAGS="-O2" \
+        -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DDISABLE_TESTS=ON && \
+    make -j$(nproc)
 
-RUN cd build && make -j$(nproc)
-
-# Build the fuzzer harness
 RUN afl-clang-lto \
     -O2 \
     -I. \
     -static -Wl,--allow-multiple-definition \
     fuzz_reader.c \
     build/libhiredis.a \
-    -o /out/fuzz_reader
+    -o fuzz_reader
 
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf hiredis-1.3.0 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/redis/hiredis/archive/refs/tags/v1.3.0.tar.gz && \
-    tar -xzf v1.3.0.tar.gz && \
-    rm v1.3.0.tar.gz
+WORKDIR /work
+RUN ln -s build-fuzz/fuzz_reader bin-fuzz && \
+    echo '*1\r\n$4\r\nPING\r\n' | /work/bin-fuzz
 
-WORKDIR /src/hiredis-1.3.0
-
-# Copy harness from /tmp (saved earlier)
-RUN cp /tmp/fuzz_reader.c .
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
     AFL_LLVM_CMPLOG=1 \
     cmake .. \
-    -DCMAKE_C_FLAGS="-O2" \
-    -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
-    -DBUILD_SHARED_LIBS=OFF \
-    -DDISABLE_TESTS=ON
+        -DCMAKE_C_FLAGS="-O2" \
+        -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DDISABLE_TESTS=ON && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Build CMPLOG fuzzer harness
 RUN AFL_LLVM_CMPLOG=1 afl-clang-lto \
     -O2 \
     -I. \
     -static -Wl,--allow-multiple-definition \
     fuzz_reader.c \
     build/libhiredis.a \
-    -o /out/fuzz_reader.cmplog
+    -o fuzz_reader
+
+WORKDIR /work
+RUN ln -s build-cmplog/fuzz_reader bin-cmplog && \
+    echo '*1\r\n$4\r\nPING\r\n' | /work/bin-cmplog
 
 # Copy fuzzing resources
-COPY hiredis/fuzz/dict /out/dict
-COPY hiredis/fuzz/in /out/in
-COPY hiredis/fuzz/fuzz.sh /out/fuzz.sh
-COPY hiredis/fuzz/whatsup.sh /out/whatsup.sh
+COPY hiredis/fuzz/dict /work/dict
+COPY hiredis/fuzz/in /work/in
+COPY hiredis/fuzz/fuzz.sh /work/fuzz.sh
+COPY hiredis/fuzz/whatsup.sh /work/whatsup.sh
 
-# Ensure scripts are executable
-RUN chmod +x /out/fuzz.sh /out/whatsup.sh
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN mkdir build && cd build && \
+    CC=clang \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+        -DCMAKE_EXE_LINKER_FLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DDISABLE_TESTS=ON && \
+    make -j$(nproc)
 
-WORKDIR /out
+RUN clang \
+    -g -O0 -fprofile-instr-generate -fcoverage-mapping \
+    -I. \
+    -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition \
+    fuzz_reader.c \
+    build/libhiredis.a \
+    -o fuzz_reader
 
-# Verify binaries are built
-RUN ls -la /out/fuzz_reader /out/fuzz_reader.cmplog && \
-    file /out/fuzz_reader
+WORKDIR /work
+RUN ln -s build-cov/fuzz_reader bin-cov && \
+    echo '*1\r\n$4\r\nPING\r\n' | /work/bin-cov && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing hiredis'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN mkdir build && cd build && \
+    CC=clang \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+        -DCMAKE_EXE_LINKER_FLAGS="-pg -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DDISABLE_TESTS=ON && \
+    make -j$(nproc)
+
+RUN clang \
+    -g -O0 -pg -fno-omit-frame-pointer \
+    -I. \
+    -pg -Wl,--allow-multiple-definition \
+    fuzz_reader.c \
+    build/libhiredis.a \
+    -o fuzz_reader
+
+WORKDIR /work
+RUN ln -s build-uftrace/fuzz_reader bin-uftrace && \
+    echo '*1\r\n$4\r\nPING\r\n' | /work/bin-uftrace && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
