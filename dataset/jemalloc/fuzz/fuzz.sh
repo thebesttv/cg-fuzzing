@@ -9,9 +9,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT_DIR="${SCRIPT_DIR}/findings"
 IN_DIR="${SCRIPT_DIR}/in"
 DICT="${SCRIPT_DIR}/dict"
-CMPLOG_BIN="${SCRIPT_DIR}/malloc-test.cmplog"
-TARGET_BIN="${SCRIPT_DIR}/malloc-test"
+CMPLOG_BIN="${SCRIPT_DIR}/bin-cmplog"
+TARGET_BIN="${SCRIPT_DIR}/bin-fuzz"
 PARALLEL=1
+
+# Set LD_LIBRARY_PATH for jemalloc shared libraries
+export LD_LIBRARY_PATH="${SCRIPT_DIR}/build-fuzz/lib:${SCRIPT_DIR}/build-cmplog/lib:${LD_LIBRARY_PATH}"
 
 # --- Usage Function ---
 usage() {
