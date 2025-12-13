@@ -1,62 +1,91 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget libpng-dev && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget libpng-dev uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract jbig2dec v0.20 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: jbig2dec" > /work/proj && \
+    echo "version: 0.20" >> /work/proj && \
+    echo "source: https://github.com/ArtifexSoftware/jbig2dec/archive/refs/tags/0.20.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ArtifexSoftware/jbig2dec/archive/refs/tags/0.20.tar.gz -O jbig2dec-0.20.tar.gz && \
     tar -xzf jbig2dec-0.20.tar.gz && \
-    rm jbig2dec-0.20.tar.gz
+    rm jbig2dec-0.20.tar.gz && \
+    cp -a jbig2dec-0.20 build-fuzz && \
+    cp -a jbig2dec-0.20 build-cmplog && \
+    cp -a jbig2dec-0.20 build-cov && \
+    cp -a jbig2dec-0.20 build-uftrace && \
+    rm -rf jbig2dec-0.20
 
-WORKDIR /src/jbig2dec-0.20
-
-# Build jbig2dec with afl-clang-lto
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN make -f Makefile.unix \
     CC=afl-clang-lto \
     CFLAGS="-O2 -Wall -Wextra -Wno-unused-parameter" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     jbig2dec
 
-# Install the jbig2dec binary
-RUN cp jbig2dec /out/jbig2dec
+WORKDIR /work
+RUN ln -s build-fuzz/jbig2dec bin-fuzz && \
+    /work/bin-fuzz --version || /work/bin-fuzz --help || true
 
-# Build CMPLOG version
-WORKDIR /src
-RUN rm -rf jbig2dec-0.20 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ArtifexSoftware/jbig2dec/archive/refs/tags/0.20.tar.gz -O jbig2dec-0.20.tar.gz && \
-    tar -xzf jbig2dec-0.20.tar.gz && \
-    rm jbig2dec-0.20.tar.gz
-
-WORKDIR /src/jbig2dec-0.20
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN AFL_LLVM_CMPLOG=1 make -f Makefile.unix \
     CC=afl-clang-lto \
     CFLAGS="-O2 -Wall -Wextra -Wno-unused-parameter" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     jbig2dec
 
-# Install CMPLOG binary
-RUN cp jbig2dec /out/jbig2dec.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/jbig2dec bin-cmplog && \
+    /work/bin-cmplog --version || /work/bin-cmplog --help || true
 
 # Copy fuzzing resources
-COPY jbig2dec/fuzz/dict /out/dict
-COPY jbig2dec/fuzz/in /out/in
-COPY jbig2dec/fuzz/fuzz.sh /out/fuzz.sh
-COPY jbig2dec/fuzz/whatsup.sh /out/whatsup.sh
+COPY jbig2dec/fuzz/dict /work/dict
+COPY jbig2dec/fuzz/in /work/in
+COPY jbig2dec/fuzz/fuzz.sh /work/fuzz.sh
+COPY jbig2dec/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN make -f Makefile.unix \
+    CC=clang \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wall -Wextra -Wno-unused-parameter" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    jbig2dec
 
-# Verify binaries are built
-RUN ls -la /out/jbig2dec /out/jbig2dec.cmplog && \
-    file /out/jbig2dec && \
-    /out/jbig2dec --help || true
+WORKDIR /work
+RUN ln -s build-cov/jbig2dec bin-cov && \
+    /work/bin-cov --version || /work/bin-cov --help || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing jbig2dec'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN make -f Makefile.unix \
+    CC=clang \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer -Wall -Wextra -Wno-unused-parameter" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    jbig2dec
+
+WORKDIR /work
+RUN ln -s build-uftrace/jbig2dec bin-uftrace && \
+    /work/bin-uftrace --version || /work/bin-uftrace --help || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
