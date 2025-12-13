@@ -1,76 +1,107 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget autoconf automake libtool pkg-config zlib1g-dev && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget autoconf automake libtool pkg-config zlib1g-dev uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract libhtp v0.5.52 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: libhtp" > /work/proj && \
+    echo "version: 0.5.52" >> /work/proj && \
+    echo "source: https://github.com/OISF/libhtp/archive/refs/tags/0.5.52.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/OISF/libhtp/archive/refs/tags/0.5.52.tar.gz && \
     tar -xzf 0.5.52.tar.gz && \
-    rm 0.5.52.tar.gz
+    rm 0.5.52.tar.gz && \
+    cp -a libhtp-0.5.52 build-fuzz && \
+    cp -a libhtp-0.5.52 build-cmplog && \
+    cp -a libhtp-0.5.52 build-cov && \
+    cp -a libhtp-0.5.52 build-uftrace && \
+    rm -rf libhtp-0.5.52
 
-WORKDIR /src/libhtp-0.5.52
-
-# Generate configure script
-RUN ./autogen.sh
-
-# Build with afl-clang-lto for fuzzing (main target binary)
-RUN CC=afl-clang-lto \
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
+RUN ./autogen.sh && \
+    CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --disable-shared --enable-static
+    ./configure --disable-shared --enable-static && \
+    make -j$(nproc) && \
+    cd test && make test_fuzz
 
-RUN make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/test/test_fuzz bin-fuzz && \
+    /work/bin-fuzz 2>&1 | head -1
 
-# Build test_fuzz
-RUN cd test && make test_fuzz
-
-# Install the test_fuzz binary
-RUN cp test/test_fuzz /out/test_fuzz
-
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf libhtp-0.5.52 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/OISF/libhtp/archive/refs/tags/0.5.52.tar.gz && \
-    tar -xzf 0.5.52.tar.gz && \
-    rm 0.5.52.tar.gz
-
-WORKDIR /src/libhtp-0.5.52
-
-RUN ./autogen.sh
-
-RUN CC=afl-clang-lto \
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
+RUN ./autogen.sh && \
+    CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure --disable-shared --enable-static
+    ./configure --disable-shared --enable-static && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc) && \
+    cd test && AFL_LLVM_CMPLOG=1 make test_fuzz
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-RUN cd test && AFL_LLVM_CMPLOG=1 make test_fuzz
-
-# Install CMPLOG binary
-RUN cp test/test_fuzz /out/test_fuzz.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/test/test_fuzz bin-cmplog && \
+    /work/bin-cmplog 2>&1 | head -1
 
 # Copy fuzzing resources
-COPY libhtp/fuzz/dict /out/dict
-COPY libhtp/fuzz/in /out/in
-COPY libhtp/fuzz/fuzz.sh /out/fuzz.sh
-COPY libhtp/fuzz/whatsup.sh /out/whatsup.sh
+COPY libhtp/fuzz/dict /work/dict
+COPY libhtp/fuzz/in /work/in
+COPY libhtp/fuzz/fuzz.sh /work/fuzz.sh
+COPY libhtp/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN ./autogen.sh && \
+    CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared --enable-static && \
+    make -j$(nproc) && \
+    cd test && make test_fuzz
 
-# Verify binaries are built
-RUN ls -la /out/test_fuzz /out/test_fuzz.cmplog && \
-    file /out/test_fuzz
+WORKDIR /work
+RUN ln -s build-cov/test/test_fuzz bin-cov && \
+    /work/bin-cov 2>&1 | head -1 && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing libhtp'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN ./autogen.sh && \
+    CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared --enable-static --prefix=/work/install-uftrace && \
+    make -j$(nproc) && \
+    make install && \
+    cd test && make test_fuzz && \
+    mkdir -p /work/install-uftrace/bin && \
+    cp test_fuzz /work/install-uftrace/bin/
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/test_fuzz bin-uftrace && \
+    /work/bin-uftrace 2>&1 | head -1 && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
