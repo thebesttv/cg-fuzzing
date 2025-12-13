@@ -1,77 +1,110 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract mxml 4.0.4 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: mxml" > /work/proj && \
+    echo "version: 4.0.4" >> /work/proj && \
+    echo "source: https://github.com/michaelrsweet/mxml/releases/download/v4.0.4/mxml-4.0.4.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/michaelrsweet/mxml/releases/download/v4.0.4/mxml-4.0.4.tar.gz && \
     tar -xzf mxml-4.0.4.tar.gz && \
-    rm mxml-4.0.4.tar.gz
+    rm mxml-4.0.4.tar.gz && \
+    cp -a mxml-4.0.4 build-fuzz && \
+    cp -a mxml-4.0.4 build-cmplog && \
+    cp -a mxml-4.0.4 build-cov && \
+    cp -a mxml-4.0.4 build-uftrace && \
+    rm -rf mxml-4.0.4
 
-WORKDIR /src/mxml-4.0.4
+# Copy fuzzing harness to all build directories
+COPY mxml/fuzz_mxml.c /work/build-fuzz/
+COPY mxml/fuzz_mxml.c /work/build-cmplog/
+COPY mxml/fuzz_mxml.c /work/build-cov/
+COPY mxml/fuzz_mxml.c /work/build-uftrace/
 
-# Copy the fuzzing harness
-COPY mxml/fuzz_mxml.c .
-
-# Configure mxml with static linking for AFL++
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --disable-shared
-
-RUN make -j$(nproc)
-
-# Compile the fuzzing harness with afl-clang-lto
-RUN afl-clang-lto -O2 -I. -static -Wl,--allow-multiple-definition \
+    ./configure --disable-shared && \
+    make -j$(nproc) && \
+    afl-clang-lto -O2 -I. -static -Wl,--allow-multiple-definition \
     -o fuzz_mxml fuzz_mxml.c libmxml4.a -lm -lpthread
 
-# Install the fuzz_mxml binary
-RUN cp fuzz_mxml /out/fuzz_mxml
+WORKDIR /work
+RUN ln -s build-fuzz/fuzz_mxml bin-fuzz && \
+    test -x /work/bin-fuzz
 
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf mxml-4.0.4 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/michaelrsweet/mxml/releases/download/v4.0.4/mxml-4.0.4.tar.gz && \
-    tar -xzf mxml-4.0.4.tar.gz && \
-    rm mxml-4.0.4.tar.gz
-
-WORKDIR /src/mxml-4.0.4
-
-# Copy the fuzzing harness again
-COPY mxml/fuzz_mxml.c .
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure --disable-shared
-
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I. -static -Wl,--allow-multiple-definition \
+    ./configure --disable-shared && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc) && \
+    AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I. -static -Wl,--allow-multiple-definition \
     -o fuzz_mxml fuzz_mxml.c libmxml4.a -lm -lpthread
 
-# Install CMPLOG binary
-RUN cp fuzz_mxml /out/fuzz_mxml.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/fuzz_mxml bin-cmplog && \
+    test -x /work/bin-cmplog
 
 # Copy fuzzing resources
-COPY mxml/fuzz/dict /out/dict
-COPY mxml/fuzz/in /out/in
-COPY mxml/fuzz/fuzz.sh /out/fuzz.sh
-COPY mxml/fuzz/whatsup.sh /out/whatsup.sh
+COPY mxml/fuzz/dict /work/dict
+COPY mxml/fuzz/in /work/in
+COPY mxml/fuzz/fuzz.sh /work/fuzz.sh
+COPY mxml/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared && \
+    make -j$(nproc) && \
+    clang -g -O0 -fprofile-instr-generate -fcoverage-mapping \
+    -I. -static -Wl,--allow-multiple-definition \
+    -o fuzz_mxml fuzz_mxml.c libmxml4.a -lm -lpthread
 
-# Verify binaries are built
-RUN ls -la /out/fuzz_mxml /out/fuzz_mxml.cmplog && \
-    file /out/fuzz_mxml
+WORKDIR /work
+RUN ln -s build-cov/fuzz_mxml bin-cov && \
+    test -x /work/bin-cov && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing Mini-XML parser'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure && \
+    make -j$(nproc) && \
+    clang -g -O0 -pg -fno-omit-frame-pointer \
+    -I. -Wl,--allow-multiple-definition \
+    -o fuzz_mxml fuzz_mxml.c libmxml4.a -lm -lpthread
+
+WORKDIR /work
+RUN ln -s build-uftrace/fuzz_mxml bin-uftrace && \
+    test -x /work/bin-uftrace && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
