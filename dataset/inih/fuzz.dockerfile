@@ -97,7 +97,7 @@ WORKDIR /work/build-uftrace
 RUN clang \
     -g -O0 -pg -fno-omit-frame-pointer \
     -o ini_fuzz ini_fuzz.c ini.c \
-    -pg -Wl,--allow-multiple-definition
+    -Wl,--allow-multiple-definition
 
 WORKDIR /work
 RUN ln -s build-uftrace/ini_fuzz bin-uftrace && \
