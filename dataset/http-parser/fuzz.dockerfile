@@ -1,167 +1,102 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract http-parser v2.9.4
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: http-parser" > /work/proj && \
+    echo "version: 2.9.4" >> /work/proj && \
+    echo "source: https://github.com/nodejs/http-parser/archive/refs/tags/v2.9.4.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/nodejs/http-parser/archive/refs/tags/v2.9.4.tar.gz && \
     tar -xzf v2.9.4.tar.gz && \
-    rm v2.9.4.tar.gz
+    rm v2.9.4.tar.gz && \
+    cp -a http-parser-2.9.4 build-fuzz && \
+    cp -a http-parser-2.9.4 build-cmplog && \
+    cp -a http-parser-2.9.4 build-cov && \
+    cp -a http-parser-2.9.4 build-uftrace && \
+    rm -rf http-parser-2.9.4
 
-WORKDIR /src/http-parser-2.9.4
+# Copy fuzzing harness (same for all builds)
+COPY http-parser/fuzz_harness.c /tmp/fuzz_harness.c
 
-# Create fuzzing harness
-RUN echo '#include <stdio.h>' > fuzz_harness.c && \
-    echo '#include <stdlib.h>' >> fuzz_harness.c && \
-    echo '#include <string.h>' >> fuzz_harness.c && \
-    echo '#include "http_parser.h"' >> fuzz_harness.c && \
-    echo '#define MAX_INPUT_SIZE (1024 * 1024)' >> fuzz_harness.c && \
-    echo 'static int on_message_begin(http_parser* p) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_url(http_parser* p, const char* at, size_t len) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_status(http_parser* p, const char* at, size_t len) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_header_field(http_parser* p, const char* at, size_t len) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_header_value(http_parser* p, const char* at, size_t len) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_headers_complete(http_parser* p) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_body(http_parser* p, const char* at, size_t len) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_message_complete(http_parser* p) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_chunk_header(http_parser* p) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_chunk_complete(http_parser* p) { return 0; }' >> fuzz_harness.c && \
-    echo 'int main(int argc, char *argv[]) {' >> fuzz_harness.c && \
-    echo '    FILE *f;' >> fuzz_harness.c && \
-    echo '    char *input = NULL;' >> fuzz_harness.c && \
-    echo '    size_t input_size;' >> fuzz_harness.c && \
-    echo '    http_parser parser;' >> fuzz_harness.c && \
-    echo '    http_parser_settings settings;' >> fuzz_harness.c && \
-    echo '    if (argc < 2) { fprintf(stderr, "Usage: %s <input_file>\\n", argv[0]); return 1; }' >> fuzz_harness.c && \
-    echo '    f = fopen(argv[1], "rb");' >> fuzz_harness.c && \
-    echo '    if (!f) { fprintf(stderr, "Cannot open file: %s\\n", argv[1]); return 1; }' >> fuzz_harness.c && \
-    echo '    fseek(f, 0, SEEK_END);' >> fuzz_harness.c && \
-    echo '    input_size = ftell(f);' >> fuzz_harness.c && \
-    echo '    rewind(f);' >> fuzz_harness.c && \
-    echo '    if (input_size == 0 || input_size > MAX_INPUT_SIZE) { fclose(f); return 0; }' >> fuzz_harness.c && \
-    echo '    input = (char *)malloc(input_size);' >> fuzz_harness.c && \
-    echo '    if (!input) { fclose(f); return 1; }' >> fuzz_harness.c && \
-    echo '    if (fread(input, 1, input_size, f) != input_size) { free(input); fclose(f); return 1; }' >> fuzz_harness.c && \
-    echo '    fclose(f);' >> fuzz_harness.c && \
-    echo '    http_parser_settings_init(&settings);' >> fuzz_harness.c && \
-    echo '    settings.on_message_begin = on_message_begin;' >> fuzz_harness.c && \
-    echo '    settings.on_url = on_url;' >> fuzz_harness.c && \
-    echo '    settings.on_status = on_status;' >> fuzz_harness.c && \
-    echo '    settings.on_header_field = on_header_field;' >> fuzz_harness.c && \
-    echo '    settings.on_header_value = on_header_value;' >> fuzz_harness.c && \
-    echo '    settings.on_headers_complete = on_headers_complete;' >> fuzz_harness.c && \
-    echo '    settings.on_body = on_body;' >> fuzz_harness.c && \
-    echo '    settings.on_message_complete = on_message_complete;' >> fuzz_harness.c && \
-    echo '    settings.on_chunk_header = on_chunk_header;' >> fuzz_harness.c && \
-    echo '    settings.on_chunk_complete = on_chunk_complete;' >> fuzz_harness.c && \
-    echo '    http_parser_init(&parser, HTTP_REQUEST);' >> fuzz_harness.c && \
-    echo '    http_parser_execute(&parser, &settings, input, input_size);' >> fuzz_harness.c && \
-    echo '    http_parser_init(&parser, HTTP_RESPONSE);' >> fuzz_harness.c && \
-    echo '    http_parser_execute(&parser, &settings, input, input_size);' >> fuzz_harness.c && \
-    echo '    http_parser_init(&parser, HTTP_BOTH);' >> fuzz_harness.c && \
-    echo '    http_parser_execute(&parser, &settings, input, input_size);' >> fuzz_harness.c && \
-    echo '    free(input);' >> fuzz_harness.c && \
-    echo '    return 0;' >> fuzz_harness.c && \
-    echo '}' >> fuzz_harness.c
-
-# Build http-parser with afl-clang-lto
-RUN afl-clang-lto \
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
+RUN cp /tmp/fuzz_harness.c fuzz_harness.c && \
+    afl-clang-lto \
     -O2 \
     -I. \
     -static -Wl,--allow-multiple-definition \
     -o http_parser_fuzz \
     fuzz_harness.c http_parser.c
 
-RUN cp http_parser_fuzz /out/http_parser_fuzz
+WORKDIR /work
+RUN ln -s build-fuzz/http_parser_fuzz bin-fuzz && \
+    echo "GET / HTTP/1.1" | /work/bin-fuzz /dev/stdin
 
-# Build CMPLOG version
-WORKDIR /src
-RUN rm -rf http-parser-2.9.4 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/nodejs/http-parser/archive/refs/tags/v2.9.4.tar.gz && \
-    tar -xzf v2.9.4.tar.gz && \
-    rm v2.9.4.tar.gz
-
-WORKDIR /src/http-parser-2.9.4
-
-RUN echo '#include <stdio.h>' > fuzz_harness.c && \
-    echo '#include <stdlib.h>' >> fuzz_harness.c && \
-    echo '#include <string.h>' >> fuzz_harness.c && \
-    echo '#include "http_parser.h"' >> fuzz_harness.c && \
-    echo '#define MAX_INPUT_SIZE (1024 * 1024)' >> fuzz_harness.c && \
-    echo 'static int on_message_begin(http_parser* p) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_url(http_parser* p, const char* at, size_t len) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_status(http_parser* p, const char* at, size_t len) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_header_field(http_parser* p, const char* at, size_t len) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_header_value(http_parser* p, const char* at, size_t len) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_headers_complete(http_parser* p) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_body(http_parser* p, const char* at, size_t len) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_message_complete(http_parser* p) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_chunk_header(http_parser* p) { return 0; }' >> fuzz_harness.c && \
-    echo 'static int on_chunk_complete(http_parser* p) { return 0; }' >> fuzz_harness.c && \
-    echo 'int main(int argc, char *argv[]) {' >> fuzz_harness.c && \
-    echo '    FILE *f;' >> fuzz_harness.c && \
-    echo '    char *input = NULL;' >> fuzz_harness.c && \
-    echo '    size_t input_size;' >> fuzz_harness.c && \
-    echo '    http_parser parser;' >> fuzz_harness.c && \
-    echo '    http_parser_settings settings;' >> fuzz_harness.c && \
-    echo '    if (argc < 2) { fprintf(stderr, "Usage: %s <input_file>\\n", argv[0]); return 1; }' >> fuzz_harness.c && \
-    echo '    f = fopen(argv[1], "rb");' >> fuzz_harness.c && \
-    echo '    if (!f) { fprintf(stderr, "Cannot open file: %s\\n", argv[1]); return 1; }' >> fuzz_harness.c && \
-    echo '    fseek(f, 0, SEEK_END);' >> fuzz_harness.c && \
-    echo '    input_size = ftell(f);' >> fuzz_harness.c && \
-    echo '    rewind(f);' >> fuzz_harness.c && \
-    echo '    if (input_size == 0 || input_size > MAX_INPUT_SIZE) { fclose(f); return 0; }' >> fuzz_harness.c && \
-    echo '    input = (char *)malloc(input_size);' >> fuzz_harness.c && \
-    echo '    if (!input) { fclose(f); return 1; }' >> fuzz_harness.c && \
-    echo '    if (fread(input, 1, input_size, f) != input_size) { free(input); fclose(f); return 1; }' >> fuzz_harness.c && \
-    echo '    fclose(f);' >> fuzz_harness.c && \
-    echo '    http_parser_settings_init(&settings);' >> fuzz_harness.c && \
-    echo '    settings.on_message_begin = on_message_begin;' >> fuzz_harness.c && \
-    echo '    settings.on_url = on_url;' >> fuzz_harness.c && \
-    echo '    settings.on_status = on_status;' >> fuzz_harness.c && \
-    echo '    settings.on_header_field = on_header_field;' >> fuzz_harness.c && \
-    echo '    settings.on_header_value = on_header_value;' >> fuzz_harness.c && \
-    echo '    settings.on_headers_complete = on_headers_complete;' >> fuzz_harness.c && \
-    echo '    settings.on_body = on_body;' >> fuzz_harness.c && \
-    echo '    settings.on_message_complete = on_message_complete;' >> fuzz_harness.c && \
-    echo '    settings.on_chunk_header = on_chunk_header;' >> fuzz_harness.c && \
-    echo '    settings.on_chunk_complete = on_chunk_complete;' >> fuzz_harness.c && \
-    echo '    http_parser_init(&parser, HTTP_REQUEST);' >> fuzz_harness.c && \
-    echo '    http_parser_execute(&parser, &settings, input, input_size);' >> fuzz_harness.c && \
-    echo '    http_parser_init(&parser, HTTP_RESPONSE);' >> fuzz_harness.c && \
-    echo '    http_parser_execute(&parser, &settings, input, input_size);' >> fuzz_harness.c && \
-    echo '    http_parser_init(&parser, HTTP_BOTH);' >> fuzz_harness.c && \
-    echo '    http_parser_execute(&parser, &settings, input, input_size);' >> fuzz_harness.c && \
-    echo '    free(input);' >> fuzz_harness.c && \
-    echo '    return 0;' >> fuzz_harness.c && \
-    echo '}' >> fuzz_harness.c
-
-RUN AFL_LLVM_CMPLOG=1 afl-clang-lto \
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
+RUN cp /tmp/fuzz_harness.c fuzz_harness.c && \
+    AFL_LLVM_CMPLOG=1 afl-clang-lto \
     -O2 \
     -I. \
     -static -Wl,--allow-multiple-definition \
     -o http_parser_fuzz \
     fuzz_harness.c http_parser.c
 
-RUN cp http_parser_fuzz /out/http_parser_fuzz.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/http_parser_fuzz bin-cmplog && \
+    echo "GET / HTTP/1.1" | /work/bin-cmplog /dev/stdin
 
 # Copy fuzzing resources
-COPY http-parser/fuzz/dict /out/dict
-COPY http-parser/fuzz/in /out/in
-COPY http-parser/fuzz/fuzz.sh /out/fuzz.sh
-COPY http-parser/fuzz/whatsup.sh /out/whatsup.sh
+COPY http-parser/fuzz/dict /work/dict
+COPY http-parser/fuzz/in /work/in
+COPY http-parser/fuzz/fuzz.sh /work/fuzz.sh
+COPY http-parser/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN cp /tmp/fuzz_harness.c fuzz_harness.c && \
+    clang \
+    -g -O0 -fprofile-instr-generate -fcoverage-mapping \
+    -I. \
+    -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition \
+    -o http_parser_fuzz \
+    fuzz_harness.c http_parser.c
 
-# Verify binaries are built
-RUN ls -la /out/http_parser_fuzz /out/http_parser_fuzz.cmplog && \
-    file /out/http_parser_fuzz
+WORKDIR /work
+RUN ln -s build-cov/http_parser_fuzz bin-cov && \
+    echo "GET / HTTP/1.1" | /work/bin-cov /dev/stdin && \
+    rm -f *.profraw
 
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing http-parser'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN cp /tmp/fuzz_harness.c fuzz_harness.c && \
+    clang \
+    -g -O0 -pg -fno-omit-frame-pointer \
+    -I. \
+    -pg -Wl,--allow-multiple-definition \
+    -o http_parser_fuzz \
+    fuzz_harness.c http_parser.c
+
+WORKDIR /work
+RUN ln -s build-uftrace/http_parser_fuzz bin-uftrace && \
+    echo "GET / HTTP/1.1" | /work/bin-uftrace /dev/stdin && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
