@@ -170,7 +170,7 @@ RUN mkdir build && cd build && \
 RUN clang \
     -g -O0 -pg -fno-omit-frame-pointer \
     -I. \
-    -pg -Wl,--allow-multiple-definition \
+    -Wl,--allow-multiple-definition \
     fuzz_reader.c \
     build/libhiredis.a \
     -o fuzz_reader
