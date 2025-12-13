@@ -1,25 +1,37 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract lz4 v1.10.0 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: lz4" > /work/proj && \
+    echo "version: 1.10.0" >> /work/proj && \
+    echo "source: https://github.com/lz4/lz4/releases/download/v1.10.0/lz4-1.10.0.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/lz4/lz4/releases/download/v1.10.0/lz4-1.10.0.tar.gz && \
     tar -xzf lz4-1.10.0.tar.gz && \
-    rm lz4-1.10.0.tar.gz
+    rm lz4-1.10.0.tar.gz && \
+    cp -a lz4-1.10.0 build-fuzz && \
+    cp -a lz4-1.10.0 build-cmplog && \
+    cp -a lz4-1.10.0 build-cov && \
+    cp -a lz4-1.10.0 build-uftrace && \
+    rm -rf lz4-1.10.0
 
-WORKDIR /src/lz4-1.10.0
-
-# Build with afl-clang-lto for fuzzing (main target binary)
-# Use static linking
-# afl-clang-lto provides collision-free instrumentation
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN make clean || true && \
     make -j$(nproc) \
     CC=afl-clang-lto \
@@ -27,18 +39,12 @@ RUN make clean || true && \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     lz4
 
-# Install the lz4 binary
-RUN cp lz4 /out/lz4
+WORKDIR /work
+RUN ln -s build-fuzz/lz4 bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf lz4-1.10.0 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/lz4/lz4/releases/download/v1.10.0/lz4-1.10.0.tar.gz && \
-    tar -xzf lz4-1.10.0.tar.gz && \
-    rm lz4-1.10.0.tar.gz
-
-WORKDIR /src/lz4-1.10.0
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN make clean || true && \
     AFL_LLVM_CMPLOG=1 make -j$(nproc) \
     CC=afl-clang-lto \
@@ -46,21 +52,47 @@ RUN make clean || true && \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     lz4
 
-# Install CMPLOG binary
-RUN cp lz4 /out/lz4.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/lz4 bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
-COPY lz4/fuzz/dict /out/dict
-COPY lz4/fuzz/in /out/in
-COPY lz4/fuzz/fuzz.sh /out/fuzz.sh
-COPY lz4/fuzz/whatsup.sh /out/whatsup.sh
+COPY lz4/fuzz/dict /work/dict
+COPY lz4/fuzz/in /work/in
+COPY lz4/fuzz/fuzz.sh /work/fuzz.sh
+COPY lz4/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN make clean || true && \
+    make -j$(nproc) \
+    CC=clang \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    lz4
 
-# Verify binaries are built
-RUN ls -la /out/lz4 /out/lz4.cmplog && \
-    file /out/lz4 && \
-    /out/lz4 --version || true
+WORKDIR /work
+RUN ln -s build-cov/lz4 bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing lz4'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN make clean || true && \
+    make -j$(nproc) \
+    CC=clang \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    PREFIX=/work/install-uftrace \
+    lz4 && \
+    mkdir -p /work/install-uftrace/bin && \
+    cp lz4 /work/install-uftrace/bin/
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/lz4 bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
