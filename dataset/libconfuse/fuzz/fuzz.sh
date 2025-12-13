@@ -6,8 +6,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT_DIR="${SCRIPT_DIR}/findings"
 IN_DIR="${SCRIPT_DIR}/in"
 DICT="${SCRIPT_DIR}/dict"
-CMPLOG_BIN="${SCRIPT_DIR}/simple.cmplog"
-TARGET_BIN="${SCRIPT_DIR}/simple"
+CMPLOG_BIN="${SCRIPT_DIR}/bin-cmplog"
+TARGET_BIN="${SCRIPT_DIR}/bin-fuzz"
 PARALLEL=1
 
 usage() {
