@@ -1,23 +1,37 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget cmake zlib1g-dev && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget cmake zlib1g-dev uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract libzip v1.11.4 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: libzip" > /work/proj && \
+    echo "version: 1.11.4" >> /work/proj && \
+    echo "source: https://github.com/nih-at/libzip/archive/refs/tags/v1.11.4.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/nih-at/libzip/archive/refs/tags/v1.11.4.tar.gz && \
     tar -xzf v1.11.4.tar.gz && \
-    rm v1.11.4.tar.gz
+    rm v1.11.4.tar.gz && \
+    cp -a libzip-1.11.4 build-fuzz && \
+    cp -a libzip-1.11.4 build-cmplog && \
+    cp -a libzip-1.11.4 build-cov && \
+    cp -a libzip-1.11.4 build-uftrace && \
+    rm -rf libzip-1.11.4
 
-WORKDIR /src/libzip-1.11.4
-
-# Build zipcmp with afl-clang-lto for fuzzing (main target binary)
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN mkdir build && cd build && \
     CC=afl-clang-lto CXX=afl-clang-lto++ \
     cmake .. \
@@ -35,22 +49,15 @@ RUN mkdir build && cd build && \
         -DBUILD_TOOLS=ON \
         -DBUILD_REGRESS=OFF \
         -DBUILD_EXAMPLES=OFF \
-        -DBUILD_DOC=OFF
+        -DBUILD_DOC=OFF && \
+    make -j$(nproc)
 
-RUN cd build && make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/build/src/zipcmp bin-fuzz && \
+    /work/bin-fuzz -V || true
 
-# Install the zipcmp binary
-RUN cp build/src/zipcmp /out/zipcmp
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf libzip-1.11.4 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/nih-at/libzip/archive/refs/tags/v1.11.4.tar.gz && \
-    tar -xzf v1.11.4.tar.gz && \
-    rm v1.11.4.tar.gz
-
-WORKDIR /src/libzip-1.11.4
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN mkdir build && cd build && \
     CC=afl-clang-lto CXX=afl-clang-lto++ \
     AFL_LLVM_CMPLOG=1 \
@@ -69,25 +76,77 @@ RUN mkdir build && cd build && \
         -DBUILD_TOOLS=ON \
         -DBUILD_REGRESS=OFF \
         -DBUILD_EXAMPLES=OFF \
-        -DBUILD_DOC=OFF
+        -DBUILD_DOC=OFF && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp build/src/zipcmp /out/zipcmp.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/build/src/zipcmp bin-cmplog && \
+    /work/bin-cmplog -V || true
 
 # Copy fuzzing resources
-COPY libzip/fuzz/dict /out/dict
-COPY libzip/fuzz/in /out/in
-COPY libzip/fuzz/fuzz.sh /out/fuzz.sh
-COPY libzip/fuzz/whatsup.sh /out/whatsup.sh
+COPY libzip/fuzz/dict /work/dict
+COPY libzip/fuzz/in /work/in
+COPY libzip/fuzz/fuzz.sh /work/fuzz.sh
+COPY libzip/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN mkdir build && cd build && \
+    CC=clang \
+    CXX=clang++ \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+        -DCMAKE_EXE_LINKER_FLAGS="-fprofile-instr-generate -fcoverage-mapping" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DENABLE_COMMONCRYPTO=OFF \
+        -DENABLE_GNUTLS=OFF \
+        -DENABLE_MBEDTLS=OFF \
+        -DENABLE_OPENSSL=OFF \
+        -DENABLE_WINDOWS_CRYPTO=OFF \
+        -DENABLE_BZIP2=OFF \
+        -DENABLE_LZMA=OFF \
+        -DENABLE_ZSTD=OFF \
+        -DBUILD_TOOLS=ON \
+        -DBUILD_REGRESS=OFF \
+        -DBUILD_EXAMPLES=OFF \
+        -DBUILD_DOC=OFF && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/zipcmp /out/zipcmp.cmplog && \
-    file /out/zipcmp && \
-    /out/zipcmp -V || true
+WORKDIR /work
+RUN ln -s build-cov/build/src/zipcmp bin-cov && \
+    /work/bin-cov -V || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing zipcmp'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN mkdir build && cd build && \
+    CC=clang \
+    CXX=clang++ \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+        -DCMAKE_EXE_LINKER_FLAGS="-pg" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DENABLE_COMMONCRYPTO=OFF \
+        -DENABLE_GNUTLS=OFF \
+        -DENABLE_MBEDTLS=OFF \
+        -DENABLE_OPENSSL=OFF \
+        -DENABLE_WINDOWS_CRYPTO=OFF \
+        -DENABLE_BZIP2=OFF \
+        -DENABLE_LZMA=OFF \
+        -DENABLE_ZSTD=OFF \
+        -DBUILD_TOOLS=ON \
+        -DBUILD_REGRESS=OFF \
+        -DBUILD_EXAMPLES=OFF \
+        -DBUILD_DOC=OFF \
+        -DCMAKE_INSTALL_PREFIX=/work/install-uftrace && \
+    make -j$(nproc) && \
+    make install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/zipcmp bin-uftrace && \
+    /work/bin-uftrace -V || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
