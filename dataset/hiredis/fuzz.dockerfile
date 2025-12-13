@@ -146,7 +146,7 @@ RUN mkdir build && cd build && \
 RUN clang \
     -g -O0 -fprofile-instr-generate -fcoverage-mapping \
     -I. \
-    -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition \
+    -static -Wl,--allow-multiple-definition \
     fuzz_reader.c \
     build/libhiredis.a \
     -o fuzz_reader

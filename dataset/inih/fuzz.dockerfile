@@ -85,7 +85,7 @@ WORKDIR /work/build-cov
 RUN clang \
     -g -O0 -fprofile-instr-generate -fcoverage-mapping \
     -o ini_fuzz ini_fuzz.c ini.c \
-    -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition
+    -static -Wl,--allow-multiple-definition
 
 WORKDIR /work
 RUN ln -s build-cov/ini_fuzz bin-cov && \

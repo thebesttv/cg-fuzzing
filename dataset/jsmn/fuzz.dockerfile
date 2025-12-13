@@ -70,7 +70,7 @@ RUN clang \
     -g -O0 -fprofile-instr-generate -fcoverage-mapping \
     -DJSMN_PARENT_LINKS \
     -I. \
-    -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition \
+    -static -Wl,--allow-multiple-definition \
     -o jsondump \
     example/jsondump.c
 
