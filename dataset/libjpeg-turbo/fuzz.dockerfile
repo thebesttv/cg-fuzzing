@@ -1,24 +1,37 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget cmake nasm && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget cmake nasm uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract libjpeg-turbo 3.1.2 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: libjpeg-turbo" > /work/proj && \
+    echo "version: 3.1.2" >> /work/proj && \
+    echo "source: https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.2.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.2.tar.gz && \
     tar -xzf 3.1.2.tar.gz && \
-    rm 3.1.2.tar.gz
+    rm 3.1.2.tar.gz && \
+    cp -a libjpeg-turbo-3.1.2 build-fuzz && \
+    cp -a libjpeg-turbo-3.1.2 build-cmplog && \
+    cp -a libjpeg-turbo-3.1.2 build-cov && \
+    cp -a libjpeg-turbo-3.1.2 build-uftrace && \
+    rm -rf libjpeg-turbo-3.1.2
 
-WORKDIR /src/libjpeg-turbo-3.1.2
-
-# Build djpeg with afl-clang-lto for fuzzing (main target binary)
-# Use static linking and disable TurboJPEG
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
@@ -27,22 +40,15 @@ RUN mkdir build && cd build && \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
         -DENABLE_SHARED=OFF \
         -DENABLE_STATIC=ON \
-        -DWITH_TURBOJPEG=OFF
+        -DWITH_TURBOJPEG=OFF && \
+    make -j$(nproc)
 
-RUN cd build && make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/build/djpeg-static bin-fuzz && \
+    /work/bin-fuzz -h || true
 
-# Install the djpeg binary
-RUN cp build/djpeg-static /out/djpeg
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf libjpeg-turbo-3.1.2 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.2.tar.gz && \
-    tar -xzf 3.1.2.tar.gz && \
-    rm 3.1.2.tar.gz
-
-WORKDIR /src/libjpeg-turbo-3.1.2
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
@@ -52,24 +58,57 @@ RUN mkdir build && cd build && \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
         -DENABLE_SHARED=OFF \
         -DENABLE_STATIC=ON \
-        -DWITH_TURBOJPEG=OFF
+        -DWITH_TURBOJPEG=OFF && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp build/djpeg-static /out/djpeg.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/build/djpeg-static bin-cmplog && \
+    /work/bin-cmplog -h || true
 
 # Copy fuzzing resources
-COPY libjpeg-turbo/fuzz/dict /out/dict
-COPY libjpeg-turbo/fuzz/in /out/in
-COPY libjpeg-turbo/fuzz/fuzz.sh /out/fuzz.sh
-COPY libjpeg-turbo/fuzz/whatsup.sh /out/whatsup.sh
+COPY libjpeg-turbo/fuzz/dict /work/dict
+COPY libjpeg-turbo/fuzz/in /work/in
+COPY libjpeg-turbo/fuzz/fuzz.sh /work/fuzz.sh
+COPY libjpeg-turbo/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN mkdir build && cd build && \
+    CC=clang \
+    CXX=clang++ \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+        -DCMAKE_EXE_LINKER_FLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+        -DENABLE_SHARED=OFF \
+        -DENABLE_STATIC=ON \
+        -DWITH_TURBOJPEG=OFF && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/djpeg /out/djpeg.cmplog && \
-    file /out/djpeg
+WORKDIR /work
+RUN ln -s build-cov/build/djpeg-static bin-cov && \
+    /work/bin-cov -h || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing libjpeg-turbo'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN mkdir build && cd build && \
+    CC=clang \
+    CXX=clang++ \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+        -DCMAKE_EXE_LINKER_FLAGS="-pg -Wl,--allow-multiple-definition" \
+        -DENABLE_SHARED=OFF \
+        -DENABLE_STATIC=ON \
+        -DWITH_TURBOJPEG=OFF \
+        -DCMAKE_INSTALL_PREFIX=/work/install-uftrace && \
+    make -j$(nproc) && \
+    make install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/djpeg bin-uftrace && \
+    /work/bin-uftrace -h || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
