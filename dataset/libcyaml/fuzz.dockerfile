@@ -74,7 +74,6 @@ RUN CC=clang \
 
 RUN cd examples/numerical && \
     clang -g -O0 -fprofile-instr-generate -fcoverage-mapping -I../../include -static -Wl,--allow-multiple-definition \
-        -fprofile-instr-generate -fcoverage-mapping \
         -o numerical main.c ../../build/release/libcyaml.a -lyaml
 
 WORKDIR /work
@@ -90,7 +89,6 @@ RUN CC=clang \
 
 RUN cd examples/numerical && \
     clang -g -O0 -pg -fno-omit-frame-pointer -I../../include -static -Wl,--allow-multiple-definition \
-        -pg \
         -o numerical main.c ../../build/release/libcyaml.a -lyaml
 
 WORKDIR /work
