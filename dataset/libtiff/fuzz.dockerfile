@@ -1,23 +1,37 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget cmake && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget cmake uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract libtiff v4.7.0 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: libtiff" > /work/proj && \
+    echo "version: 4.7.0" >> /work/proj && \
+    echo "source: https://download.osgeo.org/libtiff/tiff-4.7.0.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://download.osgeo.org/libtiff/tiff-4.7.0.tar.gz && \
     tar -xzf tiff-4.7.0.tar.gz && \
-    rm tiff-4.7.0.tar.gz
+    rm tiff-4.7.0.tar.gz && \
+    cp -a tiff-4.7.0 build-fuzz && \
+    cp -a tiff-4.7.0 build-cmplog && \
+    cp -a tiff-4.7.0 build-cov && \
+    cp -a tiff-4.7.0 build-uftrace && \
+    rm -rf tiff-4.7.0
 
-WORKDIR /src/tiff-4.7.0
-
-# Build tiffinfo with afl-clang-lto for fuzzing
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN mkdir cmake_build && cd cmake_build && \
     CC=afl-clang-lto CXX=afl-clang-lto++ \
     cmake .. \
@@ -32,22 +46,15 @@ RUN mkdir cmake_build && cd cmake_build && \
         -Dlzma=OFF \
         -Dzstd=OFF \
         -Dwebp=OFF \
-        -Dzlib=OFF
+        -Dzlib=OFF && \
+    make -j$(nproc)
 
-RUN cd cmake_build && make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/cmake_build/tools/tiffinfo bin-fuzz && \
+    /work/bin-fuzz --version || true
 
-# Install the tiffinfo binary
-RUN cp cmake_build/tools/tiffinfo /out/tiffinfo
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf tiff-4.7.0 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://download.osgeo.org/libtiff/tiff-4.7.0.tar.gz && \
-    tar -xzf tiff-4.7.0.tar.gz && \
-    rm tiff-4.7.0.tar.gz
-
-WORKDIR /src/tiff-4.7.0
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN mkdir cmake_build && cd cmake_build && \
     CC=afl-clang-lto CXX=afl-clang-lto++ \
     AFL_LLVM_CMPLOG=1 \
@@ -63,25 +70,73 @@ RUN mkdir cmake_build && cd cmake_build && \
         -Dlzma=OFF \
         -Dzstd=OFF \
         -Dwebp=OFF \
-        -Dzlib=OFF
+        -Dzlib=OFF && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 cd cmake_build && make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp cmake_build/tools/tiffinfo /out/tiffinfo.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/cmake_build/tools/tiffinfo bin-cmplog && \
+    /work/bin-cmplog --version || true
 
 # Copy fuzzing resources
-COPY libtiff/fuzz/dict /out/dict
-COPY libtiff/fuzz/in /out/in
-COPY libtiff/fuzz/fuzz.sh /out/fuzz.sh
-COPY libtiff/fuzz/whatsup.sh /out/whatsup.sh
+COPY libtiff/fuzz/dict /work/dict
+COPY libtiff/fuzz/in /work/in
+COPY libtiff/fuzz/fuzz.sh /work/fuzz.sh
+COPY libtiff/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN mkdir cmake_build && cd cmake_build && \
+    CC=clang CXX=clang++ \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+        -DCMAKE_CXX_FLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+        -DCMAKE_EXE_LINKER_FLAGS="-fprofile-instr-generate -fcoverage-mapping" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -Dtiff-docs=OFF \
+        -Dtiff-tests=OFF \
+        -Djpeg=OFF \
+        -Djbig=OFF \
+        -Dlerc=OFF \
+        -Dlzma=OFF \
+        -Dzstd=OFF \
+        -Dwebp=OFF \
+        -Dzlib=OFF && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/tiffinfo /out/tiffinfo.cmplog && \
-    file /out/tiffinfo && \
-    /out/tiffinfo --version || true
+WORKDIR /work
+RUN ln -s build-cov/cmake_build/tools/tiffinfo bin-cov && \
+    /work/bin-cov --version || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing tiffinfo'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN mkdir cmake_build && cd cmake_build && \
+    CC=clang CXX=clang++ \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+        -DCMAKE_CXX_FLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+        -DCMAKE_EXE_LINKER_FLAGS="-pg" \
+        -DCMAKE_INSTALL_PREFIX=/work/install-uftrace \
+        -DBUILD_SHARED_LIBS=OFF \
+        -Dtiff-docs=OFF \
+        -Dtiff-tests=OFF \
+        -Djpeg=OFF \
+        -Djbig=OFF \
+        -Dlerc=OFF \
+        -Dlzma=OFF \
+        -Dzstd=OFF \
+        -Dwebp=OFF \
+        -Dzlib=OFF && \
+    make -j$(nproc) && \
+    make install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/tiffinfo bin-uftrace && \
+    /work/bin-uftrace --version || true && \
+    uftrace record /work/bin-uftrace --version || true && \
+    uftrace report && \
+    rm -rf uftrace.data gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
