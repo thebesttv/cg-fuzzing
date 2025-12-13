@@ -1,82 +1,112 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract libcsv 3.0.3 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: libcsv" > /work/proj && \
+    echo "version: 3.0.3" >> /work/proj && \
+    echo "source: https://sourceforge.net/projects/libcsv/files/libcsv/libcsv-3.0.3/libcsv-3.0.3.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget -O libcsv-3.0.3.tar.gz "https://sourceforge.net/projects/libcsv/files/libcsv/libcsv-3.0.3/libcsv-3.0.3.tar.gz/download" && \
     tar -xzf libcsv-3.0.3.tar.gz && \
-    rm libcsv-3.0.3.tar.gz
+    rm libcsv-3.0.3.tar.gz && \
+    cp -a libcsv-3.0.3 build-fuzz && \
+    cp -a libcsv-3.0.3 build-cmplog && \
+    cp -a libcsv-3.0.3 build-cov && \
+    cp -a libcsv-3.0.3 build-uftrace && \
+    rm -rf libcsv-3.0.3
 
-WORKDIR /src/libcsv-3.0.3
-
-# Build libcsv with afl-clang-lto
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --disable-shared
-
-RUN make -j$(nproc)
+    ./configure --disable-shared && \
+    make -j$(nproc)
 
 # Build example tools with afl-clang-lto
-# Fix include path: examples use "libcsv/csv.h" but header is at ./csv.h
 RUN mkdir -p libcsv && cp csv.h libcsv/csv.h && \
     cd examples && \
-    afl-clang-lto -O2 -I.. -static -Wl,--allow-multiple-definition -o csvinfo csvinfo.c ../.libs/libcsv.a && \
-    afl-clang-lto -O2 -I.. -static -Wl,--allow-multiple-definition -o csvvalid csvvalid.c ../.libs/libcsv.a && \
-    afl-clang-lto -O2 -I.. -static -Wl,--allow-multiple-definition -o csvfix csvfix.c ../.libs/libcsv.a
+    afl-clang-lto -O2 -I.. -static -Wl,--allow-multiple-definition -o csvinfo csvinfo.c ../.libs/libcsv.a
 
-# Copy binaries to output
-RUN cp examples/csvinfo /out/csvinfo && \
-    cp examples/csvvalid /out/csvvalid && \
-    cp examples/csvfix /out/csvfix
+WORKDIR /work
+RUN ln -s build-fuzz/examples/csvinfo bin-fuzz && \
+    /work/bin-fuzz /work/proj
 
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf libcsv-3.0.3 && \
-    wget -O libcsv-3.0.3.tar.gz "https://sourceforge.net/projects/libcsv/files/libcsv/libcsv-3.0.3/libcsv-3.0.3.tar.gz/download" && \
-    tar -xzf libcsv-3.0.3.tar.gz && \
-    rm libcsv-3.0.3.tar.gz
-
-WORKDIR /src/libcsv-3.0.3
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
-    AFL_LLVM_CMPLOG=1 \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --disable-shared
-
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
+    AFL_LLVM_CMPLOG=1 \
+    ./configure --disable-shared && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
 # Build CMPLOG example tools
 RUN mkdir -p libcsv && cp csv.h libcsv/csv.h && \
     cd examples && \
-    AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I.. -static -Wl,--allow-multiple-definition -o csvinfo.cmplog csvinfo.c ../.libs/libcsv.a && \
-    AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I.. -static -Wl,--allow-multiple-definition -o csvvalid.cmplog csvvalid.c ../.libs/libcsv.a
+    AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I.. -static -Wl,--allow-multiple-definition -o csvinfo csvinfo.c ../.libs/libcsv.a
 
-# Copy CMPLOG binaries
-RUN cp examples/csvinfo.cmplog /out/csvinfo.cmplog && \
-    cp examples/csvvalid.cmplog /out/csvvalid.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/examples/csvinfo bin-cmplog && \
+    /work/bin-cmplog /work/proj
 
 # Copy fuzzing resources
-COPY libcsv/fuzz/dict /out/dict
-COPY libcsv/fuzz/in /out/in
-COPY libcsv/fuzz/fuzz.sh /out/fuzz.sh
-COPY libcsv/fuzz/whatsup.sh /out/whatsup.sh
+COPY libcsv/fuzz/dict /work/dict
+COPY libcsv/fuzz/in /work/in
+COPY libcsv/fuzz/fuzz.sh /work/fuzz.sh
+COPY libcsv/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/csvinfo /out/csvinfo.cmplog /out/csvvalid && \
-    file /out/csvinfo && \
-    echo "test,data" > /tmp/test.csv && /out/csvinfo /tmp/test.csv
+# Build cov example tools
+RUN mkdir -p libcsv && cp csv.h libcsv/csv.h && \
+    cd examples && \
+    clang -g -O0 -fprofile-instr-generate -fcoverage-mapping -I.. -static -Wl,--allow-multiple-definition -fprofile-instr-generate -fcoverage-mapping -o csvinfo csvinfo.c ../.libs/libcsv.a
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing libcsv'"]
+WORKDIR /work
+RUN ln -s build-cov/examples/csvinfo bin-cov && \
+    /work/bin-cov /work/proj && \
+    rm -f *.profraw
+
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared && \
+    make -j$(nproc)
+
+# Build uftrace example tools
+RUN mkdir -p libcsv && cp csv.h libcsv/csv.h && \
+    cd examples && \
+    clang -g -O0 -pg -fno-omit-frame-pointer -I.. -Wl,--allow-multiple-definition -pg -o csvinfo csvinfo.c ../.libs/libcsv.a
+
+WORKDIR /work
+RUN ln -s build-uftrace/examples/csvinfo bin-uftrace && \
+    /work/bin-uftrace /work/proj && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
