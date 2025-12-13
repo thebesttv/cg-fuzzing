@@ -92,7 +92,7 @@ RUN mkdir build && cd build && \
 # Build harness for cov
 RUN echo -e '#include <stdio.h>\n#include <stdlib.h>\n#include "libcue.h"\nint main(int argc, char *argv[]) {\n    if (argc < 2) { fprintf(stderr, "Usage: %s <file>\\n", argv[0]); return 1; }\n    FILE *f = fopen(argv[1], "r");\n    if (!f) { perror("fopen"); return 1; }\n    Cd *cd = cue_parse_file(f);\n    fclose(f);\n    if (cd) { cd_delete(cd); printf("OK\\n"); }\n    else { printf("FAIL\\n"); }\n    return 0;\n}' > cue_parse.c && \
     clang -g -O0 -fprofile-instr-generate -fcoverage-mapping -I. cue_parse.c -Lbuild -lcue \
-        -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition -o cue_parse
+        -static -Wl,--allow-multiple-definition -o cue_parse
 
 WORKDIR /work
 RUN ln -s build-cov/cue_parse bin-cov && \
