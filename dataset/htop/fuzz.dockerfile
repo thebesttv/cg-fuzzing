@@ -1,67 +1,97 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget libncurses-dev pkg-config autoconf automake libtool && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget libncurses-dev pkg-config autoconf automake libtool uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract htop 3.4.1 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: htop" > /work/proj && \
+    echo "version: 3.4.1" >> /work/proj && \
+    echo "source: https://github.com/htop-dev/htop/releases/download/3.4.1/htop-3.4.1.tar.xz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/htop-dev/htop/releases/download/3.4.1/htop-3.4.1.tar.xz && \
     tar -xf htop-3.4.1.tar.xz && \
-    rm htop-3.4.1.tar.xz
+    rm htop-3.4.1.tar.xz && \
+    cp -a htop-3.4.1 build-fuzz && \
+    cp -a htop-3.4.1 build-cmplog && \
+    cp -a htop-3.4.1 build-cov && \
+    cp -a htop-3.4.1 build-uftrace && \
+    rm -rf htop-3.4.1
 
-WORKDIR /src/htop-3.4.1
-
-# Build htop with afl-clang-lto for fuzzing
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --disable-shared --disable-unicode
+    ./configure --disable-shared --disable-unicode && \
+    make -j$(nproc)
 
-RUN make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/htop bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Install the htop binary
-RUN cp htop /out/htop
-
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf htop-3.4.1 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/htop-dev/htop/releases/download/3.4.1/htop-3.4.1.tar.xz && \
-    tar -xf htop-3.4.1.tar.xz && \
-    rm htop-3.4.1.tar.xz
-
-WORKDIR /src/htop-3.4.1
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure --disable-shared --disable-unicode
+    ./configure --disable-shared --disable-unicode && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp htop /out/htop.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/htop bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
-COPY htop/fuzz/dict /out/dict
-COPY htop/fuzz/in /out/in
-COPY htop/fuzz/fuzz.sh /out/fuzz.sh
-COPY htop/fuzz/whatsup.sh /out/whatsup.sh
+COPY htop/fuzz/dict /work/dict
+COPY htop/fuzz/in /work/in
+COPY htop/fuzz/fuzz.sh /work/fuzz.sh
+COPY htop/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared --disable-unicode && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/htop /out/htop.cmplog && \
-    file /out/htop && \
-    /out/htop --version
+WORKDIR /work
+RUN ln -s build-cov/htop bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing htop'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared --disable-unicode --prefix=/work/install-uftrace && \
+    make -j$(nproc) && \
+    make install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/htop bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
