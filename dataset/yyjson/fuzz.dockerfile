@@ -1,53 +1,62 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget cmake && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget cmake uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract yyjson v0.12.0 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: yyjson" > /work/proj && \
+    echo "version: 0.12.0" >> /work/proj && \
+    echo "source: https://github.com/ibireme/yyjson/archive/refs/tags/0.12.0.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ibireme/yyjson/archive/refs/tags/0.12.0.tar.gz && \
     tar -xzf 0.12.0.tar.gz && \
-    rm 0.12.0.tar.gz
+    rm 0.12.0.tar.gz && \
+    cp -a yyjson-0.12.0 build-fuzz && \
+    cp -a yyjson-0.12.0 build-cmplog && \
+    cp -a yyjson-0.12.0 build-cov && \
+    cp -a yyjson-0.12.0 build-uftrace && \
+    rm -rf yyjson-0.12.0
 
-WORKDIR /src/yyjson-0.12.0
+# Copy harness to all build directories
+COPY yyjson/harness.c /work/build-fuzz/
+COPY yyjson/harness.c /work/build-cmplog/
+COPY yyjson/harness.c /work/build-cov/
+COPY yyjson/harness.c /work/build-uftrace/
 
-# Build with afl-clang-lto for fuzzing
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
     cmake .. \
     -DCMAKE_C_FLAGS="-O2" \
     -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
     -DBUILD_SHARED_LIBS=OFF \
-    -DYYJSON_BUILD_TESTS=OFF
-
-RUN cd build && make -j$(nproc)
-
-# Copy the harness
-COPY yyjson/harness.c harness.c
-
-# Build the harness
-RUN afl-clang-lto -O2 -I src \
+    -DYYJSON_BUILD_TESTS=OFF && \
+    make -j$(nproc) && \
+    cd .. && \
+    afl-clang-lto -O2 -I src \
     -static -Wl,--allow-multiple-definition \
     harness.c build/libyyjson.a -o yyjson_parse
 
-# Install the binary
-RUN cp yyjson_parse /out/yyjson_parse
+WORKDIR /work
+RUN ln -s build-fuzz/yyjson_parse bin-fuzz && \
+    test -x /work/bin-fuzz
 
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf yyjson-0.12.0 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ibireme/yyjson/archive/refs/tags/0.12.0.tar.gz && \
-    tar -xzf 0.12.0.tar.gz && \
-    rm 0.12.0.tar.gz
-
-WORKDIR /src/yyjson-0.12.0
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
     AFL_LLVM_CMPLOG=1 \
@@ -55,32 +64,65 @@ RUN mkdir build && cd build && \
     -DCMAKE_C_FLAGS="-O2" \
     -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
     -DBUILD_SHARED_LIBS=OFF \
-    -DYYJSON_BUILD_TESTS=OFF
-
-RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Copy the harness
-COPY yyjson/harness.c harness.c
-
-# Build the CMPLOG harness
-RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I src \
+    -DYYJSON_BUILD_TESTS=OFF && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc) && \
+    cd .. && \
+    AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I src \
     -static -Wl,--allow-multiple-definition \
-    harness.c build/libyyjson.a -o yyjson_parse.cmplog
+    harness.c build/libyyjson.a -o yyjson_parse
 
-# Install CMPLOG binary
-RUN cp yyjson_parse.cmplog /out/yyjson_parse.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/yyjson_parse bin-cmplog && \
+    test -x /work/bin-cmplog
 
 # Copy fuzzing resources
-COPY yyjson/fuzz/dict /out/dict
-COPY yyjson/fuzz/in /out/in
-COPY yyjson/fuzz/fuzz.sh /out/fuzz.sh
-COPY yyjson/fuzz/whatsup.sh /out/whatsup.sh
+COPY yyjson/fuzz/dict /work/dict
+COPY yyjson/fuzz/in /work/in
+COPY yyjson/fuzz/fuzz.sh /work/fuzz.sh
+COPY yyjson/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN mkdir build && cd build && \
+    CC=clang \
+    CXX=clang++ \
+    cmake .. \
+    -DCMAKE_C_FLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    -DCMAKE_EXE_LINKER_FLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DYYJSON_BUILD_TESTS=OFF && \
+    make -j$(nproc) && \
+    cd .. && \
+    clang -g -O0 -fprofile-instr-generate -fcoverage-mapping \
+    -I src -static -Wl,--allow-multiple-definition \
+    harness.c build/libyyjson.a -o yyjson_parse
 
-# Verify binaries are built
-RUN ls -la /out/yyjson_parse /out/yyjson_parse.cmplog && \
-    file /out/yyjson_parse
+WORKDIR /work
+RUN ln -s build-cov/yyjson_parse bin-cov && \
+    test -x /work/bin-cov && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing yyjson'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN mkdir build && cd build && \
+    CC=clang \
+    CXX=clang++ \
+    cmake .. \
+    -DCMAKE_C_FLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    -DCMAKE_EXE_LINKER_FLAGS="-pg -Wl,--allow-multiple-definition" \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DYYJSON_BUILD_TESTS=OFF && \
+    make -j$(nproc) && \
+    cd .. && \
+    clang -g -O0 -pg -fno-omit-frame-pointer \
+    -I src -Wl,--allow-multiple-definition \
+    harness.c build/libyyjson.a -o yyjson_parse
+
+WORKDIR /work
+RUN ln -s build-uftrace/yyjson_parse bin-uftrace && \
+    test -x /work/bin-uftrace && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
