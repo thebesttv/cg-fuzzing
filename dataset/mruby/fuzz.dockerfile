@@ -1,60 +1,88 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget bison ruby && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget bison ruby uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download mruby 3.4.0 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: mruby" > /work/proj && \
+    echo "version: 3.4.0" >> /work/proj && \
+    echo "source: https://github.com/mruby/mruby/archive/refs/tags/3.4.0.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/mruby/mruby/archive/refs/tags/3.4.0.tar.gz && \
     tar -xzf 3.4.0.tar.gz && \
-    rm 3.4.0.tar.gz
+    rm 3.4.0.tar.gz && \
+    cp -a mruby-3.4.0 build-fuzz && \
+    cp -a mruby-3.4.0 build-cmplog && \
+    cp -a mruby-3.4.0 build-cov && \
+    cp -a mruby-3.4.0 build-uftrace && \
+    rm -rf mruby-3.4.0
 
-WORKDIR /src/mruby-3.4.0
-
-# Build mruby with afl-clang-lto for fuzzing
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     rake
 
-# Install the binary
-RUN cp build/host/bin/mruby /out/mruby
+WORKDIR /work
+RUN ln -s build-fuzz/build/host/bin/mruby bin-fuzz && \
+    echo 'puts "test"' | /work/bin-fuzz
 
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf mruby-3.4.0 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/mruby/mruby/archive/refs/tags/3.4.0.tar.gz && \
-    tar -xzf 3.4.0.tar.gz && \
-    rm 3.4.0.tar.gz
-
-WORKDIR /src/mruby-3.4.0
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
     rake
 
-# Install CMPLOG binary
-RUN cp build/host/bin/mruby /out/mruby.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/build/host/bin/mruby bin-cmplog && \
+    echo 'puts "test"' | /work/bin-cmplog
 
 # Copy fuzzing resources
-COPY mruby/fuzz/dict /out/dict
-COPY mruby/fuzz/in /out/in
-COPY mruby/fuzz/fuzz.sh /out/fuzz.sh
-COPY mruby/fuzz/whatsup.sh /out/whatsup.sh
+COPY mruby/fuzz/dict /work/dict
+COPY mruby/fuzz/in /work/in
+COPY mruby/fuzz/fuzz.sh /work/fuzz.sh
+COPY mruby/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    rake
 
-# Verify binaries are built
-RUN ls -la /out/mruby /out/mruby.cmplog && \
-    file /out/mruby
+WORKDIR /work
+RUN ln -s build-cov/build/host/bin/mruby bin-cov && \
+    echo 'puts "test"' | /work/bin-cov && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing mruby'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    rake
+
+WORKDIR /work
+RUN ln -s build-uftrace/build/host/bin/mruby bin-uftrace && \
+    echo 'puts "test"' | /work/bin-uftrace && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
