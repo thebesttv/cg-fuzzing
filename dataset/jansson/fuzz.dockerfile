@@ -1,68 +1,101 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract jansson 2.14.1 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: jansson" > /work/proj && \
+    echo "version: 2.14.1" >> /work/proj && \
+    echo "source: https://github.com/akheron/jansson/releases/download/v2.14.1/jansson-2.14.1.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/akheron/jansson/releases/download/v2.14.1/jansson-2.14.1.tar.gz && \
     tar -xzf jansson-2.14.1.tar.gz && \
-    rm jansson-2.14.1.tar.gz
+    rm jansson-2.14.1.tar.gz && \
+    cp -a jansson-2.14.1 build-fuzz && \
+    cp -a jansson-2.14.1 build-cmplog && \
+    cp -a jansson-2.14.1 build-cov && \
+    cp -a jansson-2.14.1 build-uftrace && \
+    rm -rf jansson-2.14.1
 
-WORKDIR /src/jansson-2.14.1
-
-# Build with afl-clang-lto for fuzzing (main target binary)
-# Use static linking
-# afl-clang-lto provides collision-free instrumentation
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
+    CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --disable-shared --enable-static
-
-RUN make -j$(nproc) && \
+    ./configure --disable-shared --enable-static && \
+    make -j$(nproc) && \
     make -C test/bin json_process
 
-# Install the json_process binary
-RUN cp test/bin/json_process /out/json_process
+WORKDIR /work
+RUN ln -s build-fuzz/test/bin/json_process bin-fuzz && \
+    echo '{}' | /work/bin-fuzz --strip /dev/stdin || true
 
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf jansson-2.14.1 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/akheron/jansson/releases/download/v2.14.1/jansson-2.14.1.tar.gz && \
-    tar -xzf jansson-2.14.1.tar.gz && \
-    rm jansson-2.14.1.tar.gz
-
-WORKDIR /src/jansson-2.14.1
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
+    CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure --disable-shared --enable-static
-
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc) && \
+    ./configure --disable-shared --enable-static && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc) && \
     AFL_LLVM_CMPLOG=1 make -C test/bin json_process
 
-# Install CMPLOG binary
-RUN cp test/bin/json_process /out/json_process.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/test/bin/json_process bin-cmplog && \
+    echo '{}' | /work/bin-cmplog --strip /dev/stdin || true
 
 # Copy fuzzing resources
-COPY jansson/fuzz/dict /out/dict
-COPY jansson/fuzz/in /out/in
-COPY jansson/fuzz/fuzz.sh /out/fuzz.sh
-COPY jansson/fuzz/whatsup.sh /out/whatsup.sh
+COPY jansson/fuzz/dict /work/dict
+COPY jansson/fuzz/in /work/in
+COPY jansson/fuzz/fuzz.sh /work/fuzz.sh
+COPY jansson/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared --enable-static && \
+    make -j$(nproc) && \
+    make -C test/bin json_process
 
-# Verify binaries are built
-RUN ls -la /out/json_process /out/json_process.cmplog && \
-    file /out/json_process
+WORKDIR /work
+RUN ln -s build-cov/test/bin/json_process bin-cov && \
+    echo '{}' | /work/bin-cov --strip /dev/stdin || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing jansson (json_process)'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --prefix=/work/install-uftrace --disable-shared --enable-static && \
+    make -j$(nproc) && \
+    make -C test/bin json_process && \
+    make install
+
+WORKDIR /work
+RUN ln -s build-uftrace/test/bin/json_process bin-uftrace && \
+    echo '{}' | /work/bin-uftrace --strip /dev/stdin || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
