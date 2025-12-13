@@ -57,7 +57,7 @@ COPY mpc/fuzz/whatsup.sh /work/whatsup.sh
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
 RUN clang -g -O0 -fprofile-instr-generate -fcoverage-mapping \
-    -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition \
+    -static -Wl,--allow-multiple-definition \
     -ansi -pedantic -Wall \
     examples/maths.c mpc.c -lm -o maths
 
