@@ -1,53 +1,75 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract lowdown 1.1.0 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: lowdown" > /work/proj && \
+    echo "version: 1.1.0" >> /work/proj && \
+    echo "source: https://github.com/kristapsdz/lowdown/archive/refs/tags/VERSION_1_1_0.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/kristapsdz/lowdown/archive/refs/tags/VERSION_1_1_0.tar.gz && \
     tar -xzf VERSION_1_1_0.tar.gz && \
-    rm VERSION_1_1_0.tar.gz
+    rm VERSION_1_1_0.tar.gz && \
+    cp -a lowdown-VERSION_1_1_0 build-fuzz && \
+    cp -a lowdown-VERSION_1_1_0 build-cmplog && \
+    cp -a lowdown-VERSION_1_1_0 build-cov && \
+    cp -a lowdown-VERSION_1_1_0 build-uftrace && \
+    rm -rf lowdown-VERSION_1_1_0
 
-WORKDIR /src/lowdown-VERSION_1_1_0
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
+RUN ./configure && \
+    make lowdown CC=afl-clang-lto CFLAGS="-O2" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
 
-# Configure and build lowdown with afl-clang-lto for fuzzing
-RUN ./configure
+WORKDIR /work
+RUN ln -s build-fuzz/lowdown bin-fuzz
 
-RUN make lowdown CC=afl-clang-lto CFLAGS="-O2" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
-RUN cp lowdown /out/lowdown
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
+RUN ./configure && \
+    AFL_LLVM_CMPLOG=1 make lowdown CC=afl-clang-lto CFLAGS="-O2" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
 
-# Build CMPLOG version
-WORKDIR /src
-RUN rm -rf lowdown-VERSION_1_1_0 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/kristapsdz/lowdown/archive/refs/tags/VERSION_1_1_0.tar.gz && \
-    tar -xzf VERSION_1_1_0.tar.gz && \
-    rm VERSION_1_1_0.tar.gz
+WORKDIR /work
+RUN ln -s build-cmplog/lowdown bin-cmplog
 
-WORKDIR /src/lowdown-VERSION_1_1_0
+# Copy fuzzing resources
+COPY lowdown/fuzz/dict /work/dict
+COPY lowdown/fuzz/in /work/in
+COPY lowdown/fuzz/fuzz.sh /work/fuzz.sh
+COPY lowdown/fuzz/whatsup.sh /work/whatsup.sh
 
-RUN ./configure
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN ./configure && \
+    make lowdown CC=clang CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make lowdown CC=afl-clang-lto CFLAGS="-O2" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
-RUN cp lowdown /out/lowdown.cmplog
+WORKDIR /work
+RUN ln -s build-cov/lowdown bin-cov && \
+    rm -f *.profraw
 
-# Copy fuzzing resources (lowdown includes AFL resources)
-COPY lowdown/fuzz/dict /out/dict
-COPY lowdown/fuzz/in /out/in
-COPY lowdown/fuzz/fuzz.sh /out/fuzz.sh
-COPY lowdown/fuzz/whatsup.sh /out/whatsup.sh
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN ./configure && \
+    make lowdown CC=clang CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" LDFLAGS="-pg -Wl,--allow-multiple-definition" -j$(nproc)
 
-WORKDIR /out
+WORKDIR /work
+RUN ln -s build-uftrace/lowdown bin-uftrace && \
+    rm -f gmon.out
 
-# Verify binaries are built
-RUN ls -la /out/lowdown /out/lowdown.cmplog && \
-    file /out/lowdown
-
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing lowdown'"]
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
