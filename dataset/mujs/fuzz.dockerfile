@@ -1,79 +1,97 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget libreadline-dev curl && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget libreadline-dev curl uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract mujs 1.3.8 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: mujs" > /work/proj && \
+    echo "version: 1.3.8" >> /work/proj && \
+    echo "source: https://github.com/ArtifexSoftware/mujs/archive/refs/tags/1.3.8.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ArtifexSoftware/mujs/archive/refs/tags/1.3.8.tar.gz && \
     tar -xzf 1.3.8.tar.gz && \
-    rm 1.3.8.tar.gz
+    rm 1.3.8.tar.gz && \
+    cp -a mujs-1.3.8 build-fuzz && \
+    cp -a mujs-1.3.8 build-cmplog && \
+    cp -a mujs-1.3.8 build-cov && \
+    cp -a mujs-1.3.8 build-uftrace && \
+    rm -rf mujs-1.3.8
 
-WORKDIR /src/mujs-1.3.8
-
-# Build mujs with afl-clang-lto for fuzzing (main target binary)
-# Use static linking - mujs Makefile doesn't use LDFLAGS for linking
-# So we need to add static flags to CFLAGS as well
-# First build libmujs.o, then link manually
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN make -j$(nproc) \
     CC=afl-clang-lto \
     CFLAGS="-O2" \
-    build/release/libmujs.o
-
-# Link statically
-RUN afl-clang-lto -O2 -static -Wl,--allow-multiple-definition \
+    build/release/libmujs.o && \
+    afl-clang-lto -O2 -static -Wl,--allow-multiple-definition \
     -o build/release/mujs main.c build/release/libmujs.o -lm
 
-# Install the mujs binary
-RUN cp build/release/mujs /out/mujs
+WORKDIR /work
+RUN ln -s build-fuzz/build/release/mujs bin-fuzz && \
+    test -x /work/bin-fuzz
 
-# Build CMPLOG version for better fuzzing (comparison logging)
-# Save Unicode data files before cleaning (they are downloaded from unicode.org during build)
-# and can fail due to network issues
-WORKDIR /src/mujs-1.3.8
-RUN cp /src/mujs-1.3.8/UnicodeData.txt /src/mujs-1.3.8/SpecialCasing.txt /tmp/ || true
-
-# Clean and rebuild for CMPLOG
-WORKDIR /src
-RUN rm -rf mujs-1.3.8 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ArtifexSoftware/mujs/archive/refs/tags/1.3.8.tar.gz && \
-    tar -xzf 1.3.8.tar.gz && \
-    rm 1.3.8.tar.gz
-
-WORKDIR /src/mujs-1.3.8
-
-# Restore Unicode data files to avoid re-downloading (network can be flaky), then clean up temp files
-RUN (cp /tmp/UnicodeData.txt /tmp/SpecialCasing.txt . && rm -f /tmp/UnicodeData.txt /tmp/SpecialCasing.txt) || true
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN AFL_LLVM_CMPLOG=1 make -j$(nproc) \
     CC=afl-clang-lto \
     CFLAGS="-O2" \
-    build/release/libmujs.o
-
-# Link statically with CMPLOG
-RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -static -Wl,--allow-multiple-definition \
+    build/release/libmujs.o && \
+    AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -static -Wl,--allow-multiple-definition \
     -o build/release/mujs main.c build/release/libmujs.o -lm
 
-# Install CMPLOG binary
-RUN cp build/release/mujs /out/mujs.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/build/release/mujs bin-cmplog && \
+    test -x /work/bin-cmplog
 
 # Copy fuzzing resources
-COPY mujs/fuzz/dict /out/dict
-COPY mujs/fuzz/in /out/in
-COPY mujs/fuzz/fuzz.sh /out/fuzz.sh
-COPY mujs/fuzz/whatsup.sh /out/whatsup.sh
+COPY mujs/fuzz/dict /work/dict
+COPY mujs/fuzz/in /work/in
+COPY mujs/fuzz/fuzz.sh /work/fuzz.sh
+COPY mujs/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN make -j$(nproc) \
+    CC=clang \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    build/release/libmujs.o && \
+    clang -g -O0 -fprofile-instr-generate -fcoverage-mapping \
+    -static -Wl,--allow-multiple-definition \
+    -o build/release/mujs main.c build/release/libmujs.o -lm
 
-# Verify binaries are built
-RUN ls -la /out/mujs /out/mujs.cmplog && \
-    file /out/mujs
+WORKDIR /work
+RUN ln -s build-cov/build/release/mujs bin-cov && \
+    test -x /work/bin-cov && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing mujs'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN make -j$(nproc) \
+    CC=clang \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    build/release/libmujs.o && \
+    clang -g -O0 -pg -fno-omit-frame-pointer \
+    -Wl,--allow-multiple-definition \
+    -o build/release/mujs main.c build/release/libmujs.o -lm
+
+WORKDIR /work
+RUN ln -s build-uftrace/build/release/mujs bin-uftrace && \
+    test -x /work/bin-uftrace && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
