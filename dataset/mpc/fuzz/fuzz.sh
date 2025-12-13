@@ -9,8 +9,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT_DIR="${SCRIPT_DIR}/findings"
 IN_DIR="${SCRIPT_DIR}/in"
 DICT="${SCRIPT_DIR}/dict"
-CMPLOG_BIN="${SCRIPT_DIR}/maths.cmplog"
-TARGET_BIN="${SCRIPT_DIR}/maths"
+CMPLOG_BIN="${SCRIPT_DIR}/bin-cmplog"
+TARGET_BIN="${SCRIPT_DIR}/bin-fuzz"
 PARALLEL=1
 
 # --- Usage Function ---
@@ -93,7 +93,7 @@ else
 
     # Trap Ctrl+C (SIGINT) to kill all background processes
     pids=()
-    trap 'echo "Stopping all fuzzers..."; kill "${pids[@]}" 2>/dev/null; wait; exit' SIGINT SIGTERM
+    trap 'echo "Stopping all fuzzers..."; kill ${pids[@]} 2>/dev/null; wait; exit' SIGINT SIGTERM
 
     # 1. Start Master (Main)
     # Master handles CMPLOG (if available) and deterministic checks
