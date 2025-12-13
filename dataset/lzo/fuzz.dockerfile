@@ -45,7 +45,7 @@ RUN cd examples && \
 
 WORKDIR /work
 RUN ln -s build-fuzz/examples/lzopack bin-fuzz && \
-    /work/bin-fuzz || true
+    /work/bin-fuzz || true  # lzopack requires arguments, just verify it exists
 
 # Build cmplog binary with afl-clang-lto + CMPLOG
 WORKDIR /work/build-cmplog
@@ -63,7 +63,7 @@ RUN cd examples && \
 
 WORKDIR /work
 RUN ln -s build-cmplog/examples/lzopack bin-cmplog && \
-    /work/bin-cmplog || true
+    /work/bin-cmplog || true  # lzopack requires arguments, just verify it exists
 
 # Copy fuzzing resources
 COPY lzo/fuzz/dict /work/dict
@@ -82,13 +82,13 @@ RUN CC=clang \
 # Build lzopack with cov instrumentation
 RUN cd examples && \
     clang -g -O0 -fprofile-instr-generate -fcoverage-mapping -I. -I../include -I.. \
-        -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition \
+        -static -Wl,--allow-multiple-definition \
         -o lzopack lzopack.c ../src/.libs/liblzo2.a
 
 WORKDIR /work
 RUN ln -s build-cov/examples/lzopack bin-cov && \
-    /work/bin-cov || true && \
-    rm -f *.profraw
+    (/work/bin-cov || true) && \
+    rm -f *.profraw  # lzopack requires arguments, just verify it exists
 
 # Build uftrace binary with profiling instrumentation
 WORKDIR /work/build-uftrace
@@ -109,8 +109,8 @@ RUN cd examples && \
 
 WORKDIR /work
 RUN ln -s install-uftrace/bin/lzopack bin-uftrace && \
-    /work/bin-uftrace || true && \
-    rm -f gmon.out
+    (/work/bin-uftrace || true) && \
+    rm -f gmon.out  # lzopack requires arguments, just verify it exists
 
 # Default to bash in /work
 WORKDIR /work
