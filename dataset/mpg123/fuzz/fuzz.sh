@@ -9,8 +9,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT_DIR="${SCRIPT_DIR}/findings"
 IN_DIR="${SCRIPT_DIR}/in"
 DICT="${SCRIPT_DIR}/dict"
-CMPLOG_BIN="${SCRIPT_DIR}/mpg123.cmplog"
-TARGET_BIN="${SCRIPT_DIR}/mpg123"
+CMPLOG_BIN="${SCRIPT_DIR}/bin-cmplog"
+TARGET_BIN="${SCRIPT_DIR}/bin-fuzz"
 PARALLEL=1
 
 # --- Usage Function ---
@@ -83,7 +83,7 @@ if [ "${PARALLEL}" -eq 1 ]; then
     afl-fuzz \
         ${AFL_ARGS} \
         ${CMPLOG_ARGS} \
-        -- "${TARGET_BIN}" -t @@
+        -- "${TARGET_BIN}" -q @@
 
 else
     # === Parallel Mode (Headless) ===
@@ -107,7 +107,7 @@ else
         ${AFL_ARGS} \
         ${CMPLOG_ARGS} \
         -M main \
-        -- "${TARGET_BIN}" -t @@ >/dev/null 2>&1 &
+        -- "${TARGET_BIN}" -q @@ >/dev/null 2>&1 &
 
     pids+=($!)
 
@@ -121,7 +121,7 @@ else
         afl-fuzz \
             ${AFL_ARGS} \
             -S "slave${i}" \
-            -- "${TARGET_BIN}" -t @@ >/dev/null 2>&1 &
+            -- "${TARGET_BIN}" -q @@ >/dev/null 2>&1 &
 
         pids+=($!)
     done
