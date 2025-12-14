@@ -1,24 +1,38 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget meson python3-pip ninja-build && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget meson python3-pip ninja-build uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract serd v0.32.2 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: serd" > /work/proj && \
+    echo "version: 0.32.2" >> /work/proj && \
+    echo "source: https://gitlab.com/drobilla/serd/-/archive/v0.32.2/serd-v0.32.2.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 \
     https://gitlab.com/drobilla/serd/-/archive/v0.32.2/serd-v0.32.2.tar.gz && \
     tar -xzf serd-v0.32.2.tar.gz && \
-    rm serd-v0.32.2.tar.gz
+    rm serd-v0.32.2.tar.gz && \
+    cp -a serd-v0.32.2 build-fuzz && \
+    cp -a serd-v0.32.2 build-cmplog && \
+    cp -a serd-v0.32.2 build-cov && \
+    cp -a serd-v0.32.2 build-uftrace && \
+    rm -rf serd-v0.32.2
 
-WORKDIR /src/serd-v0.32.2
-
-# Build serd with afl-clang-lto for fuzzing
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
@@ -27,21 +41,15 @@ RUN CC=afl-clang-lto \
     --default-library=static \
     -Ddocs=disabled \
     -Dtools=enabled \
-    -Dtests=disabled
+    -Dtests=disabled && \
+    ninja -C build
 
-RUN ninja -C build
-RUN cp build/serdi /out/serdi
+WORKDIR /work
+RUN ln -s build-fuzz/build/serdi bin-fuzz && \
+    /work/bin-fuzz --help | head -5 || true
 
-# Build CMPLOG version
-WORKDIR /src
-RUN rm -rf serd-v0.32.2 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 \
-    https://gitlab.com/drobilla/serd/-/archive/v0.32.2/serd-v0.32.2.tar.gz && \
-    tar -xzf serd-v0.32.2.tar.gz && \
-    rm serd-v0.32.2.tar.gz
-
-WORKDIR /src/serd-v0.32.2
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
@@ -51,22 +59,57 @@ RUN CC=afl-clang-lto \
     --default-library=static \
     -Ddocs=disabled \
     -Dtools=enabled \
-    -Dtests=disabled
+    -Dtests=disabled && \
+    AFL_LLVM_CMPLOG=1 ninja -C build
 
-RUN AFL_LLVM_CMPLOG=1 ninja -C build
-RUN cp build/serdi /out/serdi.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/build/serdi bin-cmplog && \
+    /work/bin-cmplog --help | head -5 || true
 
 # Copy fuzzing resources
-COPY serd/fuzz/dict /out/dict
-COPY serd/fuzz/in /out/in
-COPY serd/fuzz/fuzz.sh /out/fuzz.sh
-COPY serd/fuzz/whatsup.sh /out/whatsup.sh
+COPY serd/fuzz/dict /work/dict
+COPY serd/fuzz/in /work/in
+COPY serd/fuzz/fuzz.sh /work/fuzz.sh
+COPY serd/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    meson setup build \
+    --default-library=static \
+    -Ddocs=disabled \
+    -Dtools=enabled \
+    -Dtests=disabled && \
+    ninja -C build
 
-# Verify binaries
-RUN ls -la /out/serdi /out/serdi.cmplog && \
-    file /out/serdi && \
-    /out/serdi --help | head -5 || true
+WORKDIR /work
+RUN ln -s build-cov/build/serdi bin-cov && \
+    /work/bin-cov --help | head -5 || true && \
+    rm -f *.profraw
 
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing serd'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    meson setup build \
+    --prefix=/work/install-uftrace \
+    --default-library=static \
+    -Ddocs=disabled \
+    -Dtools=enabled \
+    -Dtests=disabled && \
+    ninja -C build && \
+    ninja -C build install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/serdi bin-uftrace && \
+    /work/bin-uftrace --help | head -5 || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
