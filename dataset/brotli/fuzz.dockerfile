@@ -103,7 +103,9 @@ RUN mkdir build && cd build && \
 WORKDIR /work
 RUN ln -s install-uftrace/bin/brotli bin-uftrace && \
     /work/bin-uftrace --version && \
-    rm -f gmon.out
+    uftrace record /work/bin-uftrace --version && \
+    uftrace report && \
+    rm -rf uftrace.data gmon.out
 
 # Default to bash in /work
 WORKDIR /work
