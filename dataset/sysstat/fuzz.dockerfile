@@ -1,66 +1,96 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget gettext && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget gettext uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract sysstat v12.7.6 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: sysstat" > /work/proj && \
+    echo "version: 12.7.6" >> /work/proj && \
+    echo "source: https://github.com/sysstat/sysstat/archive/v12.7.6.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/sysstat/sysstat/archive/v12.7.6.tar.gz && \
     tar -xzf v12.7.6.tar.gz && \
-    rm v12.7.6.tar.gz
+    rm v12.7.6.tar.gz && \
+    cp -a sysstat-12.7.6 build-fuzz && \
+    cp -a sysstat-12.7.6 build-cmplog && \
+    cp -a sysstat-12.7.6 build-cov && \
+    cp -a sysstat-12.7.6 build-uftrace && \
+    rm -rf sysstat-12.7.6
 
-WORKDIR /src/sysstat-12.7.6
-
-# Build sar with afl-clang-lto for fuzzing (main target binary)
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --disable-nls
+    ./configure --disable-nls && \
+    make -j$(nproc)
 
-RUN make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/sar bin-fuzz && \
+    /work/bin-fuzz --help 2>&1 | head -5
 
-# Install the sar binary
-RUN cp sar /out/sar
-
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf sysstat-12.7.6 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/sysstat/sysstat/archive/v12.7.6.tar.gz && \
-    tar -xzf v12.7.6.tar.gz && \
-    rm v12.7.6.tar.gz
-
-WORKDIR /src/sysstat-12.7.6
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure --disable-nls
+    ./configure --disable-nls && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp sar /out/sar.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/sar bin-cmplog && \
+    /work/bin-cmplog --help 2>&1 | head -5
 
 # Copy fuzzing resources
-COPY sysstat/fuzz/dict /out/dict
-COPY sysstat/fuzz/in /out/in
-COPY sysstat/fuzz/fuzz.sh /out/fuzz.sh
-COPY sysstat/fuzz/whatsup.sh /out/whatsup.sh
+COPY sysstat/fuzz/dict /work/dict
+COPY sysstat/fuzz/in /work/in
+COPY sysstat/fuzz/fuzz.sh /work/fuzz.sh
+COPY sysstat/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure --disable-nls && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/sar /out/sar.cmplog && \
-    file /out/sar
+WORKDIR /work
+RUN ln -s build-cov/sar bin-cov && \
+    /work/bin-cov --help 2>&1 | head -5 && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing sysstat (sar)'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --disable-nls && \
+    make -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/sar bin-uftrace && \
+    /work/bin-uftrace --help 2>&1 | head -5 && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
