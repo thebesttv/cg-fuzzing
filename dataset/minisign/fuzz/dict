@@ -1,0 +1,31 @@
+# minisign dictionary - signature verification tokens
+
+# Command line options
+"-G"
+"-S"
+"-V"
+"-R"
+"-W"
+"-C"
+"-generate"
+"-sign"
+"-verify"
+"-recreate"
+"-help"
+"-version"
+
+# File types
+".pub"
+".key"
+".sig"
+".minisig"
+
+# Common words
+"trusted"
+"comment"
+"signature"
+"public"
+"private"
+"key"
+"password"
+"passphrase"
