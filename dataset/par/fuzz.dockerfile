@@ -1,23 +1,37 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract par v1.53.0 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: par" > /work/proj && \
+    echo "version: 1.53.0" >> /work/proj && \
+    echo "source: http://www.nicemice.net/par/Par-1.53.0.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 http://www.nicemice.net/par/Par-1.53.0.tar.gz && \
     tar -xzf Par-1.53.0.tar.gz && \
-    rm Par-1.53.0.tar.gz
+    rm Par-1.53.0.tar.gz && \
+    cp -a Par-1.53.0 build-fuzz && \
+    cp -a Par-1.53.0 build-cmplog && \
+    cp -a Par-1.53.0 build-cov && \
+    cp -a Par-1.53.0 build-uftrace && \
+    rm -rf Par-1.53.0
 
-WORKDIR /src/Par-1.53.0
-
-# Build par with afl-clang-lto for fuzzing
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN afl-clang-lto -c -O2 buffer.c && \
     afl-clang-lto -c -O2 charset.c && \
     afl-clang-lto -c -O2 errmsg.c && \
@@ -26,18 +40,12 @@ RUN afl-clang-lto -c -O2 buffer.c && \
     afl-clang-lto -O2 -static -Wl,--allow-multiple-definition \
         buffer.o charset.o errmsg.o reformat.o par.o -o par
 
-# Install the par binary
-RUN cp par /out/par
+WORKDIR /work
+RUN ln -s build-fuzz/par bin-fuzz && \
+    echo "Test:" | /work/bin-fuzz
 
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf Par-1.53.0 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 http://www.nicemice.net/par/Par-1.53.0.tar.gz && \
-    tar -xzf Par-1.53.0.tar.gz && \
-    rm Par-1.53.0.tar.gz
-
-WORKDIR /src/Par-1.53.0
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -c -O2 buffer.c && \
     AFL_LLVM_CMPLOG=1 afl-clang-lto -c -O2 charset.c && \
     AFL_LLVM_CMPLOG=1 afl-clang-lto -c -O2 errmsg.c && \
@@ -46,21 +54,46 @@ RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -c -O2 buffer.c && \
     AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -static -Wl,--allow-multiple-definition \
         buffer.o charset.o errmsg.o reformat.o par.o -o par
 
-# Install CMPLOG binary
-RUN cp par /out/par.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/par bin-cmplog && \
+    echo "Test:" | /work/bin-cmplog
 
 # Copy fuzzing resources
-COPY par/fuzz/dict /out/dict
-COPY par/fuzz/in /out/in
-COPY par/fuzz/fuzz.sh /out/fuzz.sh
-COPY par/fuzz/whatsup.sh /out/whatsup.sh
+COPY par/fuzz/dict /work/dict
+COPY par/fuzz/in /work/in
+COPY par/fuzz/fuzz.sh /work/fuzz.sh
+COPY par/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN clang -c -g -O0 -fprofile-instr-generate -fcoverage-mapping buffer.c && \
+    clang -c -g -O0 -fprofile-instr-generate -fcoverage-mapping charset.c && \
+    clang -c -g -O0 -fprofile-instr-generate -fcoverage-mapping errmsg.c && \
+    clang -c -g -O0 -fprofile-instr-generate -fcoverage-mapping reformat.c && \
+    clang -c -g -O0 -fprofile-instr-generate -fcoverage-mapping par.c && \
+    clang -g -O0 -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition \
+        buffer.o charset.o errmsg.o reformat.o par.o -o par
 
-# Verify binaries are built
-RUN ls -la /out/par /out/par.cmplog && \
-    file /out/par && \
-    echo "Test:" | /out/par
+WORKDIR /work
+RUN ln -s build-cov/par bin-cov && \
+    echo "Test:" | /work/bin-cov && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing par'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN clang -c -g -O0 -pg -fno-omit-frame-pointer buffer.c && \
+    clang -c -g -O0 -pg -fno-omit-frame-pointer charset.c && \
+    clang -c -g -O0 -pg -fno-omit-frame-pointer errmsg.c && \
+    clang -c -g -O0 -pg -fno-omit-frame-pointer reformat.c && \
+    clang -c -g -O0 -pg -fno-omit-frame-pointer par.c && \
+    clang -g -O0 -pg -fno-omit-frame-pointer -Wl,--allow-multiple-definition \
+        buffer.o charset.o errmsg.o reformat.o par.o -o par
+
+WORKDIR /work
+RUN ln -s build-uftrace/par bin-uftrace && \
+    echo "Test:" | /work/bin-uftrace && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
