@@ -1,69 +1,100 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget cmake && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget cmake uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract tidy-html5 5.8.0 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: tidy-html5" > /work/proj && \
+    echo "version: 5.8.0" >> /work/proj && \
+    echo "source: https://github.com/htacg/tidy-html5/archive/refs/tags/5.8.0.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/htacg/tidy-html5/archive/refs/tags/5.8.0.tar.gz && \
     tar -xzf 5.8.0.tar.gz && \
-    rm 5.8.0.tar.gz
+    rm 5.8.0.tar.gz && \
+    cp -a tidy-html5-5.8.0 build-fuzz && \
+    cp -a tidy-html5-5.8.0 build-cmplog && \
+    cp -a tidy-html5-5.8.0 build-cov && \
+    cp -a tidy-html5-5.8.0 build-uftrace && \
+    rm -rf tidy-html5-5.8.0
 
-WORKDIR /src/tidy-html5-5.8.0
-
-# Build tidy with afl-clang-lto for fuzzing (main target binary)
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN rm -rf build && mkdir build && cd build && \
     CC=afl-clang-lto \
     cmake .. \
         -DCMAKE_C_FLAGS="-O2" \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
-        -DBUILD_SHARED_LIB=OFF
+        -DBUILD_SHARED_LIB=OFF && \
+    make -j$(nproc)
 
-RUN cd build && make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/build/tidy bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Copy main binary
-RUN cp build/tidy /out/tidy
-
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf tidy-html5-5.8.0 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/htacg/tidy-html5/archive/refs/tags/5.8.0.tar.gz && \
-    tar -xzf 5.8.0.tar.gz && \
-    rm 5.8.0.tar.gz
-
-WORKDIR /src/tidy-html5-5.8.0
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN rm -rf build && mkdir build && cd build && \
     CC=afl-clang-lto \
     AFL_LLVM_CMPLOG=1 \
     cmake .. \
         -DCMAKE_C_FLAGS="-O2" \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
-        -DBUILD_SHARED_LIB=OFF
+        -DBUILD_SHARED_LIB=OFF && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 cd build && make -j$(nproc)
-
-# Copy CMPLOG binary
-RUN cp build/tidy /out/tidy.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/build/tidy bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
-COPY tidy-html5/fuzz/dict /out/dict
-COPY tidy-html5/fuzz/in /out/in
-COPY tidy-html5/fuzz/fuzz.sh /out/fuzz.sh
-COPY tidy-html5/fuzz/whatsup.sh /out/whatsup.sh
+COPY tidy-html5/fuzz/dict /work/dict
+COPY tidy-html5/fuzz/in /work/in
+COPY tidy-html5/fuzz/fuzz.sh /work/fuzz.sh
+COPY tidy-html5/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN rm -rf build && mkdir build && cd build && \
+    CC=clang \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+        -DCMAKE_EXE_LINKER_FLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIB=OFF && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/tidy /out/tidy.cmplog && \
-    file /out/tidy && \
-    /out/tidy --version
+WORKDIR /work
+RUN ln -s build-cov/build/tidy bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing tidy-html5'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN rm -rf build && mkdir build && cd build && \
+    CC=clang \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+        -DCMAKE_EXE_LINKER_FLAGS="-pg -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIB=OFF && \
+    make -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/build/tidy bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]

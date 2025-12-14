@@ -1,90 +1,114 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget git && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget git uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download stb (latest commit - same as bc.dockerfile)
-WORKDIR /src
-RUN git clone --depth 1 https://github.com/nothings/stb.git
+# Create working directory
+WORKDIR /work
 
-WORKDIR /src/stb
+# Save project metadata
+RUN echo "project: stb" > /work/proj && \
+    echo "version: latest" >> /work/proj && \
+    echo "source: https://github.com/nothings/stb.git" >> /work/proj
 
-# Create a harness program that uses stb_image to load images
-RUN echo '/* stb_image harness for fuzzing/analysis */' > stb_image_harness.c && \
-    echo '#define STB_IMAGE_IMPLEMENTATION' >> stb_image_harness.c && \
-    echo '#include "stb_image.h"' >> stb_image_harness.c && \
-    echo '#include <stdio.h>' >> stb_image_harness.c && \
-    echo '#include <stdlib.h>' >> stb_image_harness.c && \
-    echo 'int main(int argc, char **argv) {' >> stb_image_harness.c && \
-    echo '    if (argc != 2) { fprintf(stderr, "Usage: %s <image_file>\\n", argv[0]); return 1; }' >> stb_image_harness.c && \
-    echo '    int width, height, channels;' >> stb_image_harness.c && \
-    echo '    unsigned char *data = stbi_load(argv[1], &width, &height, &channels, 0);' >> stb_image_harness.c && \
-    echo '    if (data == NULL) { fprintf(stderr, "Failed to load image: %s\\n", stbi_failure_reason()); return 1; }' >> stb_image_harness.c && \
-    echo '    printf("Loaded image: %dx%d, %d channels\\n", width, height, channels);' >> stb_image_harness.c && \
-    echo '    stbi_image_free(data);' >> stb_image_harness.c && \
-    echo '    return 0;' >> stb_image_harness.c && \
-    echo '}' >> stb_image_harness.c
+# Download source once and clone to multiple build directories
+RUN git clone --depth 1 https://github.com/nothings/stb.git && \
+    cp -a stb build-fuzz && \
+    cp -a stb build-cmplog && \
+    cp -a stb build-cov && \
+    cp -a stb build-uftrace && \
+    rm -rf stb
 
-# Build the harness with afl-clang-lto and static linking
-RUN afl-clang-lto \
+# Create harness helper function to avoid repetition
+RUN echo '/* stb_image harness for fuzzing/analysis */' > /tmp/harness_template.c && \
+    echo '#define STB_IMAGE_IMPLEMENTATION' >> /tmp/harness_template.c && \
+    echo '#include "stb_image.h"' >> /tmp/harness_template.c && \
+    echo '#include <stdio.h>' >> /tmp/harness_template.c && \
+    echo '#include <stdlib.h>' >> /tmp/harness_template.c && \
+    echo 'int main(int argc, char **argv) {' >> /tmp/harness_template.c && \
+    echo '    if (argc != 2) { fprintf(stderr, "Usage: %s <image_file>\\n", argv[0]); return 1; }' >> /tmp/harness_template.c && \
+    echo '    int width, height, channels;' >> /tmp/harness_template.c && \
+    echo '    unsigned char *data = stbi_load(argv[1], &width, &height, &channels, 0);' >> /tmp/harness_template.c && \
+    echo '    if (data == NULL) { fprintf(stderr, "Failed to load image: %s\\n", stbi_failure_reason()); return 1; }' >> /tmp/harness_template.c && \
+    echo '    printf("Loaded image: %dx%d, %d channels\\n", width, height, channels);' >> /tmp/harness_template.c && \
+    echo '    stbi_image_free(data);' >> /tmp/harness_template.c && \
+    echo '    return 0;' >> /tmp/harness_template.c && \
+    echo '}' >> /tmp/harness_template.c
+
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
+RUN cp /tmp/harness_template.c stb_image_harness.c && \
+    afl-clang-lto \
     -O2 \
     -static \
     -Wl,--allow-multiple-definition \
     -o stb_image_harness stb_image_harness.c \
     -lm
 
-RUN cp stb_image_harness /out/stb_image_harness
+WORKDIR /work
+RUN ln -s build-fuzz/stb_image_harness bin-fuzz && \
+    /work/bin-fuzz 2>&1 | grep -q "Usage" && echo "bin-fuzz OK"
 
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf stb && \
-    git clone --depth 1 https://github.com/nothings/stb.git
-
-WORKDIR /src/stb
-
-# Create the harness again
-RUN echo '/* stb_image harness for fuzzing/analysis */' > stb_image_harness.c && \
-    echo '#define STB_IMAGE_IMPLEMENTATION' >> stb_image_harness.c && \
-    echo '#include "stb_image.h"' >> stb_image_harness.c && \
-    echo '#include <stdio.h>' >> stb_image_harness.c && \
-    echo '#include <stdlib.h>' >> stb_image_harness.c && \
-    echo 'int main(int argc, char **argv) {' >> stb_image_harness.c && \
-    echo '    if (argc != 2) { fprintf(stderr, "Usage: %s <image_file>\\n", argv[0]); return 1; }' >> stb_image_harness.c && \
-    echo '    int width, height, channels;' >> stb_image_harness.c && \
-    echo '    unsigned char *data = stbi_load(argv[1], &width, &height, &channels, 0);' >> stb_image_harness.c && \
-    echo '    if (data == NULL) { fprintf(stderr, "Failed to load image: %s\\n", stbi_failure_reason()); return 1; }' >> stb_image_harness.c && \
-    echo '    printf("Loaded image: %dx%d, %d channels\\n", width, height, channels);' >> stb_image_harness.c && \
-    echo '    stbi_image_free(data);' >> stb_image_harness.c && \
-    echo '    return 0;' >> stb_image_harness.c && \
-    echo '}' >> stb_image_harness.c
-
-# Build CMPLOG version
-RUN AFL_LLVM_CMPLOG=1 afl-clang-lto \
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
+RUN cp /tmp/harness_template.c stb_image_harness.c && \
+    AFL_LLVM_CMPLOG=1 afl-clang-lto \
     -O2 \
     -static \
     -Wl,--allow-multiple-definition \
     -o stb_image_harness stb_image_harness.c \
     -lm
 
-RUN cp stb_image_harness /out/stb_image_harness.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/stb_image_harness bin-cmplog && \
+    /work/bin-cmplog 2>&1 | grep -q "Usage" && echo "bin-cmplog OK"
 
 # Copy fuzzing resources
-COPY stb/fuzz/dict /out/dict
-COPY stb/fuzz/in /out/in
-COPY stb/fuzz/fuzz.sh /out/fuzz.sh
-COPY stb/fuzz/whatsup.sh /out/whatsup.sh
+COPY stb/fuzz/dict /work/dict
+COPY stb/fuzz/in /work/in
+COPY stb/fuzz/fuzz.sh /work/fuzz.sh
+COPY stb/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN cp /tmp/harness_template.c stb_image_harness.c && \
+    clang \
+    -g -O0 -fprofile-instr-generate -fcoverage-mapping \
+    -static -Wl,--allow-multiple-definition \
+    -o stb_image_harness stb_image_harness.c \
+    -lm
 
-# Verify binaries are built
-RUN ls -la /out/stb_image_harness /out/stb_image_harness.cmplog && \
-    file /out/stb_image_harness
+WORKDIR /work
+RUN ln -s build-cov/stb_image_harness bin-cov && \
+    /work/bin-cov 2>&1 | grep -q "Usage" && echo "bin-cov OK" && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing stb_image'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN cp /tmp/harness_template.c stb_image_harness.c && \
+    clang \
+    -g -O0 -pg -fno-omit-frame-pointer \
+    -Wl,--allow-multiple-definition \
+    -o stb_image_harness stb_image_harness.c \
+    -lm
+
+WORKDIR /work
+RUN ln -s build-uftrace/stb_image_harness bin-uftrace && \
+    /work/bin-uftrace 2>&1 | grep -q "Usage" && echo "bin-uftrace OK" && \
+    rm -f gmon.out
+
+# Clean up template
+RUN rm -f /tmp/harness_template.c
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
