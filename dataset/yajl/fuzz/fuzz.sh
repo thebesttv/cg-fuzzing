@@ -10,8 +10,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT_DIR="${SCRIPT_DIR}/findings"
 IN_DIR="${SCRIPT_DIR}/in"
 DICT="${SCRIPT_DIR}/dict"
-CMPLOG_BIN="${SCRIPT_DIR}/json_verify.cmplog"
-TARGET_BIN="${SCRIPT_DIR}/json_verify"
+CMPLOG_BIN="${SCRIPT_DIR}/bin-cmplog"
+TARGET_BIN="${SCRIPT_DIR}/bin-fuzz"
 PARALLEL=1
 
 # --- Usage Function ---
@@ -68,6 +68,10 @@ fi
 # -m none: No memory limit
 AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none"
 
+# json_verify only reads from stdin, so we need to use shell wrapper
+# This requires AFL_SKIP_BIN_CHECK since AFL can't detect instrumentation through the shell
+export AFL_SKIP_BIN_CHECK=1
+
 # --- Fuzzing Logic ---
 
 if [ "${PARALLEL}" -eq 1 ]; then
@@ -82,7 +86,7 @@ if [ "${PARALLEL}" -eq 1 ]; then
     fi
 
     # json_verify reads from stdin, use @@ with < redirection
-    afl-fuzz \
+    AFL_SKIP_BIN_CHECK=1 afl-fuzz \
         ${AFL_ARGS} \
         ${CMPLOG_ARGS} \
         -- /bin/sh -c "${TARGET_BIN} < @@"
@@ -105,7 +109,7 @@ else
     fi
 
     echo "[+] Starting Master fuzzer..."
-    afl-fuzz \
+    AFL_SKIP_BIN_CHECK=1 afl-fuzz \
         ${AFL_ARGS} \
         ${CMPLOG_ARGS} \
         -M main \
@@ -120,7 +124,7 @@ else
     # Slaves focus on throughput/havoc, usually don't need CMPLOG to save CPU
     for i in $(seq 1 $((PARALLEL - 1))); do
         echo "[+] Starting Slave fuzzer #$i..."
-        afl-fuzz \
+        AFL_SKIP_BIN_CHECK=1 afl-fuzz \
             ${AFL_ARGS} \
             -S "slave${i}" \
             -- /bin/sh -c "${TARGET_BIN} < @@" >/dev/null 2>&1 &

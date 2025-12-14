@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fuzzing script for wolfssl asn1 using AFL++
+# Fuzzing script for wolfssl (asn1) using AFL++
 # Optimized: Parallel execution support (-j), unlimited memory, cleanup handling.
 
 set -e
@@ -9,8 +9,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT_DIR="${SCRIPT_DIR}/findings"
 IN_DIR="${SCRIPT_DIR}/in"
 DICT="${SCRIPT_DIR}/dict"
-CMPLOG_BIN="${SCRIPT_DIR}/asn1.cmplog"
-TARGET_BIN="${SCRIPT_DIR}/asn1"
+CMPLOG_BIN="${SCRIPT_DIR}/bin-cmplog"
+TARGET_BIN="${SCRIPT_DIR}/bin-fuzz"
 PARALLEL=1
 
 # --- Usage Function ---
@@ -48,7 +48,7 @@ fi
 # Ensure output directory exists
 mkdir -p "${OUT_DIR}"
 
-echo "=== wolfssl asn1 AFL++ Fuzzing ==="
+echo "=== wolfssl (asn1) AFL++ Fuzzing ==="
 echo "Target:           ${TARGET_BIN}"
 echo "Input corpus:     ${IN_DIR}"
 echo "Output directory: ${OUT_DIR}"
