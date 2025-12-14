@@ -83,7 +83,7 @@ WORKDIR /work/build-cov
 RUN cp /tmp/harness_template.c stb_image_harness.c && \
     clang \
     -g -O0 -fprofile-instr-generate -fcoverage-mapping \
-    -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition \
+    -static -Wl,--allow-multiple-definition \
     -o stb_image_harness stb_image_harness.c \
     -lm
 
@@ -97,7 +97,7 @@ WORKDIR /work/build-uftrace
 RUN cp /tmp/harness_template.c stb_image_harness.c && \
     clang \
     -g -O0 -pg -fno-omit-frame-pointer \
-    -pg -Wl,--allow-multiple-definition \
+    -Wl,--allow-multiple-definition \
     -o stb_image_harness stb_image_harness.c \
     -lm
 
