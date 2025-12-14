@@ -1,23 +1,37 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget cmake && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget cmake uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract zlib-ng 2.3.1 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: zlib-ng" > /work/proj && \
+    echo "version: 2.3.1" >> /work/proj && \
+    echo "source: https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.3.1.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.3.1.tar.gz && \
     tar -xzf 2.3.1.tar.gz && \
-    rm 2.3.1.tar.gz
+    rm 2.3.1.tar.gz && \
+    cp -a zlib-ng-2.3.1 build-fuzz && \
+    cp -a zlib-ng-2.3.1 build-cmplog && \
+    cp -a zlib-ng-2.3.1 build-cov && \
+    cp -a zlib-ng-2.3.1 build-uftrace && \
+    rm -rf zlib-ng-2.3.1
 
-WORKDIR /src/zlib-ng-2.3.1
-
-# Build zlib-ng with afl-clang-lto for fuzzing (main target binary)
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
@@ -26,22 +40,15 @@ RUN mkdir build && cd build && \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
         -DBUILD_SHARED_LIBS=OFF \
         -DZLIB_COMPAT=ON \
-        -DWITH_GTEST=OFF
+        -DWITH_GTEST=OFF && \
+    make -j$(nproc)
 
-RUN cd build && make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/build/minigzip bin-fuzz && \
+    /work/bin-fuzz -h 2>&1 | head -3 || true
 
-# Install the binaries
-RUN cp build/minigzip /out/minigzip
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf zlib-ng-2.3.1 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.3.1.tar.gz && \
-    tar -xzf 2.3.1.tar.gz && \
-    rm 2.3.1.tar.gz
-
-WORKDIR /src/zlib-ng-2.3.1
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
@@ -51,25 +58,55 @@ RUN mkdir build && cd build && \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
         -DBUILD_SHARED_LIBS=OFF \
         -DZLIB_COMPAT=ON \
-        -DWITH_GTEST=OFF
+        -DWITH_GTEST=OFF && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 && cd build && make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp build/minigzip /out/minigzip.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/build/minigzip bin-cmplog && \
+    /work/bin-cmplog -h 2>&1 | head -3 || true
 
 # Copy fuzzing resources
-COPY zlib-ng/fuzz/dict /out/dict
-COPY zlib-ng/fuzz/in /out/in
-COPY zlib-ng/fuzz/fuzz.sh /out/fuzz.sh
-COPY zlib-ng/fuzz/whatsup.sh /out/whatsup.sh
+COPY zlib-ng/fuzz/dict /work/dict
+COPY zlib-ng/fuzz/in /work/in
+COPY zlib-ng/fuzz/fuzz.sh /work/fuzz.sh
+COPY zlib-ng/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN mkdir build && cd build && \
+    CC=clang \
+    CXX=clang++ \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+        -DCMAKE_EXE_LINKER_FLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DZLIB_COMPAT=ON \
+        -DWITH_GTEST=OFF && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/minigzip /out/minigzip.cmplog && \
-    file /out/minigzip && \
-    /out/minigzip -h || true
+WORKDIR /work
+RUN ln -s build-cov/build/minigzip bin-cov && \
+    /work/bin-cov -h 2>&1 | head -3 || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing zlib-ng'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN mkdir build && cd build && \
+    CC=clang \
+    CXX=clang++ \
+    cmake .. \
+        -DCMAKE_C_FLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+        -DCMAKE_EXE_LINKER_FLAGS="-pg -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DZLIB_COMPAT=ON \
+        -DWITH_GTEST=OFF && \
+    make -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/build/minigzip bin-uftrace && \
+    /work/bin-uftrace -h 2>&1 | head -3 || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
