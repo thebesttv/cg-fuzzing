@@ -1,46 +1,52 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget cmake ninja-build zlib1g-dev && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget cmake ninja-build zlib1g-dev uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract upx v5.0.2 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: upx" > /work/proj && \
+    echo "version: 5.0.2" >> /work/proj && \
+    echo "source: https://github.com/upx/upx/releases/download/v5.0.2/upx-5.0.2-src.tar.xz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/upx/upx/releases/download/v5.0.2/upx-5.0.2-src.tar.xz && \
     tar -xf upx-5.0.2-src.tar.xz && \
-    rm upx-5.0.2-src.tar.xz
+    rm upx-5.0.2-src.tar.xz && \
+    cp -a upx-5.0.2-src build-fuzz && \
+    cp -a upx-5.0.2-src build-cmplog && \
+    cp -a upx-5.0.2-src build-cov && \
+    cp -a upx-5.0.2-src build-uftrace && \
+    rm -rf upx-5.0.2-src
 
-WORKDIR /src/upx-5.0.2-src
-
-# Build upx with afl-clang-lto for fuzzing (main target binary)
-# Use static linking for better portability
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN mkdir build && cd build && \
     CC=afl-clang-lto CXX=afl-clang-lto++ \
     cmake .. -G Ninja \
         -DCMAKE_C_FLAGS="-O2" \
         -DCMAKE_CXX_FLAGS="-O2" \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
-        -DUPX_CONFIG_DISABLE_WERROR=ON
+        -DUPX_CONFIG_DISABLE_WERROR=ON && \
+    ninja -j$(nproc)
 
-RUN cd build && ninja -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/build/upx bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Install the upx binary
-RUN cp build/upx /out/upx
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf upx-5.0.2-src && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/upx/upx/releases/download/v5.0.2/upx-5.0.2-src.tar.xz && \
-    tar -xf upx-5.0.2-src.tar.xz && \
-    rm upx-5.0.2-src.tar.xz
-
-WORKDIR /src/upx-5.0.2-src
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN mkdir build && cd build && \
     CC=afl-clang-lto CXX=afl-clang-lto++ \
     AFL_LLVM_CMPLOG=1 \
@@ -48,25 +54,53 @@ RUN mkdir build && cd build && \
         -DCMAKE_C_FLAGS="-O2" \
         -DCMAKE_CXX_FLAGS="-O2" \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
-        -DUPX_CONFIG_DISABLE_WERROR=ON
+        -DUPX_CONFIG_DISABLE_WERROR=ON && \
+    AFL_LLVM_CMPLOG=1 ninja -j$(nproc)
 
-RUN cd build && AFL_LLVM_CMPLOG=1 ninja -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp build/upx /out/upx.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/build/upx bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
-COPY upx/fuzz/dict /out/dict
-COPY upx/fuzz/in /out/in
-COPY upx/fuzz/fuzz.sh /out/fuzz.sh
-COPY upx/fuzz/whatsup.sh /out/whatsup.sh
+COPY upx/fuzz/dict /work/dict
+COPY upx/fuzz/in /work/in
+COPY upx/fuzz/fuzz.sh /work/fuzz.sh
+COPY upx/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN mkdir build && cd build && \
+    CC=clang CXX=clang++ \
+    cmake .. -G Ninja \
+        -DCMAKE_C_FLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+        -DCMAKE_CXX_FLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+        -DCMAKE_EXE_LINKER_FLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+        -DUPX_CONFIG_DISABLE_WERROR=ON && \
+    ninja -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/upx /out/upx.cmplog && \
-    file /out/upx && \
-    /out/upx --version
+WORKDIR /work
+RUN ln -s build-cov/build/upx bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing upx'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN mkdir build && cd build && \
+    CC=clang CXX=clang++ \
+    cmake .. -G Ninja \
+        -DCMAKE_C_FLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+        -DCMAKE_CXX_FLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+        -DCMAKE_EXE_LINKER_FLAGS="-pg -Wl,--allow-multiple-definition" \
+        -DCMAKE_INSTALL_PREFIX=/work/install-uftrace \
+        -DUPX_CONFIG_DISABLE_WERROR=ON && \
+    ninja -j$(nproc) && \
+    ninja install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/upx bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
