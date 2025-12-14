@@ -1,0 +1,92 @@
+# scdoc dictionary - man page formatting tokens and commands
+
+# Common man page section headers
+"NAME"
+"SYNOPSIS"
+"DESCRIPTION"
+"OPTIONS"
+"EXAMPLES"
+"EXIT STATUS"
+"ENVIRONMENT"
+"FILES"
+"SEE ALSO"
+"BUGS"
+"AUTHORS"
+"COPYRIGHT"
+
+# scdoc-specific formatting
+"*bold*"
+"_underline_"
+"*_bold underline_*"
+"_*underline bold*_"
+"+literal+"
+
+# Section markers
+"#"
+"##"
+"###"
+
+# List markers
+"-"
+"."
+"*"
+
+# Special characters and escapes
+"\\"
+"\\-"
+"\\*"
+"\\_"
+"\\n"
+"\\t"
+
+# Common man page content
+"--help"
+"--version"
+"--output"
+"--input"
+"-h"
+"-v"
+"-o"
+"-i"
+
+# Table formatting
+"|"
+"||"
+"|||"
+"[- "
+":- "
+":-:"
+" -:"
+"[:"
+":["
+"]:"
+
+# Links and references
+"*NAME*(1)"
+"*NAME*(2)"
+"*NAME*(3)"
+"*NAME*(5)"
+"*NAME*(7)"
+"*NAME*(8)"
+
+# Indentation
+"	"
+"  "
+"    "
+
+# Code blocks
+"```"
+"```\n"
+"```\ncode\n```"
+
+# Common words in man pages
+"command"
+"option"
+"argument"
+"file"
+"directory"
+"path"
+"value"
+"string"
+"integer"
+"number"
