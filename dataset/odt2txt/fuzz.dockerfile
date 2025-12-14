@@ -34,7 +34,7 @@ RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github
 WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
-    LDFLAGS="-static -Wl,--allow-multiple-definition" \
+    LDFLAGS="-Wl,--allow-multiple-definition" \
     make
 
 WORKDIR /work
@@ -45,7 +45,7 @@ RUN ln -s build-fuzz/odt2txt bin-fuzz && \
 WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
-    LDFLAGS="-static -Wl,--allow-multiple-definition" \
+    LDFLAGS="-Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
     make
 
@@ -63,7 +63,7 @@ COPY odt2txt/fuzz/whatsup.sh /work/whatsup.sh
 WORKDIR /work/build-cov
 RUN CC=clang \
     CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
-    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -Wl,--allow-multiple-definition" \
     make
 
 WORKDIR /work
