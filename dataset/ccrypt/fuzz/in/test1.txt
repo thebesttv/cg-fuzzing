@@ -1,0 +1,2 @@
+This is a simple test file for ccrypt fuzzing.
+It contains some plain text that can be encrypted.

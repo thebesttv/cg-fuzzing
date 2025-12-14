@@ -1,0 +1,44 @@
+# ccrypt dictionary - encryption-related tokens
+
+# Command line options
+"--encrypt"
+"--decrypt"
+"--cat"
+"--unixcrypt"
+"--keychange"
+"-e"
+"-d"
+"-c"
+"-u"
+"-x"
+"--help"
+"--version"
+"--verbose"
+"--quiet"
+"--force"
+"--recursive"
+"-h"
+"-V"
+"-v"
+"-q"
+"-f"
+"-r"
+
+# Password/key related
+"password"
+"passphrase"
+"key"
+"secret"
+
+# File extensions
+".cpt"
+".txt"
+".doc"
+
+# Common words in test files
+"test"
+"data"
+"encrypted"
+"decrypted"
+"plaintext"
+"ciphertext"
