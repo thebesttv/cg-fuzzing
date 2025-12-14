@@ -1,78 +1,108 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget python3 && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget python3 uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract wren 0.4.0 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: wren" > /work/proj && \
+    echo "version: 0.4.0" >> /work/proj && \
+    echo "source: https://github.com/wren-lang/wren/archive/refs/tags/0.4.0.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/wren-lang/wren/archive/refs/tags/0.4.0.tar.gz && \
     tar -xzf 0.4.0.tar.gz && \
-    rm 0.4.0.tar.gz
+    rm 0.4.0.tar.gz && \
+    cp -a wren-0.4.0 build-fuzz && \
+    cp -a wren-0.4.0 build-cmplog && \
+    cp -a wren-0.4.0 build-cov && \
+    cp -a wren-0.4.0 build-uftrace && \
+    rm -rf wren-0.4.0
 
-WORKDIR /src/wren-0.4.0/projects/make
-
-# Build wren with afl-clang-lto
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz/projects/make
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     make config=release_64bit wren
 
-# Copy the harness
-COPY wren/harness.c /src/wren-0.4.0/harness.c
+COPY wren/harness.c /work/build-fuzz/harness.c
 
-WORKDIR /src/wren-0.4.0
-
-# Build the harness
+WORKDIR /work/build-fuzz
 RUN afl-clang-lto -O2 -I src/include \
     -static -Wl,--allow-multiple-definition \
     harness.c lib/libwren.a -lm -o wren_parse
 
-# Install the binary
-RUN cp wren_parse /out/wren_parse
+WORKDIR /work
+RUN ln -s build-fuzz/wren_parse bin-fuzz
 
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf wren-0.4.0 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/wren-lang/wren/archive/refs/tags/0.4.0.tar.gz && \
-    tar -xzf 0.4.0.tar.gz && \
-    rm 0.4.0.tar.gz
-
-WORKDIR /src/wren-0.4.0/projects/make
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog/projects/make
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     AFL_LLVM_CMPLOG=1 \
     make config=release_64bit wren
 
-# Copy the harness
-COPY wren/harness.c /src/wren-0.4.0/harness.c
+COPY wren/harness.c /work/build-cmplog/harness.c
 
-WORKDIR /src/wren-0.4.0
-
-# Build the CMPLOG harness
+WORKDIR /work/build-cmplog
 RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -I src/include \
     -static -Wl,--allow-multiple-definition \
-    harness.c lib/libwren.a -lm -o wren_parse.cmplog
+    harness.c lib/libwren.a -lm -o wren_parse
 
-# Install CMPLOG binary
-RUN cp wren_parse.cmplog /out/wren_parse.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/wren_parse bin-cmplog
 
 # Copy fuzzing resources
-COPY wren/fuzz/dict /out/dict
-COPY wren/fuzz/in /out/in
-COPY wren/fuzz/fuzz.sh /out/fuzz.sh
-COPY wren/fuzz/whatsup.sh /out/whatsup.sh
+COPY wren/fuzz/dict /work/dict
+COPY wren/fuzz/in /work/in
+COPY wren/fuzz/fuzz.sh /work/fuzz.sh
+COPY wren/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov/projects/make
+RUN CC=clang \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    make config=release_64bit wren
 
-# Verify binaries are built
-RUN ls -la /out/wren_parse /out/wren_parse.cmplog && \
-    file /out/wren_parse
+COPY wren/harness.c /work/build-cov/harness.c
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing wren'"]
+WORKDIR /work/build-cov
+RUN clang -g -O0 -fprofile-instr-generate -fcoverage-mapping -I src/include \
+    -static -Wl,--allow-multiple-definition \
+    harness.c lib/libwren.a -lm -o wren_parse
+
+WORKDIR /work
+RUN ln -s build-cov/wren_parse bin-cov && \
+    rm -f *.profraw
+
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace/projects/make
+RUN CC=clang \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    make config=release_64bit wren
+
+COPY wren/harness.c /work/build-uftrace/harness.c
+
+WORKDIR /work/build-uftrace
+RUN clang -g -O0 -pg -fno-omit-frame-pointer -I src/include \
+    -Wl,--allow-multiple-definition \
+    harness.c lib/libwren.a -lm -o wren_parse
+
+WORKDIR /work
+RUN ln -s build-uftrace/wren_parse bin-uftrace && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
