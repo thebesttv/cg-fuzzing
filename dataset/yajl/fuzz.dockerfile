@@ -1,25 +1,37 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget cmake && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget cmake uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract yajl 2.1.0 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: yajl" > /work/proj && \
+    echo "version: 2.1.0" >> /work/proj && \
+    echo "source: https://github.com/lloyd/yajl/archive/refs/tags/2.1.0.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/lloyd/yajl/archive/refs/tags/2.1.0.tar.gz && \
     tar -xzf 2.1.0.tar.gz && \
-    rm 2.1.0.tar.gz
+    rm 2.1.0.tar.gz && \
+    cp -a yajl-2.1.0 build-fuzz && \
+    cp -a yajl-2.1.0 build-cmplog && \
+    cp -a yajl-2.1.0 build-cov && \
+    cp -a yajl-2.1.0 build-uftrace && \
+    rm -rf yajl-2.1.0
 
-WORKDIR /src/yajl-2.1.0
-
-# Build json_verify with afl-clang-lto for fuzzing (main target binary)
-# Use static linking
-# afl-clang-lto provides collision-free instrumentation
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
@@ -27,23 +39,15 @@ RUN mkdir build && cd build && \
     cmake .. \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
-        -DBUILD_SHARED_LIBS=OFF
+        -DBUILD_SHARED_LIBS=OFF && \
+    make -j$(nproc) yajl_s json_verify
 
-# Build only the static library and json_verify (skip tests that link against dynamic lib)
-RUN cd build && make -j$(nproc) yajl_s json_verify
+WORKDIR /work
+RUN find build-fuzz/build -type f -name "json_verify" -executable | head -1 | xargs -I {} ln -s {} bin-fuzz && \
+    /work/bin-fuzz < /dev/null || true
 
-# Install the json_verify binary
-RUN find build -type f -name "json_verify" -executable -exec cp {} /out/json_verify \;
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf yajl-2.1.0 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/lloyd/yajl/archive/refs/tags/2.1.0.tar.gz && \
-    tar -xzf 2.1.0.tar.gz && \
-    rm 2.1.0.tar.gz
-
-WORKDIR /src/yajl-2.1.0
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN mkdir build && cd build && \
     CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
@@ -52,25 +56,55 @@ RUN mkdir build && cd build && \
     cmake .. \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
-        -DBUILD_SHARED_LIBS=OFF
+        -DBUILD_SHARED_LIBS=OFF && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc) yajl_s json_verify
 
-# Build only the static library and json_verify for CMPLOG
-RUN cd build && AFL_LLVM_CMPLOG=1 make -j$(nproc) yajl_s json_verify
-
-# Install CMPLOG binary
-RUN find build -type f -name "json_verify" -executable -exec cp {} /out/json_verify.cmplog \;
+WORKDIR /work
+RUN find build-cmplog/build -type f -name "json_verify" -executable | head -1 | xargs -I {} ln -s {} bin-cmplog && \
+    /work/bin-cmplog < /dev/null || true
 
 # Copy fuzzing resources
-COPY yajl/fuzz/dict /out/dict
-COPY yajl/fuzz/in /out/in
-COPY yajl/fuzz/fuzz.sh /out/fuzz.sh
-COPY yajl/fuzz/whatsup.sh /out/whatsup.sh
+COPY yajl/fuzz/dict /work/dict
+COPY yajl/fuzz/in /work/in
+COPY yajl/fuzz/fuzz.sh /work/fuzz.sh
+COPY yajl/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN mkdir build && cd build && \
+    CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    cmake .. \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -DCMAKE_EXE_LINKER_FLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIBS=OFF && \
+    make -j$(nproc) yajl_s json_verify
 
-# Verify binaries are built
-RUN ls -la /out/json_verify /out/json_verify.cmplog && \
-    file /out/json_verify
+WORKDIR /work
+RUN find build-cov/build -type f -name "json_verify" -executable | head -1 | xargs -I {} ln -s {} bin-cov && \
+    /work/bin-cov < /dev/null || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing json_verify'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN mkdir build && cd build && \
+    CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    cmake .. \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -DCMAKE_INSTALL_PREFIX=/work/install-uftrace \
+        -DCMAKE_EXE_LINKER_FLAGS="-pg -Wl,--allow-multiple-definition" \
+        -DBUILD_SHARED_LIBS=OFF && \
+    make -j$(nproc) yajl_s json_verify && \
+    make install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/json_verify bin-uftrace && \
+    /work/bin-uftrace < /dev/null || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
