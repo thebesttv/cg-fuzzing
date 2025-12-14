@@ -91,12 +91,12 @@ WORKDIR /work/build-uftrace
 RUN CC=clang \
     CXX=clang++ \
     CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
-    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    LDFLAGS="-pg -static -Wl,--allow-multiple-definition" \
     ./configure --disable-tcl --disable-shared --enable-static && \
     make sqlite3.c sqlite3.h -j$(nproc) && \
     clang -g -O0 -pg -fno-omit-frame-pointer -c sqlite3.c -o sqlite3.o -DSQLITE_OMIT_LOAD_EXTENSION && \
     clang -g -O0 -pg -fno-omit-frame-pointer -c test/ossfuzz.c -o ossfuzz.o -I. && \
-    clang -g -O0 -fsanitize=fuzzer -pg -Wl,--allow-multiple-definition \
+    clang -g -O0 -fsanitize=fuzzer -pg -static -Wl,--allow-multiple-definition \
         ossfuzz.o sqlite3.o -lpthread -lm -ldl -o sqlite_ossfuzz
 
 WORKDIR /work

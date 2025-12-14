@@ -96,7 +96,7 @@ COPY wren/harness.c /work/build-uftrace/harness.c
 
 WORKDIR /work/build-uftrace
 RUN clang -g -O0 -pg -fno-omit-frame-pointer -I src/include \
-    -Wl,--allow-multiple-definition \
+    -static -Wl,--allow-multiple-definition \
     harness.c lib/libwren.a -lm -o wren_parse
 
 WORKDIR /work
