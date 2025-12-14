@@ -24,16 +24,18 @@ RUN echo "project: tcpdump" > /work/proj && \
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.tcpdump.org/release/libpcap-1.10.5.tar.gz && \
     wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.tcpdump.org/release/tcpdump-4.99.5.tar.gz
 
-# Extract to multiple build directories
-RUN tar -xzf libpcap-1.10.5.tar.gz && mv libpcap-1.10.5 libpcap-fuzz && \
-    tar -xzf libpcap-1.10.5.tar.gz && mv libpcap-1.10.5 libpcap-cmplog && \
-    tar -xzf libpcap-1.10.5.tar.gz && mv libpcap-1.10.5 libpcap-cov && \
-    tar -xzf libpcap-1.10.5.tar.gz && mv libpcap-1.10.5 libpcap-uftrace && \
-    tar -xzf tcpdump-4.99.5.tar.gz && mv tcpdump-4.99.5 build-fuzz && \
-    tar -xzf tcpdump-4.99.5.tar.gz && mv tcpdump-4.99.5 build-cmplog && \
-    tar -xzf tcpdump-4.99.5.tar.gz && mv tcpdump-4.99.5 build-cov && \
-    tar -xzf tcpdump-4.99.5.tar.gz && mv tcpdump-4.99.5 build-uftrace && \
-    rm libpcap-1.10.5.tar.gz tcpdump-4.99.5.tar.gz
+# Extract once and copy to multiple build directories
+RUN tar -xzf libpcap-1.10.5.tar.gz && \
+    tar -xzf tcpdump-4.99.5.tar.gz && \
+    cp -a libpcap-1.10.5 libpcap-fuzz && \
+    cp -a libpcap-1.10.5 libpcap-cmplog && \
+    cp -a libpcap-1.10.5 libpcap-cov && \
+    cp -a libpcap-1.10.5 libpcap-uftrace && \
+    cp -a tcpdump-4.99.5 build-fuzz && \
+    cp -a tcpdump-4.99.5 build-cmplog && \
+    cp -a tcpdump-4.99.5 build-cov && \
+    cp -a tcpdump-4.99.5 build-uftrace && \
+    rm -rf libpcap-1.10.5 tcpdump-4.99.5 libpcap-1.10.5.tar.gz tcpdump-4.99.5.tar.gz
 
 # Build libpcap for fuzz
 WORKDIR /work/libpcap-fuzz
