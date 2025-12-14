@@ -73,7 +73,7 @@ RUN bash /tmp/create_harness.sh && \
     clang \
     -g -O0 -fprofile-instr-generate -fcoverage-mapping \
     -I. \
-    -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition \
+    -static -Wl,--allow-multiple-definition \
     -o picohttpparser_fuzz \
     fuzz_harness.c picohttpparser.c
 

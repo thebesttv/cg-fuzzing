@@ -80,7 +80,7 @@ RUN CC=clang \
     clang \
     -g -O0 -fprofile-instr-generate -fcoverage-mapping \
     -I. \
-    -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition \
+    -static -Wl,--allow-multiple-definition \
     -o utf8proc_fuzz \
     test/fuzz_main.c test/fuzzer.c libutf8proc.a
 
