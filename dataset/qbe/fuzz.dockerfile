@@ -1,61 +1,88 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget xz-utils && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget xz-utils uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract qbe (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: qbe" > /work/proj && \
+    echo "version: 1.2" >> /work/proj && \
+    echo "source: https://c9x.me/compile/release/qbe-1.2.tar.xz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://c9x.me/compile/release/qbe-1.2.tar.xz && \
     tar -xJf qbe-1.2.tar.xz && \
-    rm qbe-1.2.tar.xz
+    rm qbe-1.2.tar.xz && \
+    cp -a qbe-1.2 build-fuzz && \
+    cp -a qbe-1.2 build-cmplog && \
+    cp -a qbe-1.2 build-cov && \
+    cp -a qbe-1.2 build-uftrace && \
+    rm -rf qbe-1.2
 
-WORKDIR /src/qbe-1.2
-
-# Build with afl-clang-lto for fuzzing
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     make -j$(nproc)
 
-# Install the qbe binary
-RUN cp qbe /out/qbe
+WORKDIR /work
+RUN ln -s build-fuzz/qbe bin-fuzz && \
+    /work/bin-fuzz -h || true
 
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf qbe-1.2 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://c9x.me/compile/release/qbe-1.2.tar.xz && \
-    tar -xJf qbe-1.2.tar.xz && \
-    rm qbe-1.2.tar.xz
-
-WORKDIR /src/qbe-1.2
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
     make -j$(nproc)
 
-# Install CMPLOG binary
-RUN cp qbe /out/qbe.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/qbe bin-cmplog && \
+    /work/bin-cmplog -h || true
 
 # Copy fuzzing resources
-COPY qbe/fuzz/dict /out/dict
-COPY qbe/fuzz/in /out/in
-COPY qbe/fuzz/fuzz.sh /out/fuzz.sh
-COPY qbe/fuzz/whatsup.sh /out/whatsup.sh
+COPY qbe/fuzz/dict /work/dict
+COPY qbe/fuzz/in /work/in
+COPY qbe/fuzz/fuzz.sh /work/fuzz.sh
+COPY qbe/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN make CC=clang \
+    CFLAGS="-std=c99 -g -O0 -Wall -Wextra -Wpedantic -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/qbe /out/qbe.cmplog && \
-    file /out/qbe && \
-    /out/qbe -h || true
+WORKDIR /work
+RUN ln -s build-cov/qbe bin-cov && \
+    /work/bin-cov -h || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing qbe'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN make CC=clang \
+    CFLAGS="-std=c99 -g -O0 -Wall -Wextra -Wpedantic -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/qbe bin-uftrace && \
+    /work/bin-uftrace -h || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
