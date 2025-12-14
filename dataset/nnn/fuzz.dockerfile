@@ -1,62 +1,90 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget libncurses-dev libreadline-dev pkg-config && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget libncurses-dev libreadline-dev pkg-config uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract nnn v5.1 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: nnn" > /work/proj && \
+    echo "version: 5.1" >> /work/proj && \
+    echo "source: https://github.com/jarun/nnn/archive/refs/tags/v5.1.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jarun/nnn/archive/refs/tags/v5.1.tar.gz && \
     tar -xzf v5.1.tar.gz && \
-    rm v5.1.tar.gz
+    rm v5.1.tar.gz && \
+    cp -a nnn-5.1 build-fuzz && \
+    cp -a nnn-5.1 build-cmplog && \
+    cp -a nnn-5.1 build-cov && \
+    cp -a nnn-5.1 build-uftrace && \
+    rm -rf nnn-5.1
 
-WORKDIR /src/nnn-5.1
-
-# Build nnn with afl-clang-lto for fuzzing
-# afl-clang-lto provides collision-free instrumentation
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CFLAGS_OPTIMIZATION="-O2" \
     LDFLAGS="-Wl,--allow-multiple-definition" \
     make strip -j$(nproc)
 
-# Install the nnn binary
-RUN cp nnn /out/nnn
+WORKDIR /work
+RUN ln -s build-fuzz/nnn bin-fuzz && \
+    /work/bin-fuzz --version || true
 
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf nnn-5.1 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jarun/nnn/archive/refs/tags/v5.1.tar.gz && \
-    tar -xzf v5.1.tar.gz && \
-    rm v5.1.tar.gz
-
-WORKDIR /src/nnn-5.1
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CFLAGS_OPTIMIZATION="-O2" \
     LDFLAGS="-Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
     make strip -j$(nproc)
 
-# Install CMPLOG binary
-RUN cp nnn /out/nnn.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/nnn bin-cmplog && \
+    /work/bin-cmplog --version || true
 
 # Copy fuzzing resources
-COPY nnn/fuzz/dict /out/dict
-COPY nnn/fuzz/in /out/in
-COPY nnn/fuzz/fuzz.sh /out/fuzz.sh
-COPY nnn/fuzz/whatsup.sh /out/whatsup.sh
+COPY nnn/fuzz/dict /work/dict
+COPY nnn/fuzz/in /work/in
+COPY nnn/fuzz/fuzz.sh /work/fuzz.sh
+COPY nnn/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS_OPTIMIZATION="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -Wl,--allow-multiple-definition" \
+    make strip -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/nnn /out/nnn.cmplog && \
-    file /out/nnn && \
-    (/out/nnn --version || true)
+WORKDIR /work
+RUN ln -s build-cov/nnn bin-cov && \
+    /work/bin-cov --version || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'nnn is an interactive file manager. Fuzzing support is limited. Run ./fuzz.sh if needed.'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS_OPTIMIZATION="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    make strip -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/nnn bin-uftrace && \
+    /work/bin-uftrace --version || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
