@@ -179,8 +179,8 @@ jobs:
           if docker cp "$container_id:/work/." "output/${{ matrix.project }}/fuzz/" 2>/dev/null; then
             echo "Successfully copied artifacts from /work"
           else
-            echo "/work not found or copy failed, trying /out..."
-            docker cp "$container_id:/out/." "output/${{ matrix.project }}/fuzz/"
+            echo "/work not found"
+            exit 1
           fi
           docker rm "$container_id"
           echo "=== fuzz artifacts ==="
