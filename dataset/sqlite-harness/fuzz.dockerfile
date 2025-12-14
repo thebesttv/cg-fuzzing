@@ -1,96 +1,108 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract SQLite version-3.51.0 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: sqlite-harness" > /work/proj && \
+    echo "version: 3.51.0" >> /work/proj && \
+    echo "source: https://github.com/sqlite/sqlite/archive/refs/tags/version-3.51.0.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/sqlite/sqlite/archive/refs/tags/version-3.51.0.tar.gz && \
     tar -xzf version-3.51.0.tar.gz && \
-    rm version-3.51.0.tar.gz
+    rm version-3.51.0.tar.gz && \
+    cp -a sqlite-version-3.51.0 build-fuzz && \
+    cp -a sqlite-version-3.51.0 build-cmplog && \
+    cp -a sqlite-version-3.51.0 build-cov && \
+    cp -a sqlite-version-3.51.0 build-uftrace && \
+    rm -rf sqlite-version-3.51.0
 
-WORKDIR /src/sqlite-version-3.51.0
-
-# Configure SQLite with static linking
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --disable-tcl --disable-shared --enable-static
+    ./configure --disable-tcl --disable-shared --enable-static && \
+    make sqlite3.c sqlite3.h -j$(nproc) && \
+    afl-clang-lto -O2 -c sqlite3.c -o sqlite3.o -DSQLITE_OMIT_LOAD_EXTENSION && \
+    afl-clang-lto -O2 -c test/ossfuzz.c -o ossfuzz.o -I. && \
+    afl-clang-lto -O2 -fsanitize=fuzzer -static -Wl,--allow-multiple-definition \
+        ossfuzz.o sqlite3.o -lpthread -lm -ldl -o sqlite_ossfuzz
 
-# Build SQLite amalgamation
-RUN make sqlite3.c sqlite3.h -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/sqlite_ossfuzz bin-fuzz
 
-# Compile SQLite amalgamation with AFL++ instrumentation
-RUN afl-clang-lto -O2 -c sqlite3.c -o sqlite3.o \
-    -DSQLITE_OMIT_LOAD_EXTENSION
-
-# Compile the OSS-Fuzz harness (test/ossfuzz.c)
-RUN afl-clang-lto -O2 -c test/ossfuzz.c -o ossfuzz.o \
-    -I.
-
-# Link harness with SQLite and AFL++ fuzzer runtime
-# Use -fsanitize=fuzzer to get the main function from libFuzzer-compatible AFL++
-RUN afl-clang-lto -O2 \
-    -fsanitize=fuzzer \
-    -static -Wl,--allow-multiple-definition \
-    ossfuzz.o sqlite3.o \
-    -lpthread -lm -ldl \
-    -o /out/sqlite_ossfuzz
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf sqlite-version-3.51.0 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/sqlite/sqlite/archive/refs/tags/version-3.51.0.tar.gz && \
-    tar -xzf version-3.51.0.tar.gz && \
-    rm version-3.51.0.tar.gz
-
-WORKDIR /src/sqlite-version-3.51.0
-
-# Configure with CMPLOG enabled
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure --disable-tcl --disable-shared --enable-static
+    ./configure --disable-tcl --disable-shared --enable-static && \
+    AFL_LLVM_CMPLOG=1 make sqlite3.c sqlite3.h -j$(nproc) && \
+    AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -c sqlite3.c -o sqlite3.o -DSQLITE_OMIT_LOAD_EXTENSION && \
+    AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -c test/ossfuzz.c -o ossfuzz.o -I. && \
+    AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -fsanitize=fuzzer -static -Wl,--allow-multiple-definition \
+        ossfuzz.o sqlite3.o -lpthread -lm -ldl -o sqlite_ossfuzz
 
-# Build SQLite amalgamation with CMPLOG
-RUN AFL_LLVM_CMPLOG=1 make sqlite3.c sqlite3.h -j$(nproc)
-
-# Compile SQLite amalgamation with CMPLOG
-RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -c sqlite3.c -o sqlite3.o \
-    -DSQLITE_OMIT_LOAD_EXTENSION
-
-# Compile the OSS-Fuzz harness with CMPLOG
-RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -c test/ossfuzz.c -o ossfuzz.o \
-    -I.
-
-# Link CMPLOG version
-RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 \
-    -fsanitize=fuzzer \
-    -static -Wl,--allow-multiple-definition \
-    ossfuzz.o sqlite3.o \
-    -lpthread -lm -ldl \
-    -o /out/sqlite_ossfuzz.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/sqlite_ossfuzz bin-cmplog
 
 # Copy fuzzing resources
-COPY sqlite-harness/fuzz/dict /out/dict
-COPY sqlite-harness/fuzz/in /out/in
-COPY sqlite-harness/fuzz/fuzz.sh /out/fuzz.sh
-COPY sqlite-harness/fuzz/whatsup.sh /out/whatsup.sh
+COPY sqlite-harness/fuzz/dict /work/dict
+COPY sqlite-harness/fuzz/in /work/in
+COPY sqlite-harness/fuzz/fuzz.sh /work/fuzz.sh
+COPY sqlite-harness/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure --disable-tcl --disable-shared --enable-static && \
+    make sqlite3.c sqlite3.h -j$(nproc) && \
+    clang -g -O0 -fprofile-instr-generate -fcoverage-mapping -c sqlite3.c -o sqlite3.o -DSQLITE_OMIT_LOAD_EXTENSION && \
+    clang -g -O0 -fprofile-instr-generate -fcoverage-mapping -c test/ossfuzz.c -o ossfuzz.o -I. && \
+    clang -g -O0 -fsanitize=fuzzer -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition \
+        ossfuzz.o sqlite3.o -lpthread -lm -ldl -o sqlite_ossfuzz
 
-# Verify binaries are built
-RUN ls -la /out/sqlite_ossfuzz /out/sqlite_ossfuzz.cmplog && \
-    file /out/sqlite_ossfuzz
+WORKDIR /work
+RUN ln -s build-cov/sqlite_ossfuzz bin-cov && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing sqlite_ossfuzz'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -static -Wl,--allow-multiple-definition" \
+    ./configure --disable-tcl --disable-shared --enable-static && \
+    make sqlite3.c sqlite3.h -j$(nproc) && \
+    clang -g -O0 -pg -fno-omit-frame-pointer -c sqlite3.c -o sqlite3.o -DSQLITE_OMIT_LOAD_EXTENSION && \
+    clang -g -O0 -pg -fno-omit-frame-pointer -c test/ossfuzz.c -o ossfuzz.o -I. && \
+    clang -g -O0 -fsanitize=fuzzer -pg -static -Wl,--allow-multiple-definition \
+        ossfuzz.o sqlite3.o -lpthread -lm -ldl -o sqlite_ossfuzz
+
+WORKDIR /work
+RUN ln -s build-uftrace/sqlite_ossfuzz bin-uftrace && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
