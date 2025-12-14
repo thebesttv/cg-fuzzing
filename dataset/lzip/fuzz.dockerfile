@@ -20,9 +20,9 @@ RUN echo "project: lzip" > /work/proj && \
     echo "version: 1.15" >> /work/proj && \
     echo "source: http://download.savannah.gnu.org/releases/lzip/lzip-1.15.tar.gz" >> /work/proj
 
-# Download source once and extract to multiple build directories
-RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 http://download.savannah.gnu.org/releases/lzip/lzip-1.15.tar.gz && \
-    tar -xzf lzip-1.15.tar.gz && \
+# Copy source once and extract to multiple build directories
+COPY lzip/lzip-1.15.tar.gz /work/
+RUN tar -xzf lzip-1.15.tar.gz && \
     rm lzip-1.15.tar.gz && \
     cp -a lzip-1.15 build-fuzz && \
     cp -a lzip-1.15 build-cmplog && \

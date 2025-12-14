@@ -11,10 +11,10 @@ RUN pipx install wllvm
 ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
-# Download and extract lzip v1.15
+# Copy and extract lzip v1.15
 WORKDIR /home/SVF-tools
-RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 http://download.savannah.gnu.org/releases/lzip/lzip-1.15.tar.gz && \
-    tar -xzf lzip-1.15.tar.gz && \
+COPY lzip/lzip-1.15.tar.gz /home/SVF-tools/
+RUN tar -xzf lzip-1.15.tar.gz && \
     rm lzip-1.15.tar.gz
 
 WORKDIR /home/SVF-tools/lzip-1.15
