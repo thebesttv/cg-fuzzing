@@ -1,0 +1,29 @@
+# SVG tags
+"<svg>"
+"</svg>"
+"<path>"
+"<circle>"
+"<rect>"
+"<line>"
+"<polyline>"
+"<polygon>"
+"<g>"
+"<defs>"
+
+# SVG attributes
+"cx=\""
+"cy=\""
+"r=\""
+"d=\""
+"fill=\""
+"stroke=\""
+"transform=\""
+"viewBox=\""
+
+# Common values
+"0"
+"1"
+"10"
+"100"
+"#000000"
+"#ffffff"
