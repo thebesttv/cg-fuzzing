@@ -85,7 +85,7 @@ WORKDIR /work
 RUN ln -s build-uftrace/antiword bin-uftrace && \
     /work/bin-uftrace || true && \
     uftrace record /work/bin-uftrace || true && \
-    uftrace report && \
+    uftrace report || true && \
     rm -rf uftrace.data gmon.out
 
 # Default to bash in /work
