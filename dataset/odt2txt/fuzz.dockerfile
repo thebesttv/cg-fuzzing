@@ -1,61 +1,88 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget zlib1g-dev && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget zlib1g-dev uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract odt2txt v0.5 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: odt2txt" > /work/proj && \
+    echo "version: 0.5" >> /work/proj && \
+    echo "source: https://github.com/dstosberg/odt2txt/archive/refs/tags/v0.5.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/dstosberg/odt2txt/archive/refs/tags/v0.5.tar.gz && \
     tar -xzf v0.5.tar.gz && \
-    rm v0.5.tar.gz
+    rm v0.5.tar.gz && \
+    cp -a odt2txt-0.5 build-fuzz && \
+    cp -a odt2txt-0.5 build-cmplog && \
+    cp -a odt2txt-0.5 build-cov && \
+    cp -a odt2txt-0.5 build-uftrace && \
+    rm -rf odt2txt-0.5
 
-WORKDIR /src/odt2txt-0.5
-
-# Build odt2txt with afl-clang-lto for fuzzing (main target binary)
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
-    LDFLAGS="-Wl,--allow-multiple-definition" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
     make
 
-# Install the odt2txt binary
-RUN cp odt2txt /out/odt2txt
+WORKDIR /work
+RUN ln -s build-fuzz/odt2txt bin-fuzz && \
+    /work/bin-fuzz --version || true
 
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf odt2txt-0.5 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/dstosberg/odt2txt/archive/refs/tags/v0.5.tar.gz && \
-    tar -xzf v0.5.tar.gz && \
-    rm v0.5.tar.gz
-
-WORKDIR /src/odt2txt-0.5
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
-    LDFLAGS="-Wl,--allow-multiple-definition" \
+    LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
     make
 
-# Install CMPLOG binary
-RUN cp odt2txt /out/odt2txt.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/odt2txt bin-cmplog && \
+    /work/bin-cmplog --version || true
 
 # Copy fuzzing resources
-COPY odt2txt/fuzz/dict /out/dict
-COPY odt2txt/fuzz/in /out/in
-COPY odt2txt/fuzz/fuzz.sh /out/fuzz.sh
-COPY odt2txt/fuzz/whatsup.sh /out/whatsup.sh
+COPY odt2txt/fuzz/dict /work/dict
+COPY odt2txt/fuzz/in /work/in
+COPY odt2txt/fuzz/fuzz.sh /work/fuzz.sh
+COPY odt2txt/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    make
 
-# Verify binaries are built
-RUN ls -la /out/odt2txt /out/odt2txt.cmplog && \
-    file /out/odt2txt && \
-    /out/odt2txt --version || true
+WORKDIR /work
+RUN ln -s build-cov/odt2txt bin-cov && \
+    /work/bin-cov --version || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing odt2txt'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    make
+
+WORKDIR /work
+RUN ln -s build-uftrace/odt2txt bin-uftrace && \
+    /work/bin-uftrace --version || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
