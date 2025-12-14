@@ -1,70 +1,100 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract recutils v1.9 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: recutils" > /work/proj && \
+    echo "version: 1.9" >> /work/proj && \
+    echo "source: https://ftpmirror.gnu.org/gnu/recutils/recutils-1.9.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/recutils/recutils-1.9.tar.gz && \
     tar -xzf recutils-1.9.tar.gz && \
-    rm recutils-1.9.tar.gz
+    rm recutils-1.9.tar.gz && \
+    cp -a recutils-1.9 build-fuzz && \
+    cp -a recutils-1.9 build-cmplog && \
+    cp -a recutils-1.9 build-cov && \
+    cp -a recutils-1.9 build-uftrace && \
+    rm -rf recutils-1.9
 
-WORKDIR /src/recutils-1.9
-
-# Build recutils with afl-clang-lto for fuzzing (main target binary)
-# Add -Wno-error=implicit-function-declaration to handle older code
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2 -Wno-error=implicit-function-declaration" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     FORCE_UNSAFE_CONFIGURE=1 \
-    ./configure --disable-shared
+    ./configure --disable-shared && \
+    make -j$(nproc)
 
-RUN make
+WORKDIR /work
+RUN ln -s build-fuzz/utils/recsel bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Install the recsel binary (good for fuzzing - reads rec files)
-RUN cp utils/recsel /out/recsel
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf recutils-1.9 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/recutils/recutils-1.9.tar.gz && \
-    tar -xzf recutils-1.9.tar.gz && \
-    rm recutils-1.9.tar.gz
-
-WORKDIR /src/recutils-1.9
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2 -Wno-error=implicit-function-declaration" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
     FORCE_UNSAFE_CONFIGURE=1 \
-    ./configure --disable-shared
+    ./configure --disable-shared && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make
-
-# Install CMPLOG binary
-RUN cp utils/recsel /out/recsel.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/utils/recsel bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
-COPY recutils/fuzz/dict /out/dict
-COPY recutils/fuzz/in /out/in
-COPY recutils/fuzz/fuzz.sh /out/fuzz.sh
-COPY recutils/fuzz/whatsup.sh /out/whatsup.sh
+COPY recutils/fuzz/dict /work/dict
+COPY recutils/fuzz/in /work/in
+COPY recutils/fuzz/fuzz.sh /work/fuzz.sh
+COPY recutils/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping -Wno-error=implicit-function-declaration" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    FORCE_UNSAFE_CONFIGURE=1 \
+    ./configure --disable-shared && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/recsel /out/recsel.cmplog && \
-    file /out/recsel && \
-    /out/recsel --version
+WORKDIR /work
+RUN ln -s build-cov/utils/recsel bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing recutils'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer -Wno-error=implicit-function-declaration" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    FORCE_UNSAFE_CONFIGURE=1 \
+    ./configure --disable-shared && \
+    make -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/utils/recsel bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
