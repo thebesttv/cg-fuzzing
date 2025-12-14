@@ -93,7 +93,9 @@ RUN ./autogen.sh && \
 WORKDIR /work
 RUN ln -s build-uftrace/bspatch bin-uftrace && \
     /work/bin-uftrace || true && \
-    rm -f gmon.out
+    uftrace record /work/bin-uftrace || true && \
+    (uftrace report || true) && \
+    rm -rf uftrace.data gmon.out
 
 # Default to bash in /work
 WORKDIR /work
