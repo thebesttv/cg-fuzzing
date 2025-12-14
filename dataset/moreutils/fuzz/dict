@@ -1,0 +1,10 @@
+# moreutils dictionary
+"cat"
+"grep"
+"sed"
+"awk"
+"wc"
+"sort"
+"uniq"
+"head"
+"tail"
