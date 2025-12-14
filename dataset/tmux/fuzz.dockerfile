@@ -1,74 +1,97 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y \
-    wget \
-    libevent-dev \
-    libncurses-dev \
-    bison \
-    pkg-config \
-    && apt-get clean && \
+    apt-get install -y htop vim tmux parallel && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget libevent-dev libncurses-dev bison pkg-config uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract tmux 3.6 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: tmux" > /work/proj && \
+    echo "version: 3.6" >> /work/proj && \
+    echo "source: https://github.com/tmux/tmux/releases/download/3.6/tmux-3.6.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/tmux/tmux/releases/download/3.6/tmux-3.6.tar.gz && \
     tar -xzf tmux-3.6.tar.gz && \
-    rm tmux-3.6.tar.gz
+    rm tmux-3.6.tar.gz && \
+    cp -a tmux-3.6 build-fuzz && \
+    cp -a tmux-3.6 build-cmplog && \
+    cp -a tmux-3.6 build-cov && \
+    cp -a tmux-3.6 build-uftrace && \
+    rm -rf tmux-3.6
 
-WORKDIR /src/tmux-3.6
-
-# Build tmux with afl-clang-lto for fuzzing (main target binary)
-# Use static linking
-# afl-clang-lto provides collision-free instrumentation
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --enable-static
+    ./configure --enable-static && \
+    make -j$(nproc)
 
-RUN make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/tmux bin-fuzz && \
+    /work/bin-fuzz -V
 
-# Install the tmux binary
-RUN cp tmux /out/tmux
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf tmux-3.6 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/tmux/tmux/releases/download/3.6/tmux-3.6.tar.gz && \
-    tar -xzf tmux-3.6.tar.gz && \
-    rm tmux-3.6.tar.gz
-
-WORKDIR /src/tmux-3.6
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure --enable-static
+    ./configure --enable-static && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp tmux /out/tmux.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/tmux bin-cmplog && \
+    /work/bin-cmplog -V
 
 # Copy fuzzing resources
-COPY tmux/fuzz/dict /out/dict
-COPY tmux/fuzz/in /out/in
-COPY tmux/fuzz/fuzz.sh /out/fuzz.sh
-COPY tmux/fuzz/whatsup.sh /out/whatsup.sh
+COPY tmux/fuzz/dict /work/dict
+COPY tmux/fuzz/in /work/in
+COPY tmux/fuzz/fuzz.sh /work/fuzz.sh
+COPY tmux/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure --enable-static && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/tmux /out/tmux.cmplog && \
-    file /out/tmux && \
-    /out/tmux -V
+WORKDIR /work
+RUN ln -s build-cov/tmux bin-cov && \
+    /work/bin-cov -V && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing tmux'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --prefix=/work/install-uftrace && \
+    make -j$(nproc) && \
+    make install
+
+WORKDIR /work
+RUN ln -s install-uftrace/bin/tmux bin-uftrace && \
+    /work/bin-uftrace -V && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
