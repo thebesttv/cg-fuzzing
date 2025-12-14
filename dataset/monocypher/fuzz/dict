@@ -1,0 +1,14 @@
+# Crypto patterns
+"\x00\x00\x00\x00"
+"\xff\xff\xff\xff"
+"\x01\x00\x00\x00"
+"\x00\x01\x00\x00"
+
+# Common test strings
+"Hello World"
+"AAAAAAAAAA"
+"0123456789"
+
+# Edge cases
+"\x00"
+"\xff"
