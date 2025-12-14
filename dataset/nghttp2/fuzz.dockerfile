@@ -1,149 +1,109 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget pkg-config && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget pkg-config uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract nghttp2 v1.68.0 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: nghttp2" > /work/proj && \
+    echo "version: 1.68.0" >> /work/proj && \
+    echo "source: https://github.com/nghttp2/nghttp2/releases/download/v1.68.0/nghttp2-1.68.0.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/nghttp2/nghttp2/releases/download/v1.68.0/nghttp2-1.68.0.tar.gz && \
     tar -xzf nghttp2-1.68.0.tar.gz && \
-    rm nghttp2-1.68.0.tar.gz
+    rm nghttp2-1.68.0.tar.gz && \
+    cp -a nghttp2-1.68.0 build-fuzz && \
+    cp -a nghttp2-1.68.0 build-cmplog && \
+    cp -a nghttp2-1.68.0 build-cov && \
+    cp -a nghttp2-1.68.0 build-uftrace && \
+    rm -rf nghttp2-1.68.0
 
-WORKDIR /src/nghttp2-1.68.0
+# Copy harness source
+COPY nghttp2/hd_decode.c /work/hd_decode.c
 
-# Configure with static linking - library only
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure \
-        --disable-shared \
-        --enable-static \
-        --enable-lib-only
+    ./configure --disable-shared --enable-static --enable-lib-only && \
+    make -j$(nproc) && \
+    afl-clang-lto -O2 -static -Wl,--allow-multiple-definition \
+        -I. -Ilib/includes \
+        /work/hd_decode.c lib/.libs/libnghttp2.a \
+        -o /work/build-fuzz/hd_decode
 
-# Build nghttp2 library
-RUN make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/hd_decode bin-fuzz
 
-# Create a simple HPACK decoder test program
-RUN echo '#include <stdio.h>' > hd_decode.c && \
-    echo '#include <stdlib.h>' >> hd_decode.c && \
-    echo '#include <stdint.h>' >> hd_decode.c && \
-    echo '#include <nghttp2/nghttp2.h>' >> hd_decode.c && \
-    echo 'int main(int argc, char **argv) {' >> hd_decode.c && \
-    echo '    if (argc < 2) { return 1; }' >> hd_decode.c && \
-    echo '    FILE *f = fopen(argv[1], "rb");' >> hd_decode.c && \
-    echo '    if (!f) { return 1; }' >> hd_decode.c && \
-    echo '    fseek(f, 0, SEEK_END);' >> hd_decode.c && \
-    echo '    long fsize = ftell(f);' >> hd_decode.c && \
-    echo '    fseek(f, 0, SEEK_SET);' >> hd_decode.c && \
-    echo '    if (fsize <= 0 || fsize > 1024*1024) { fclose(f); return 0; }' >> hd_decode.c && \
-    echo '    uint8_t *data = malloc(fsize);' >> hd_decode.c && \
-    echo '    if (!data) { fclose(f); return 1; }' >> hd_decode.c && \
-    echo '    fread(data, 1, fsize, f);' >> hd_decode.c && \
-    echo '    fclose(f);' >> hd_decode.c && \
-    echo '    nghttp2_hd_inflater *inflater;' >> hd_decode.c && \
-    echo '    nghttp2_hd_inflate_new(&inflater);' >> hd_decode.c && \
-    echo '    nghttp2_nv nv;' >> hd_decode.c && \
-    echo '    int inflate_flags;' >> hd_decode.c && \
-    echo '    ssize_t rv;' >> hd_decode.c && \
-    echo '    uint8_t *in = data;' >> hd_decode.c && \
-    echo '    size_t inlen = fsize;' >> hd_decode.c && \
-    echo '    while (inlen > 0) {' >> hd_decode.c && \
-    echo '        rv = nghttp2_hd_inflate_hd2(inflater, &nv, &inflate_flags, in, inlen, 1);' >> hd_decode.c && \
-    echo '        if (rv < 0) break;' >> hd_decode.c && \
-    echo '        in += rv;' >> hd_decode.c && \
-    echo '        inlen -= rv;' >> hd_decode.c && \
-    echo '        if (inflate_flags & NGHTTP2_HD_INFLATE_FINAL) break;' >> hd_decode.c && \
-    echo '    }' >> hd_decode.c && \
-    echo '    nghttp2_hd_inflate_del(inflater);' >> hd_decode.c && \
-    echo '    free(data);' >> hd_decode.c && \
-    echo '    return 0;' >> hd_decode.c && \
-    echo '}' >> hd_decode.c
-
-# Compile the test program with afl-clang-lto
-RUN afl-clang-lto -O2 -static -Wl,--allow-multiple-definition \
-    -I. -Ilib/includes \
-    hd_decode.c lib/.libs/libnghttp2.a \
-    -o /out/hd_decode
-
-# Build CMPLOG version
-WORKDIR /src
-RUN rm -rf nghttp2-1.68.0 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/nghttp2/nghttp2/releases/download/v1.68.0/nghttp2-1.68.0.tar.gz && \
-    tar -xzf nghttp2-1.68.0.tar.gz && \
-    rm nghttp2-1.68.0.tar.gz
-
-WORKDIR /src/nghttp2-1.68.0
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure \
-        --disable-shared \
-        --enable-static \
-        --enable-lib-only
+    ./configure --disable-shared --enable-static --enable-lib-only && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc) && \
+    AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -static -Wl,--allow-multiple-definition \
+        -I. -Ilib/includes \
+        /work/hd_decode.c lib/.libs/libnghttp2.a \
+        -o /work/build-cmplog/hd_decode
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Create the same test program for CMPLOG
-RUN echo '#include <stdio.h>' > hd_decode.c && \
-    echo '#include <stdlib.h>' >> hd_decode.c && \
-    echo '#include <stdint.h>' >> hd_decode.c && \
-    echo '#include <nghttp2/nghttp2.h>' >> hd_decode.c && \
-    echo 'int main(int argc, char **argv) {' >> hd_decode.c && \
-    echo '    if (argc < 2) { return 1; }' >> hd_decode.c && \
-    echo '    FILE *f = fopen(argv[1], "rb");' >> hd_decode.c && \
-    echo '    if (!f) { return 1; }' >> hd_decode.c && \
-    echo '    fseek(f, 0, SEEK_END);' >> hd_decode.c && \
-    echo '    long fsize = ftell(f);' >> hd_decode.c && \
-    echo '    fseek(f, 0, SEEK_SET);' >> hd_decode.c && \
-    echo '    if (fsize <= 0 || fsize > 1024*1024) { fclose(f); return 0; }' >> hd_decode.c && \
-    echo '    uint8_t *data = malloc(fsize);' >> hd_decode.c && \
-    echo '    if (!data) { fclose(f); return 1; }' >> hd_decode.c && \
-    echo '    fread(data, 1, fsize, f);' >> hd_decode.c && \
-    echo '    fclose(f);' >> hd_decode.c && \
-    echo '    nghttp2_hd_inflater *inflater;' >> hd_decode.c && \
-    echo '    nghttp2_hd_inflate_new(&inflater);' >> hd_decode.c && \
-    echo '    nghttp2_nv nv;' >> hd_decode.c && \
-    echo '    int inflate_flags;' >> hd_decode.c && \
-    echo '    ssize_t rv;' >> hd_decode.c && \
-    echo '    uint8_t *in = data;' >> hd_decode.c && \
-    echo '    size_t inlen = fsize;' >> hd_decode.c && \
-    echo '    while (inlen > 0) {' >> hd_decode.c && \
-    echo '        rv = nghttp2_hd_inflate_hd2(inflater, &nv, &inflate_flags, in, inlen, 1);' >> hd_decode.c && \
-    echo '        if (rv < 0) break;' >> hd_decode.c && \
-    echo '        in += rv;' >> hd_decode.c && \
-    echo '        inlen -= rv;' >> hd_decode.c && \
-    echo '        if (inflate_flags & NGHTTP2_HD_INFLATE_FINAL) break;' >> hd_decode.c && \
-    echo '    }' >> hd_decode.c && \
-    echo '    nghttp2_hd_inflate_del(inflater);' >> hd_decode.c && \
-    echo '    free(data);' >> hd_decode.c && \
-    echo '    return 0;' >> hd_decode.c && \
-    echo '}' >> hd_decode.c
-
-# Compile CMPLOG version
-RUN AFL_LLVM_CMPLOG=1 afl-clang-lto -O2 -static -Wl,--allow-multiple-definition \
-    -I. -Ilib/includes \
-    hd_decode.c lib/.libs/libnghttp2.a \
-    -o /out/hd_decode.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/hd_decode bin-cmplog
 
 # Copy fuzzing resources
-COPY nghttp2/fuzz/dict /out/dict
-COPY nghttp2/fuzz/in /out/in
-COPY nghttp2/fuzz/fuzz.sh /out/fuzz.sh
-COPY nghttp2/fuzz/whatsup.sh /out/whatsup.sh
+COPY nghttp2/fuzz/dict /work/dict
+COPY nghttp2/fuzz/in /work/in
+COPY nghttp2/fuzz/fuzz.sh /work/fuzz.sh
+COPY nghttp2/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared --enable-static --enable-lib-only && \
+    make -j$(nproc) && \
+    clang -g -O0 -fprofile-instr-generate -fcoverage-mapping \
+        -static -Wl,--allow-multiple-definition \
+        -I. -Ilib/includes \
+        /work/hd_decode.c lib/.libs/libnghttp2.a \
+        -o /work/build-cov/hd_decode
 
-# Verify binaries are built
-RUN ls -la /out/hd_decode /out/hd_decode.cmplog && \
-    file /out/hd_decode
+WORKDIR /work
+RUN ln -s build-cov/hd_decode bin-cov && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing nghttp2 HPACK decoder'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared --enable-static --enable-lib-only && \
+    make -j$(nproc) && \
+    clang -g -O0 -pg -fno-omit-frame-pointer \
+        -Wl,--allow-multiple-definition \
+        -I. -Ilib/includes \
+        /work/hd_decode.c lib/.libs/libnghttp2.a \
+        -o /work/build-uftrace/hd_decode
+
+WORKDIR /work
+RUN ln -s build-uftrace/hd_decode bin-uftrace && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]

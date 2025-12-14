@@ -1,71 +1,100 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract GNU patch 2.8 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: patch" > /work/proj && \
+    echo "version: 2.8" >> /work/proj && \
+    echo "source: https://ftpmirror.gnu.org/gnu/patch/patch-2.8.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/patch/patch-2.8.tar.gz && \
     tar -xzf patch-2.8.tar.gz && \
-    rm patch-2.8.tar.gz
+    rm patch-2.8.tar.gz && \
+    cp -a patch-2.8 build-fuzz && \
+    cp -a patch-2.8 build-cmplog && \
+    cp -a patch-2.8 build-cov && \
+    cp -a patch-2.8 build-uftrace && \
+    rm -rf patch-2.8
 
-WORKDIR /src/patch-2.8
-
-# Build patch with afl-clang-lto for fuzzing (main target binary)
-# Use static linking
-# afl-clang-lto provides collision-free instrumentation
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     FORCE_UNSAFE_CONFIGURE=1 \
-    ./configure --disable-shared
+    ./configure --disable-shared && \
+    make -j$(nproc)
 
-RUN make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/src/patch bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Install the patch binary
-RUN cp src/patch /out/patch
-
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf patch-2.8 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/patch/patch-2.8.tar.gz && \
-    tar -xzf patch-2.8.tar.gz && \
-    rm patch-2.8.tar.gz
-
-WORKDIR /src/patch-2.8
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     FORCE_UNSAFE_CONFIGURE=1 \
     AFL_LLVM_CMPLOG=1 \
-    ./configure --disable-shared
+    ./configure --disable-shared && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp src/patch /out/patch.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/src/patch bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
-COPY patch/fuzz/dict /out/dict
-COPY patch/fuzz/in /out/in
-COPY patch/fuzz/fuzz.sh /out/fuzz.sh
-COPY patch/fuzz/whatsup.sh /out/whatsup.sh
+COPY patch/fuzz/dict /work/dict
+COPY patch/fuzz/in /work/in
+COPY patch/fuzz/fuzz.sh /work/fuzz.sh
+COPY patch/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    FORCE_UNSAFE_CONFIGURE=1 \
+    ./configure --disable-shared && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/patch /out/patch.cmplog && \
-    file /out/patch && \
-    /out/patch --version
+WORKDIR /work
+RUN ln -s build-cov/src/patch bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing patch'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    FORCE_UNSAFE_CONFIGURE=1 \
+    ./configure --disable-shared && \
+    make -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/src/patch bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
