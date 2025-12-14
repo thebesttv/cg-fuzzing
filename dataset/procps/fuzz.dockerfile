@@ -1,71 +1,100 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget autoconf automake libtool gettext autopoint pkg-config libncurses-dev && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget autoconf automake libtool gettext autopoint pkg-config libncurses-dev uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract procps v4.0.4 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: procps" > /work/proj && \
+    echo "version: 4.0.4" >> /work/proj && \
+    echo "source: https://gitlab.com/procps-ng/procps/-/archive/v4.0.4/procps-v4.0.4.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://gitlab.com/procps-ng/procps/-/archive/v4.0.4/procps-v4.0.4.tar.gz && \
     tar -xzf procps-v4.0.4.tar.gz && \
-    rm procps-v4.0.4.tar.gz
+    rm procps-v4.0.4.tar.gz && \
+    cp -a procps-v4.0.4 build-fuzz && \
+    cp -a procps-v4.0.4 build-cmplog && \
+    cp -a procps-v4.0.4 build-cov && \
+    cp -a procps-v4.0.4 build-uftrace && \
+    rm -rf procps-v4.0.4
 
-WORKDIR /src/procps-v4.0.4
-
-# Bootstrap the build system
-RUN ./autogen.sh
-
-# Build ps with afl-clang-lto for fuzzing (main target binary)
-RUN CC=afl-clang-lto \
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz
+RUN ./autogen.sh && \
+    CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    ./configure --disable-shared --disable-nls
+    ./configure --disable-shared --disable-nls && \
+    make -j$(nproc)
 
-RUN make -j$(nproc)
+WORKDIR /work
+RUN ln -s build-fuzz/src/ps/pscommand bin-fuzz && \
+    /work/bin-fuzz --version
 
-# Install the ps binary (called pscommand)
-RUN cp src/ps/pscommand /out/ps
-
-# Build CMPLOG version for better fuzzing
-WORKDIR /src
-RUN rm -rf procps-v4.0.4 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://gitlab.com/procps-ng/procps/-/archive/v4.0.4/procps-v4.0.4.tar.gz && \
-    tar -xzf procps-v4.0.4.tar.gz && \
-    rm procps-v4.0.4.tar.gz
-
-WORKDIR /src/procps-v4.0.4
-
-RUN ./autogen.sh
-
-RUN CC=afl-clang-lto \
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog
+RUN ./autogen.sh && \
+    CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    ./configure --disable-shared --disable-nls
+    ./configure --disable-shared --disable-nls && \
+    AFL_LLVM_CMPLOG=1 make -j$(nproc)
 
-RUN AFL_LLVM_CMPLOG=1 make -j$(nproc)
-
-# Install CMPLOG binary
-RUN cp src/ps/pscommand /out/ps.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/src/ps/pscommand bin-cmplog && \
+    /work/bin-cmplog --version
 
 # Copy fuzzing resources
-COPY procps/fuzz/dict /out/dict
-COPY procps/fuzz/in /out/in
-COPY procps/fuzz/fuzz.sh /out/fuzz.sh
-COPY procps/fuzz/whatsup.sh /out/whatsup.sh
+COPY procps/fuzz/dict /work/dict
+COPY procps/fuzz/in /work/in
+COPY procps/fuzz/fuzz.sh /work/fuzz.sh
+COPY procps/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov
+RUN ./autogen.sh && \
+    CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared --disable-nls && \
+    make -j$(nproc)
 
-# Verify binaries are built
-RUN ls -la /out/ps /out/ps.cmplog && \
-    file /out/ps
+WORKDIR /work
+RUN ln -s build-cov/src/ps/pscommand bin-cov && \
+    /work/bin-cov --version && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing procps (ps)'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace
+RUN ./autogen.sh && \
+    CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    ./configure --disable-shared --disable-nls && \
+    make -j$(nproc)
+
+WORKDIR /work
+RUN ln -s build-uftrace/src/ps/pscommand bin-uftrace && \
+    /work/bin-uftrace --version && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
