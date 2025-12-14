@@ -97,7 +97,7 @@ WORKDIR /work/build-uftrace
 RUN cp /tmp/harness_template.c stb_image_harness.c && \
     clang \
     -g -O0 -pg -fno-omit-frame-pointer \
-    -pg -Wl,--allow-multiple-definition \
+    -Wl,--allow-multiple-definition \
     -o stb_image_harness stb_image_harness.c \
     -lm
 
