@@ -1,0 +1,18 @@
+# FFI type indicators
+"sint"
+"uint"
+"float"
+"double"
+"pointer"
+"void"
+"struct"
+
+# Common patterns for integer values
+"\x00\x00\x00\x00"
+"\xff\xff\xff\xff"
+"\x00\x00\x00\x01"
+"\x01\x00\x00\x00"
+
+# Edge cases
+"\x7f\xff\xff\xff"
+"\x80\x00\x00\x00"
