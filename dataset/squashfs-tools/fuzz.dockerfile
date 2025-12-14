@@ -1,43 +1,49 @@
 FROM aflplusplus/aflplusplus:latest
 
-# Install build dependencies
+# Install basic packages first
 RUN apt-get update && \
-    apt-get install -y wget zlib1g-dev liblzo2-dev liblz4-dev libzstd-dev liblzma-dev && \
+    apt-get install -y htop vim tmux parallel && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create output directory
-RUN mkdir -p /out
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y wget zlib1g-dev liblzo2-dev liblz4-dev libzstd-dev liblzma-dev uftrace && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and extract squashfs-tools 4.7.4 (same version as bc.dockerfile)
-WORKDIR /src
+# Create working directory
+WORKDIR /work
+
+# Save project metadata
+RUN echo "project: squashfs-tools" > /work/proj && \
+    echo "version: 4.7.4" >> /work/proj && \
+    echo "source: https://github.com/plougher/squashfs-tools/releases/download/4.7.4/squashfs-tools-4.7.4.tar.gz" >> /work/proj
+
+# Download source once and extract to multiple build directories
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/plougher/squashfs-tools/releases/download/4.7.4/squashfs-tools-4.7.4.tar.gz && \
     tar -xzf squashfs-tools-4.7.4.tar.gz && \
-    rm squashfs-tools-4.7.4.tar.gz
+    rm squashfs-tools-4.7.4.tar.gz && \
+    cp -a squashfs-tools-4.7.4 build-fuzz && \
+    cp -a squashfs-tools-4.7.4 build-cmplog && \
+    cp -a squashfs-tools-4.7.4 build-cov && \
+    cp -a squashfs-tools-4.7.4 build-uftrace && \
+    rm -rf squashfs-tools-4.7.4
 
-WORKDIR /src/squashfs-tools-4.7.4/squashfs-tools
-
-# Build unsquashfs with afl-clang-lto for fuzzing (main target binary)
-# Use static linking
-# afl-clang-lto provides collision-free instrumentation
+# Build fuzz binary with afl-clang-lto
+WORKDIR /work/build-fuzz/squashfs-tools
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     make -j$(nproc) unsquashfs
 
-# Install the unsquashfs binary
-RUN cp unsquashfs /out/unsquashfs
+WORKDIR /work
+RUN ln -s build-fuzz/squashfs-tools/unsquashfs bin-fuzz && \
+    /work/bin-fuzz -v || true
 
-# Build CMPLOG version for better fuzzing (comparison logging)
-WORKDIR /src
-RUN rm -rf squashfs-tools-4.7.4 && \
-    wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/plougher/squashfs-tools/releases/download/4.7.4/squashfs-tools-4.7.4.tar.gz && \
-    tar -xzf squashfs-tools-4.7.4.tar.gz && \
-    rm squashfs-tools-4.7.4.tar.gz
-
-WORKDIR /src/squashfs-tools-4.7.4/squashfs-tools
-
+# Build cmplog binary with afl-clang-lto + CMPLOG
+WORKDIR /work/build-cmplog/squashfs-tools
 RUN CC=afl-clang-lto \
     CXX=afl-clang-lto++ \
     CFLAGS="-O2" \
@@ -45,20 +51,42 @@ RUN CC=afl-clang-lto \
     AFL_LLVM_CMPLOG=1 \
     make -j$(nproc) unsquashfs
 
-# Install CMPLOG binary
-RUN cp unsquashfs /out/unsquashfs.cmplog
+WORKDIR /work
+RUN ln -s build-cmplog/squashfs-tools/unsquashfs bin-cmplog && \
+    /work/bin-cmplog -v || true
 
 # Copy fuzzing resources
-COPY squashfs-tools/fuzz/dict /out/dict
-COPY squashfs-tools/fuzz/in /out/in
-COPY squashfs-tools/fuzz/fuzz.sh /out/fuzz.sh
-COPY squashfs-tools/fuzz/whatsup.sh /out/whatsup.sh
+COPY squashfs-tools/fuzz/dict /work/dict
+COPY squashfs-tools/fuzz/in /work/in
+COPY squashfs-tools/fuzz/fuzz.sh /work/fuzz.sh
+COPY squashfs-tools/fuzz/whatsup.sh /work/whatsup.sh
 
-WORKDIR /out
+# Build cov binary with llvm-cov instrumentation
+WORKDIR /work/build-cov/squashfs-tools
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    make -j$(nproc) unsquashfs
 
-# Verify binaries are built
-RUN ls -la /out/unsquashfs /out/unsquashfs.cmplog && \
-    file /out/unsquashfs
+WORKDIR /work
+RUN ln -s build-cov/squashfs-tools/unsquashfs bin-cov && \
+    /work/bin-cov -v || true && \
+    rm -f *.profraw
 
-# Default command shows help
-CMD ["/bin/bash", "-c", "echo 'Run ./fuzz.sh to start fuzzing squashfs-tools'"]
+# Build uftrace binary with profiling instrumentation
+WORKDIR /work/build-uftrace/squashfs-tools
+RUN CC=clang \
+    CXX=clang++ \
+    CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
+    LDFLAGS="-pg -Wl,--allow-multiple-definition" \
+    make -j$(nproc) unsquashfs
+
+WORKDIR /work
+RUN ln -s build-uftrace/squashfs-tools/unsquashfs bin-uftrace && \
+    /work/bin-uftrace -v || true && \
+    rm -f gmon.out
+
+# Default to bash in /work
+WORKDIR /work
+CMD ["/bin/bash"]
