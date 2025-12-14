@@ -1,0 +1,32 @@
+# TrueType/OpenType font magic numbers
+"OTTO"
+"ttcf"
+"true"
+"typ1"
+
+# Font table tags
+"cmap"
+"head"
+"hhea"
+"hmtx"
+"maxp"
+"name"
+"OS/2"
+"post"
+"cvt "
+"fpgm"
+"glyf"
+"loca"
+"prep"
+"CFF "
+"VORG"
+"GPOS"
+"GSUB"
+"GDEF"
+"BASE"
+"JSTF"
+
+# Common values
+"\x00\x01\x00\x00"
+"\x00\x00\x00\x01"
+"\xff\xff\xff\xff"
