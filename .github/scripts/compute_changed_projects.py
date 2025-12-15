@@ -6,7 +6,7 @@ This script replaces the bash logic in the GitHub Actions workflow.
 
 import json
 import sys
-from typing import List, Dict, Any
+from typing import List, Dict
 
 
 def parse_changed_files(files_json: str) -> List[str]:
@@ -56,11 +56,13 @@ def filter_projects_with_dockerfiles(changed_projects: List[str], all_projects: 
 
 def pair_projects(projects: List[str]) -> List[Dict[str, str]]:
     """
-    Pair projects into groups of 2.
-    If odd number of projects, the last pair will have proj2 = proj1.
+    Pair projects into groups of 2 where proj1 and proj2 are always different.
+    Both proj1 and proj2 can be empty strings (meaning no project to build).
     
     Returns:
-        List of dicts with keys 'proj1' and 'proj2'
+        List of dicts with keys 'proj1' and 'proj2', where:
+        - proj1 != proj2 (always different)
+        - Either can be empty string "" (skip building)
     """
     if not projects:
         return []
@@ -68,8 +70,9 @@ def pair_projects(projects: List[str]) -> List[Dict[str, str]]:
     pairs = []
     for i in range(0, len(projects), 2):
         proj1 = projects[i]
-        # If odd number of projects, duplicate the last one
-        proj2 = projects[i + 1] if i + 1 < len(projects) else proj1
+        # Always ensure proj1 != proj2
+        # If only one project left, proj2 is empty
+        proj2 = projects[i + 1] if i + 1 < len(projects) else ""
         pairs.append({
             "proj1": proj1,
             "proj2": proj2

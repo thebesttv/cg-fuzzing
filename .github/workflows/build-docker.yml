@@ -99,8 +99,8 @@ jobs:
 
   build-project:
     # Each matrix job builds two projects (proj1 and proj2) to reduce total number of jobs.
-    # Projects are paired by compute_changed_projects.py. If odd number of projects,
-    # the last pair has proj1 == proj2 (builds same project twice, which is handled gracefully).
+    # Projects are paired by compute_changed_projects.py. proj1 != proj2 (always different).
+    # Either proj1 or proj2 can be empty string "" (no project), which will be skipped gracefully.
     # Only bc and fuzz dockerfiles are built; cov and uftrace are removed.
     needs: get-changed-projects
     if: ${{ needs.get-changed-projects.outputs.projects != '[]' && needs.get-changed-projects.outputs.projects != 'null' }}
@@ -130,11 +130,16 @@ jobs:
 
       - name: Create output directories
         run: |
-          mkdir -p output/${{ matrix.pair.proj1 }}/{bc,fuzz}
-          mkdir -p output/${{ matrix.pair.proj2 }}/{bc,fuzz}
+          if [ -n "${{ matrix.pair.proj1 }}" ]; then
+            mkdir -p output/${{ matrix.pair.proj1 }}/{bc,fuzz}
+          fi
+          if [ -n "${{ matrix.pair.proj2 }}" ]; then
+            mkdir -p output/${{ matrix.pair.proj2 }}/{bc,fuzz}
+          fi
 
       # Build proj1 - bc
       - name: Build bc.dockerfile for ${{ matrix.pair.proj1 }}
+        if: ${{ matrix.pair.proj1 != '' }}
         id: build-bc-proj1
         run: |
           if [ -f "${{ matrix.pair.proj1 }}/bc.dockerfile" ]; then
@@ -150,7 +155,7 @@ jobs:
           fi
 
       - name: Extract bc artifacts for ${{ matrix.pair.proj1 }}
-        if: steps.build-bc-proj1.outputs.exists == 'true'
+        if: ${{ matrix.pair.proj1 != '' && steps.build-bc-proj1.outputs.exists == 'true' }}
         run: |
           container_id=$(docker create "${{ matrix.pair.proj1 }}-bc:latest")
           # Copy bc files from container
@@ -166,6 +171,7 @@ jobs:
 
       # Build proj1 - fuzz
       - name: Build fuzz.dockerfile for ${{ matrix.pair.proj1 }}
+        if: ${{ matrix.pair.proj1 != '' }}
         id: build-fuzz-proj1
         run: |
           if [ -f "${{ matrix.pair.proj1 }}/fuzz.dockerfile" ]; then
@@ -181,7 +187,7 @@ jobs:
           fi
 
       - name: Extract fuzz artifacts for ${{ matrix.pair.proj1 }}
-        if: steps.build-fuzz-proj1.outputs.exists == 'true'
+        if: ${{ matrix.pair.proj1 != '' && steps.build-fuzz-proj1.outputs.exists == 'true' }}
         run: |
           container_id=$(docker create "${{ matrix.pair.proj1 }}-fuzz:latest")
           if docker cp "$container_id:/work/." "output/${{ matrix.pair.proj1 }}/fuzz/" 2>/dev/null; then
@@ -201,6 +207,7 @@ jobs:
 
       # Build proj2 - bc
       - name: Build bc.dockerfile for ${{ matrix.pair.proj2 }}
+        if: ${{ matrix.pair.proj2 != '' }}
         id: build-bc-proj2
         run: |
           if [ -f "${{ matrix.pair.proj2 }}/bc.dockerfile" ]; then
@@ -216,7 +223,7 @@ jobs:
           fi
 
       - name: Extract bc artifacts for ${{ matrix.pair.proj2 }}
-        if: steps.build-bc-proj2.outputs.exists == 'true'
+        if: ${{ matrix.pair.proj2 != '' && steps.build-bc-proj2.outputs.exists == 'true' }}
         run: |
           container_id=$(docker create "${{ matrix.pair.proj2 }}-bc:latest")
           # Copy bc files from container
@@ -232,6 +239,7 @@ jobs:
 
       # Build proj2 - fuzz
       - name: Build fuzz.dockerfile for ${{ matrix.pair.proj2 }}
+        if: ${{ matrix.pair.proj2 != '' }}
         id: build-fuzz-proj2
         run: |
           if [ -f "${{ matrix.pair.proj2 }}/fuzz.dockerfile" ]; then
@@ -247,7 +255,7 @@ jobs:
           fi
 
       - name: Extract fuzz artifacts for ${{ matrix.pair.proj2 }}
-        if: steps.build-fuzz-proj2.outputs.exists == 'true'
+        if: ${{ matrix.pair.proj2 != '' && steps.build-fuzz-proj2.outputs.exists == 'true' }}
         run: |
           container_id=$(docker create "${{ matrix.pair.proj2 }}-fuzz:latest")
           if docker cp "$container_id:/work/." "output/${{ matrix.pair.proj2 }}/fuzz/" 2>/dev/null; then
@@ -268,26 +276,37 @@ jobs:
       - name: Remove empty directories
         run: |
           # Remove empty subdirectories from output
-          find "output/${{ matrix.pair.proj1 }}" -type d -empty -delete 2>/dev/null || true
-          find "output/${{ matrix.pair.proj2 }}" -type d -empty -delete 2>/dev/null || true
+          if [ -n "${{ matrix.pair.proj1 }}" ] && [ -d "output/${{ matrix.pair.proj1 }}" ]; then
+            find "output/${{ matrix.pair.proj1 }}" -type d -empty -delete 2>/dev/null || true
+          fi
+          if [ -n "${{ matrix.pair.proj2 }}" ] && [ -d "output/${{ matrix.pair.proj2 }}" ]; then
+            find "output/${{ matrix.pair.proj2 }}" -type d -empty -delete 2>/dev/null || true
+          fi
           echo "=== Final output structure ==="
-          find "output/${{ matrix.pair.proj1 }}" -type f | head -50
-          find "output/${{ matrix.pair.proj2 }}" -type f | head -50
+          if [ -n "${{ matrix.pair.proj1 }}" ] && [ -d "output/${{ matrix.pair.proj1 }}" ]; then
+            find "output/${{ matrix.pair.proj1 }}" -type f | head -50
+          fi
+          if [ -n "${{ matrix.pair.proj2 }}" ] && [ -d "output/${{ matrix.pair.proj2 }}" ]; then
+            find "output/${{ matrix.pair.proj2 }}" -type f | head -50
+          fi
 
       - name: Create project archives with tar.xz
         run: |
           cd output
-          # Create archive for proj1
-          XZ_OPT="-9e -T0" tar -cJf "${{ matrix.pair.proj1 }}.tar.xz" "${{ matrix.pair.proj1 }}"
-          ls -lh "${{ matrix.pair.proj1 }}.tar.xz"
+          # Create archive for proj1 if not empty
+          if [ -n "${{ matrix.pair.proj1 }}" ] && [ -d "${{ matrix.pair.proj1 }}" ]; then
+            XZ_OPT="-9e -T0" tar -cJf "${{ matrix.pair.proj1 }}.tar.xz" "${{ matrix.pair.proj1 }}"
+            ls -lh "${{ matrix.pair.proj1 }}.tar.xz"
+          fi
           
-          # Create archive for proj2 (skip if same as proj1)
-          if [ "${{ matrix.pair.proj1 }}" != "${{ matrix.pair.proj2 }}" ]; then
+          # Create archive for proj2 if not empty
+          if [ -n "${{ matrix.pair.proj2 }}" ] && [ -d "${{ matrix.pair.proj2 }}" ]; then
             XZ_OPT="-9e -T0" tar -cJf "${{ matrix.pair.proj2 }}.tar.xz" "${{ matrix.pair.proj2 }}"
             ls -lh "${{ matrix.pair.proj2 }}.tar.xz"
           fi
 
       - name: Upload artifact for ${{ matrix.pair.proj1 }}
+        if: ${{ matrix.pair.proj1 != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.pair.proj1 }}
@@ -295,7 +314,7 @@ jobs:
           retention-days: 30
 
       - name: Upload artifact for ${{ matrix.pair.proj2 }}
-        if: ${{ matrix.pair.proj1 != matrix.pair.proj2 }}
+        if: ${{ matrix.pair.proj2 != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.pair.proj2 }}
@@ -312,18 +331,20 @@ jobs:
       - name: Push Docker images to Docker Hub
         if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && github.event_name != 'pull_request'
         run: |
-          # Push images for proj1
-          for type in bc fuzz; do
-            image="${{ matrix.pair.proj1 }}-${type}"
-            if docker image inspect "${image}:latest" >/dev/null 2>&1; then
-              echo "Pushing ${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
-              docker tag "${image}:latest" "${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
-              docker push "${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
-            fi
-          done
+          # Push images for proj1 if not empty
+          if [ -n "${{ matrix.pair.proj1 }}" ]; then
+            for type in bc fuzz; do
+              image="${{ matrix.pair.proj1 }}-${type}"
+              if docker image inspect "${image}:latest" >/dev/null 2>&1; then
+                echo "Pushing ${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
+                docker tag "${image}:latest" "${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
+                docker push "${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
+              fi
+            done
+          fi
           
-          # Push images for proj2 (skip if same as proj1)
-          if [ "${{ matrix.pair.proj1 }}" != "${{ matrix.pair.proj2 }}" ]; then
+          # Push images for proj2 if not empty
+          if [ -n "${{ matrix.pair.proj2 }}" ]; then
             for type in bc fuzz; do
               image="${{ matrix.pair.proj2 }}-${type}"
               if docker image inspect "${image}:latest" >/dev/null 2>&1; then
