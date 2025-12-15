@@ -1,0 +1,28 @@
+# BitTorrent metainfo dictionary keys
+"announce"
+"announce-list"
+"comment"
+"created by"
+"creation date"
+"encoding"
+"info"
+"length"
+"name"
+"piece length"
+"pieces"
+"files"
+"path"
+"private"
+"source"
+
+# Common values
+"http://tracker.example.com:8080/announce"
+"udp://tracker.example.com:6969/announce"
+"mktorrent"
+
+# Numbers
+"262144"
+"524288"
+"1048576"
+"16384"
+"32768"
