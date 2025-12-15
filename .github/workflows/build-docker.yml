@@ -98,6 +98,10 @@ jobs:
           echo "Paired projects: $PAIRED"
 
   build-project:
+    # Each matrix job builds two projects (proj1 and proj2) to reduce total number of jobs.
+    # Projects are paired by compute_changed_projects.py. If odd number of projects,
+    # the last pair has proj1 == proj2 (builds same project twice, which is handled gracefully).
+    # Only bc and fuzz dockerfiles are built; cov and uftrace are removed.
     needs: get-changed-projects
     if: ${{ needs.get-changed-projects.outputs.projects != '[]' && needs.get-changed-projects.outputs.projects != 'null' }}
     runs-on: ubuntu-latest
