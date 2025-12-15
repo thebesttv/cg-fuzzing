@@ -1,0 +1,44 @@
+# Banner dictionary - common options and text patterns
+
+# Options
+"-C"
+"-h"
+"-l"
+"-V"
+"--center"
+"--help"
+"--use-letters"
+"--version"
+"--use-char="
+"--font="
+"--width="
+"-c"
+"-f"
+"-w"
+
+# Common characters for use-char
+"-c *"
+"-c #"
+"-c @"
+"-c X"
+"-c +"
+
+# Width values
+"-w 40"
+"-w 80"
+"-w 120"
+
+# Common words and phrases
+"Hello"
+"World"
+"Test"
+"ABC"
+"123"
+"Banner"
+
+# Edge cases
+""
+" "
+"\n"
+"\t"
+"A"
