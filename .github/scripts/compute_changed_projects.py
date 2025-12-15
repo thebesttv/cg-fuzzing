@@ -10,7 +10,15 @@ from typing import List, Dict, Any
 
 
 def parse_changed_files(files_json: str) -> List[str]:
-    """Parse the JSON array of changed files and extract unique project names."""
+    """
+    Parse the JSON array of changed files and extract unique project names.
+    
+    Args:
+        files_json: JSON string containing array of file paths (e.g., '["dataset/proj1/file", ...]')
+    
+    Returns:
+        Sorted list of unique project names extracted from the file paths
+    """
     if not files_json or files_json == "[]":
         return []
     
@@ -32,7 +40,16 @@ def parse_changed_files(files_json: str) -> List[str]:
 
 
 def filter_projects_with_dockerfiles(changed_projects: List[str], all_projects: List[str]) -> List[str]:
-    """Filter changed projects to only those that exist in all_projects (have dockerfiles)."""
+    """
+    Filter changed projects to only those that exist in all_projects (have dockerfiles).
+    
+    Args:
+        changed_projects: List of project names that have changed files
+        all_projects: List of all valid project names (projects with dockerfiles)
+    
+    Returns:
+        Filtered list of changed projects that also exist in all_projects
+    """
     all_projects_set = set(all_projects)
     return [p for p in changed_projects if p in all_projects_set]
 
