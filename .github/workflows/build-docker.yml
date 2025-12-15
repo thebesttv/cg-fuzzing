@@ -117,11 +117,14 @@ jobs:
 
       - name: Validate project names
         run: |
-          # Validate both project names contain only safe characters
+          # Validate both project names contain only safe characters (allow empty string)
           for proj in "${{ matrix.pair.proj1 }}" "${{ matrix.pair.proj2 }}"; do
-            if ! echo "$proj" | grep -qE '^[a-zA-Z0-9_-]+$'; then
-              echo "Error: Invalid project name: $proj"
-              exit 1
+            # Skip empty strings (proj2 can be empty for odd number of projects)
+            if [ -n "$proj" ]; then
+              if ! echo "$proj" | grep -qE '^[a-zA-Z0-9_-]+$'; then
+                echo "Error: Invalid project name: $proj"
+                exit 1
+              fi
             fi
           done
 

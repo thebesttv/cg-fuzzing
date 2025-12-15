@@ -32,6 +32,8 @@ def parse_changed_files(files_json: str) -> List[str]:
     # Files are in format: dataset/PROJECT_NAME/...
     projects = set()
     for file_path in files:
+        if not isinstance(file_path, str):
+            continue  # Skip non-string elements
         parts = file_path.split('/')
         if len(parts) >= 2 and parts[0] == 'dataset':
             projects.add(parts[1])
