@@ -1,0 +1,19 @@
+\title Halibut Test Document
+
+\H{intro} Introduction
+
+This is a simple test document for halibut.
+
+\S{subsect} A subsection
+
+Some text in a subsection with \i{italic} and \b{bold} text.
+
+\c Code block
+\c with multiple lines
+\c of code
+
+\bullet Item 1
+\bullet Item 2
+\bullet Item 3
+
+\copyright 2024 Test Author
