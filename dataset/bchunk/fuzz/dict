@@ -1,0 +1,52 @@
+# bchunk dictionary - CUE file format keywords and options
+
+# Commands
+"FILE"
+"TRACK"
+"INDEX"
+"PREGAP"
+"POSTGAP"
+"CATALOG"
+"ISRC"
+"REM"
+"PERFORMER"
+"TITLE"
+"SONGWRITER"
+"FLAGS"
+
+# File types
+"BINARY"
+"MOTOROLA"
+"AIFF"
+"WAVE"
+"MP3"
+
+# Track types
+"AUDIO"
+"CDG"
+"MODE1/2048"
+"MODE1/2352"
+"MODE2/2048"
+"MODE2/2324"
+"MODE2/2336"
+"MODE2/2352"
+"CDI/2336"
+"CDI/2352"
+
+# Time formats
+"00:00:00"
+"00:02:00"
+"00:10:00"
+"01:00:00"
+
+# Common track numbers
+"01"
+"02"
+"10"
+"99"
+
+# Flags
+"DCP"
+"4CH"
+"PRE"
+"SCMS"
