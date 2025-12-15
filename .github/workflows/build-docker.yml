@@ -56,6 +56,8 @@ jobs:
           filters: |
             dataset:
               - 'dataset/**'
+            workflow:
+              - '.github/workflows/**'
           list-files: json
 
       - name: Set up Python
@@ -85,14 +87,25 @@ jobs:
         id: set-projects-pr
         if: github.ref != format('refs/heads/{0}', github.event.repository.default_branch)
         run: |
+          ALL='${{ needs.find-projects.outputs.projects }}'
+          
+          # If GitHub Actions workflow files changed, run all projects
+          if [ "${{ steps.changes.outputs.workflow }}" = "true" ]; then
+            echo "GitHub Actions workflow changed - running all projects"
+            # Create a synthetic file list for all projects
+            FAKE_FILES=$(echo "$ALL" | jq -c 'map("dataset/" + . + "/dummy")')
+            PAIRED=$(python3 .github/scripts/compute_changed_projects.py "$FAKE_FILES" "$ALL")
+            echo "projects=$PAIRED" >> $GITHUB_OUTPUT
+            echo "Paired projects: $PAIRED"
+            exit 0
+          fi
+          
           FILES='${{ steps.changes.outputs.dataset_files }}'
           if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
             echo "No dataset files changed"
             echo "projects=[]" >> $GITHUB_OUTPUT
             exit 0
           fi
-
-          ALL='${{ needs.find-projects.outputs.projects }}'
           
           # Use Python script to compute changed projects and pair them
           PAIRED=$(python3 .github/scripts/compute_changed_projects.py "$FILES" "$ALL")

@@ -58,30 +58,46 @@ def filter_projects_with_dockerfiles(changed_projects: List[str], all_projects: 
 
 def pair_projects(projects: List[str]) -> List[Dict[str, str]]:
     """
-    Pair projects into groups of 2 where proj1 and proj2 are always different.
-    proj2 can be empty string (meaning no second project to build) when odd number.
+    Pair projects with a priority strategy:
+    1. First, put all projects one-by-one into proj1 slots (up to 256 workers)
+    2. If more than 256 projects, put the excess into proj2 slots of previous workers
     
     Returns:
         List of dicts with keys 'proj1' and 'proj2', where:
         - proj1 != proj2 (always different)
         - proj1 is always non-empty
-        - proj2 can be empty string "" (skip building) for odd number of projects
+        - proj2 can be empty string "" (no second project)
     """
     if not projects:
         return []
     
-    pairs = []
-    for i in range(0, len(projects), 2):
-        proj1 = projects[i]
-        # Always ensure proj1 != proj2
-        # If only one project left, proj2 is empty
-        proj2 = projects[i + 1] if i + 1 < len(projects) else ""
-        pairs.append({
-            "proj1": proj1,
-            "proj2": proj2
-        })
+    MAX_WORKERS = 256
+    num_projects = len(projects)
     
-    return pairs
+    # Strategy: First fill all proj1 slots, then fill proj2 slots if needed
+    if num_projects <= MAX_WORKERS:
+        # All projects fit in proj1 slots, proj2 remains empty
+        pairs = []
+        for i in range(num_projects):
+            pairs.append({
+                "proj1": projects[i],
+                "proj2": ""
+            })
+        return pairs
+    else:
+        # More than MAX_WORKERS projects
+        # First MAX_WORKERS go to proj1, remainder goes to proj2
+        pairs = []
+        for i in range(MAX_WORKERS):
+            proj1 = projects[i]
+            # Check if there's a corresponding project for proj2
+            proj2_index = MAX_WORKERS + i
+            proj2 = projects[proj2_index] if proj2_index < num_projects else ""
+            pairs.append({
+                "proj1": proj1,
+                "proj2": proj2
+            })
+        return pairs
 
 
 def main():
