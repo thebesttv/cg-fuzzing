@@ -56,20 +56,50 @@ jobs:
           filters: |
             dataset:
               - 'dataset/**'
+            workflow:
+              - '.github/workflows/**'
           list-files: json
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
 
       - name: Set projects for default branch
         id: set-projects
         if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         run: |
-          echo "Default branch detected - running all projects"
-          echo 'projects=${{ needs.find-projects.outputs.projects }}' >> $GITHUB_OUTPUT
+          echo "Default branch detected - pairing all projects"
+          ALL_PROJECTS='${{ needs.find-projects.outputs.projects }}'
+
+          # For default branch, we want to pair all projects, not just changed ones.
+          # Create a synthetic file list with one dummy file per project to trigger
+          # the pairing logic. The Python script will extract project names from paths
+          # like "dataset/proj1/dummy", "dataset/proj2/dummy", etc.
+          FAKE_FILES=$(echo "$ALL_PROJECTS" | jq -c 'map("dataset/" + . + "/dummy")')
+
+          # Use Python script to pair all projects
+          PAIRED=$(python3 ${GITHUB_WORKSPACE}/.github/scripts/compute_changed_projects.py "$FAKE_FILES" "$ALL_PROJECTS")
+          echo "projects=$PAIRED" >> $GITHUB_OUTPUT
+          echo "Paired projects: $PAIRED"
 
       - name: Compute changed projects
         id: set-projects-pr
         if: github.ref != format('refs/heads/{0}', github.event.repository.default_branch)
         run: |
-          set -euo pipefail
+          ALL='${{ needs.find-projects.outputs.projects }}'
+
+          # If GitHub Actions workflow files changed, run all projects
+          if [ "${{ steps.changes.outputs.workflow }}" = "true" ]; then
+            echo "GitHub Actions workflow changed - running all projects"
+            # Create a synthetic file list for all projects
+            FAKE_FILES=$(echo "$ALL" | jq -c 'map("dataset/" + . + "/dummy")')
+            PAIRED=$(python3 ${GITHUB_WORKSPACE}/.github/scripts/compute_changed_projects.py "$FAKE_FILES" "$ALL")
+            echo "projects=$PAIRED" >> $GITHUB_OUTPUT
+            echo "Paired projects: $PAIRED"
+            exit 0
+          fi
+
           FILES='${{ steps.changes.outputs.dataset_files }}'
           if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
             echo "No dataset files changed"
@@ -77,175 +107,236 @@ jobs:
             exit 0
           fi
 
-          ALL='${{ needs.find-projects.outputs.projects }}'
-          # Extract unique project names from changed dataset files
-          CHANGED_PROJECTS=$(echo "$FILES" | jq -r '.[] | split("/")[1]' | sort -u)
-
-          # Build final intersection between changed projects and projects that have dockerfiles
-          RESULT_ARRAY=()
-          for p in $CHANGED_PROJECTS; do
-            if echo "$ALL" | jq -e --arg p "$p" 'index($p) // empty' >/dev/null 2>&1; then
-              RESULT_ARRAY+=("$p")
-            fi
-          done
-
-          if [ ${#RESULT_ARRAY[@]} -eq 0 ]; then
-            echo "projects=[]" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          # Convert bash array to JSON array
-          JSON=$(printf '%s\n' "${RESULT_ARRAY[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          echo "projects=$JSON" >> $GITHUB_OUTPUT
+          # Use Python script to compute changed projects and pair them
+          PAIRED=$(python3 ${GITHUB_WORKSPACE}/.github/scripts/compute_changed_projects.py "$FILES" "$ALL")
+          echo "projects=$PAIRED" >> $GITHUB_OUTPUT
+          echo "Paired projects: $PAIRED"
 
   build-project:
+    # Each matrix job builds two projects (proj1 and proj2) to reduce total number of jobs.
+    # Projects are paired by compute_changed_projects.py. proj1 != proj2 (always different).
+    # Either proj1 or proj2 can be empty string "" (no project), which will be skipped gracefully.
+    # Only bc and fuzz dockerfiles are built; cov and uftrace are removed.
     needs: get-changed-projects
     if: ${{ needs.get-changed-projects.outputs.projects != '[]' && needs.get-changed-projects.outputs.projects != 'null' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        project: ${{ fromJson(needs.get-changed-projects.outputs.projects) }}
+        pair: ${{ fromJson(needs.get-changed-projects.outputs.projects) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           lfs: true
 
-      - name: Validate project name
+      - name: Validate project names
         run: |
-          # Validate project name contains only safe characters
-          if ! echo "${{ matrix.project }}" | grep -qE '^[a-zA-Z0-9_-]+$'; then
-            echo "Error: Invalid project name: ${{ matrix.project }}"
-            exit 1
-          fi
+          # Validate both project names contain only safe characters (allow empty string)
+          for proj in "${{ matrix.pair.proj1 }}" "${{ matrix.pair.proj2 }}"; do
+            # Skip empty strings (proj2 can be empty for odd number of projects)
+            if [ -n "$proj" ]; then
+              if ! echo "$proj" | grep -qE '^[a-zA-Z0-9_-]+$'; then
+                echo "Error: Invalid project name: $proj"
+                exit 1
+              fi
+            fi
+          done
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Create output directories
         run: |
-          mkdir -p output/${{ matrix.project }}/{bc,fuzz}
+          if [ -n "${{ matrix.pair.proj1 }}" ]; then
+            mkdir -p output/${{ matrix.pair.proj1 }}/{bc,fuzz}
+          fi
+          if [ -n "${{ matrix.pair.proj2 }}" ]; then
+            mkdir -p output/${{ matrix.pair.proj2 }}/{bc,fuzz}
+          fi
 
-      - name: Build bc.dockerfile (if exists)
-        id: build-bc
+      # Build proj1 - bc
+      - name: Build bc.dockerfile for ${{ matrix.pair.proj1 }}
+        if: ${{ matrix.pair.proj1 != '' }}
+        id: build-bc-proj1
         run: |
-          if [ -f "${{ matrix.project }}/bc.dockerfile" ]; then
-            echo "Building ${{ matrix.project }}-bc from ${{ matrix.project }}/bc.dockerfile"
+          if [ -f "${{ matrix.pair.proj1 }}/bc.dockerfile" ]; then
+            echo "Building ${{ matrix.pair.proj1 }}-bc from ${{ matrix.pair.proj1 }}/bc.dockerfile"
             docker build \
-              -f "${{ matrix.project }}/bc.dockerfile" \
-              -t "${{ matrix.project }}-bc:latest" \
+              -f "${{ matrix.pair.proj1 }}/bc.dockerfile" \
+              -t "${{ matrix.pair.proj1 }}-bc:latest" \
               .
             echo "exists=true" >> $GITHUB_OUTPUT
           else
-            echo "bc.dockerfile not found for ${{ matrix.project }}"
+            echo "bc.dockerfile not found for ${{ matrix.pair.proj1 }}"
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Extract bc artifacts
-        if: steps.build-bc.outputs.exists == 'true'
+      - name: Extract bc artifacts for ${{ matrix.pair.proj1 }}
+        if: ${{ matrix.pair.proj1 != '' && steps.build-bc-proj1.outputs.exists == 'true' }}
         run: |
-          container_id=$(docker create "${{ matrix.project }}-bc:latest")
+          container_id=$(docker create "${{ matrix.pair.proj1 }}-bc:latest")
           # Copy bc files from container
-          docker cp "$container_id:/home/SVF-tools/bc/." "output/${{ matrix.project }}/bc/" 2>/dev/null || true
+          docker cp "$container_id:/home/SVF-tools/bc/." "output/${{ matrix.pair.proj1 }}/bc/" 2>/dev/null || true
           docker rm "$container_id"
-          echo "=== bc artifacts ==="
-          ls -la "output/${{ matrix.project }}/bc/" || true
+          echo "=== bc artifacts for ${{ matrix.pair.proj1 }} ==="
+          ls -la "output/${{ matrix.pair.proj1 }}/bc/" || true
           # Verify directory is non-empty
-          if [ -z "$(ls -A "output/${{ matrix.project }}/bc/" 2>/dev/null)" ]; then
+          if [ -z "$(ls -A "output/${{ matrix.pair.proj1 }}/bc/" 2>/dev/null)" ]; then
             echo "Error: bc artifacts directory is empty!"
             exit 1
           fi
 
-      - name: Build fuzz.dockerfile (if exists)
-        id: build-fuzz
+      # Build proj1 - fuzz
+      - name: Build fuzz.dockerfile for ${{ matrix.pair.proj1 }}
+        if: ${{ matrix.pair.proj1 != '' }}
+        id: build-fuzz-proj1
         run: |
-          if [ -f "${{ matrix.project }}/fuzz.dockerfile" ]; then
-            echo "Building ${{ matrix.project }}-fuzz from ${{ matrix.project }}/fuzz.dockerfile"
+          if [ -f "${{ matrix.pair.proj1 }}/fuzz.dockerfile" ]; then
+            echo "Building ${{ matrix.pair.proj1 }}-fuzz from ${{ matrix.pair.proj1 }}/fuzz.dockerfile"
             docker build \
-              -f "${{ matrix.project }}/fuzz.dockerfile" \
-              -t "${{ matrix.project }}-fuzz:latest" \
+              -f "${{ matrix.pair.proj1 }}/fuzz.dockerfile" \
+              -t "${{ matrix.pair.proj1 }}-fuzz:latest" \
               .
             echo "exists=true" >> $GITHUB_OUTPUT
           else
-            echo "fuzz.dockerfile not found for ${{ matrix.project }}"
+            echo "fuzz.dockerfile not found for ${{ matrix.pair.proj1 }}"
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Extract fuzz artifacts
-        if: steps.build-fuzz.outputs.exists == 'true'
+      - name: Extract fuzz artifacts for ${{ matrix.pair.proj1 }}
+        if: ${{ matrix.pair.proj1 != '' && steps.build-fuzz-proj1.outputs.exists == 'true' }}
         run: |
-          container_id=$(docker create "${{ matrix.project }}-fuzz:latest")
-          if docker cp "$container_id:/work/." "output/${{ matrix.project }}/fuzz/" 2>/dev/null; then
+          container_id=$(docker create "${{ matrix.pair.proj1 }}-fuzz:latest")
+          if docker cp "$container_id:/work/." "output/${{ matrix.pair.proj1 }}/fuzz/" 2>/dev/null; then
             echo "Successfully copied artifacts from /work"
           else
             echo "/work not found"
             exit 1
           fi
           docker rm "$container_id"
-          echo "=== fuzz artifacts ==="
-          ls -la "output/${{ matrix.project }}/fuzz/" || true
+          echo "=== fuzz artifacts for ${{ matrix.pair.proj1 }} ==="
+          ls -la "output/${{ matrix.pair.proj1 }}/fuzz/" || true
           # Verify directory is non-empty
-          if [ -z "$(ls -A "output/${{ matrix.project }}/fuzz/" 2>/dev/null)" ]; then
+          if [ -z "$(ls -A "output/${{ matrix.pair.proj1 }}/fuzz/" 2>/dev/null)" ]; then
             echo "Error: fuzz artifacts directory is empty!"
             exit 1
           fi
 
-      - name: Build cov.dockerfile (if exists)
-        id: build-cov
+      # Build proj2 - bc
+      - name: Build bc.dockerfile for ${{ matrix.pair.proj2 }}
+        if: ${{ matrix.pair.proj2 != '' }}
+        id: build-bc-proj2
         run: |
-          if [ -f "${{ matrix.project }}/cov.dockerfile" ]; then
-            echo "Building ${{ matrix.project }}-cov from ${{ matrix.project }}/cov.dockerfile"
+          if [ -f "${{ matrix.pair.proj2 }}/bc.dockerfile" ]; then
+            echo "Building ${{ matrix.pair.proj2 }}-bc from ${{ matrix.pair.proj2 }}/bc.dockerfile"
             docker build \
-              -f "${{ matrix.project }}/cov.dockerfile" \
-              -t "${{ matrix.project }}-cov:latest" \
+              -f "${{ matrix.pair.proj2 }}/bc.dockerfile" \
+              -t "${{ matrix.pair.proj2 }}-bc:latest" \
               .
             echo "exists=true" >> $GITHUB_OUTPUT
           else
-            echo "cov.dockerfile not found for ${{ matrix.project }}"
+            echo "bc.dockerfile not found for ${{ matrix.pair.proj2 }}"
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build uftrace.dockerfile (if exists)
-        id: build-uftrace
+      - name: Extract bc artifacts for ${{ matrix.pair.proj2 }}
+        if: ${{ matrix.pair.proj2 != '' && steps.build-bc-proj2.outputs.exists == 'true' }}
         run: |
-          if [ -f "${{ matrix.project }}/uftrace.dockerfile" ]; then
-            echo "Building ${{ matrix.project }}-uftrace from ${{ matrix.project }}/uftrace.dockerfile"
+          container_id=$(docker create "${{ matrix.pair.proj2 }}-bc:latest")
+          # Copy bc files from container
+          docker cp "$container_id:/home/SVF-tools/bc/." "output/${{ matrix.pair.proj2 }}/bc/" 2>/dev/null || true
+          docker rm "$container_id"
+          echo "=== bc artifacts for ${{ matrix.pair.proj2 }} ==="
+          ls -la "output/${{ matrix.pair.proj2 }}/bc/" || true
+          # Verify directory is non-empty
+          if [ -z "$(ls -A "output/${{ matrix.pair.proj2 }}/bc/" 2>/dev/null)" ]; then
+            echo "Error: bc artifacts directory is empty!"
+            exit 1
+          fi
+
+      # Build proj2 - fuzz
+      - name: Build fuzz.dockerfile for ${{ matrix.pair.proj2 }}
+        if: ${{ matrix.pair.proj2 != '' }}
+        id: build-fuzz-proj2
+        run: |
+          if [ -f "${{ matrix.pair.proj2 }}/fuzz.dockerfile" ]; then
+            echo "Building ${{ matrix.pair.proj2 }}-fuzz from ${{ matrix.pair.proj2 }}/fuzz.dockerfile"
             docker build \
-              -f "${{ matrix.project }}/uftrace.dockerfile" \
-              -t "${{ matrix.project }}-uftrace:latest" \
+              -f "${{ matrix.pair.proj2 }}/fuzz.dockerfile" \
+              -t "${{ matrix.pair.proj2 }}-fuzz:latest" \
               .
             echo "exists=true" >> $GITHUB_OUTPUT
           else
-            echo "uftrace.dockerfile not found for ${{ matrix.project }}"
+            echo "fuzz.dockerfile not found for ${{ matrix.pair.proj2 }}"
             echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract fuzz artifacts for ${{ matrix.pair.proj2 }}
+        if: ${{ matrix.pair.proj2 != '' && steps.build-fuzz-proj2.outputs.exists == 'true' }}
+        run: |
+          container_id=$(docker create "${{ matrix.pair.proj2 }}-fuzz:latest")
+          if docker cp "$container_id:/work/." "output/${{ matrix.pair.proj2 }}/fuzz/" 2>/dev/null; then
+            echo "Successfully copied artifacts from /work"
+          else
+            echo "/work not found"
+            exit 1
+          fi
+          docker rm "$container_id"
+          echo "=== fuzz artifacts for ${{ matrix.pair.proj2 }} ==="
+          ls -la "output/${{ matrix.pair.proj2 }}/fuzz/" || true
+          # Verify directory is non-empty
+          if [ -z "$(ls -A "output/${{ matrix.pair.proj2 }}/fuzz/" 2>/dev/null)" ]; then
+            echo "Error: fuzz artifacts directory is empty!"
+            exit 1
           fi
 
       - name: Remove empty directories
         run: |
           # Remove empty subdirectories from output
-          find "output/${{ matrix.project }}" -type d -empty -delete 2>/dev/null || true
+          if [ -n "${{ matrix.pair.proj1 }}" ] && [ -d "output/${{ matrix.pair.proj1 }}" ]; then
+            find "output/${{ matrix.pair.proj1 }}" -type d -empty -delete 2>/dev/null || true
+          fi
+          if [ -n "${{ matrix.pair.proj2 }}" ] && [ -d "output/${{ matrix.pair.proj2 }}" ]; then
+            find "output/${{ matrix.pair.proj2 }}" -type d -empty -delete 2>/dev/null || true
+          fi
           echo "=== Final output structure ==="
-          find "output/${{ matrix.project }}" -type f | head -50
+          if [ -n "${{ matrix.pair.proj1 }}" ] && [ -d "output/${{ matrix.pair.proj1 }}" ]; then
+            find "output/${{ matrix.pair.proj1 }}" -type f | head -50
+          fi
+          if [ -n "${{ matrix.pair.proj2 }}" ] && [ -d "output/${{ matrix.pair.proj2 }}" ]; then
+            find "output/${{ matrix.pair.proj2 }}" -type f | head -50
+          fi
 
-      - name: Create project archive with tar.xz
+      - name: Create project archives with tar.xz
         run: |
           cd output
-          # Use tar with xz compression (maximum compression level)
-          # -c: create archive, -J: use xz compression, -f: output file
-          # --exclude-vcs: exclude version control files
-          # Set XZ_OPT for maximum compression
-          XZ_OPT="-9e -T0" tar -cJf "${{ matrix.project }}.tar.xz" "${{ matrix.project }}"
-          ls -lh "${{ matrix.project }}.tar.xz"
+          # Create archive for proj1 if not empty
+          if [ -n "${{ matrix.pair.proj1 }}" ] && [ -d "${{ matrix.pair.proj1 }}" ]; then
+            XZ_OPT="-9e -T0" tar -cJf "${{ matrix.pair.proj1 }}.tar.xz" "${{ matrix.pair.proj1 }}"
+            ls -lh "${{ matrix.pair.proj1 }}.tar.xz"
+          fi
 
-      - name: Upload artifact
+          # Create archive for proj2 if not empty
+          if [ -n "${{ matrix.pair.proj2 }}" ] && [ -d "${{ matrix.pair.proj2 }}" ]; then
+            XZ_OPT="-9e -T0" tar -cJf "${{ matrix.pair.proj2 }}.tar.xz" "${{ matrix.pair.proj2 }}"
+            ls -lh "${{ matrix.pair.proj2 }}.tar.xz"
+          fi
+
+      - name: Upload artifact for ${{ matrix.pair.proj1 }}
+        if: ${{ matrix.pair.proj1 != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.project }}
-          # `defaults.run.working-directory` is `./dataset` so run steps create tar.xz archives under
-          # `dataset/output/...`. Actions using `uses:` run from the workspace root, so
-          # specify the dataset prefix so the uploader finds the file.
-          path: dataset/output/${{ matrix.project }}.tar.xz
+          name: ${{ matrix.pair.proj1 }}
+          path: dataset/output/${{ matrix.pair.proj1 }}.tar.xz
+          retention-days: 30
+
+      - name: Upload artifact for ${{ matrix.pair.proj2 }}
+        if: ${{ matrix.pair.proj2 != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.pair.proj2 }}
+          path: dataset/output/${{ matrix.pair.proj2 }}.tar.xz
           retention-days: 30
 
       - name: Login to Docker Hub
@@ -258,14 +349,33 @@ jobs:
       - name: Push Docker images to Docker Hub
         if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && github.event_name != 'pull_request'
         run: |
-          for type in bc fuzz cov uftrace; do
-            image="${{ matrix.project }}-${type}"
-            if docker image inspect "${image}:latest" >/dev/null 2>&1; then
-              echo "Pushing ${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
-              docker tag "${image}:latest" "${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
-              docker push "${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
-            fi
-          done
+          # Define image types to push (only bc and fuzz, not cov or uftrace)
+          IMAGE_TYPES="bc fuzz"
+
+          # Push images for proj1 if not empty
+          if [ -n "${{ matrix.pair.proj1 }}" ]; then
+            for type in $IMAGE_TYPES; do
+              image="${{ matrix.pair.proj1 }}-${type}"
+              if docker image inspect "${image}:latest" >/dev/null 2>&1; then
+                echo "Pushing ${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
+                docker tag "${image}:latest" "${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
+                docker push "${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
+              fi
+            done
+          fi
+
+          # Push images for proj2 if not empty
+          if [ -n "${{ matrix.pair.proj2 }}" ]; then
+            for type in $IMAGE_TYPES; do
+              image="${{ matrix.pair.proj2 }}-${type}"
+              if docker image inspect "${image}:latest" >/dev/null 2>&1; then
+                echo "Pushing ${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
+                docker tag "${image}:latest" "${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
+                docker push "${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
+              fi
+            done
+          fi
+
 
   create-release:
     needs: build-project
