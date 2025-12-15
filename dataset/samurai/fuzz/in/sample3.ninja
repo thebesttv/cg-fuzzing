@@ -1,0 +1,15 @@
+builddir = build
+cflags = -Wall -O2
+
+rule cc
+  command = gcc $cflags -c $in -o $out
+  description = CC $out
+
+rule link
+  command = gcc $in -o $out
+  description = LINK $out
+
+build $builddir/foo.o: cc foo.c
+build $builddir/bar.o: cc bar.c
+build program: link $builddir/foo.o $builddir/bar.o
+default program

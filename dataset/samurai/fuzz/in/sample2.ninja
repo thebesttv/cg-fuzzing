@@ -1,0 +1,11 @@
+rule link
+  command = gcc $in -o $out
+
+rule cc
+  command = gcc -c $in -o $out
+  depfile = $out.d
+  deps = gcc
+
+build main.o: cc main.c
+build hello: link main.o
+default hello
