@@ -70,8 +70,10 @@ jobs:
           echo "Default branch detected - pairing all projects"
           ALL_PROJECTS='${{ needs.find-projects.outputs.projects }}'
           
-          # For default branch, create a fake "all files changed" JSON to reuse the Python script
-          # Generate a list like ["dataset/proj1/file", "dataset/proj2/file", ...]
+          # For default branch, we want to pair all projects, not just changed ones.
+          # Create a synthetic file list with one dummy file per project to trigger
+          # the pairing logic. The Python script will extract project names from paths
+          # like "dataset/proj1/dummy", "dataset/proj2/dummy", etc.
           FAKE_FILES=$(echo "$ALL_PROJECTS" | jq -c 'map("dataset/" + . + "/dummy")')
           
           # Use Python script to pair all projects
@@ -334,9 +336,12 @@ jobs:
       - name: Push Docker images to Docker Hub
         if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && github.event_name != 'pull_request'
         run: |
+          # Define image types to push (only bc and fuzz, not cov or uftrace)
+          IMAGE_TYPES="bc fuzz"
+          
           # Push images for proj1 if not empty
           if [ -n "${{ matrix.pair.proj1 }}" ]; then
-            for type in bc fuzz; do
+            for type in $IMAGE_TYPES; do
               image="${{ matrix.pair.proj1 }}-${type}"
               if docker image inspect "${image}:latest" >/dev/null 2>&1; then
                 echo "Pushing ${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"
@@ -348,7 +353,7 @@ jobs:
           
           # Push images for proj2 if not empty
           if [ -n "${{ matrix.pair.proj2 }}" ]; then
-            for type in bc fuzz; do
+            for type in $IMAGE_TYPES; do
               image="${{ matrix.pair.proj2 }}-${type}"
               if docker image inspect "${image}:latest" >/dev/null 2>&1; then
                 echo "Pushing ${{ env.DOCKER_HUB_USERNAME }}/${image}:latest"

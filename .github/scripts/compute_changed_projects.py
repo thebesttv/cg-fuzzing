@@ -59,12 +59,13 @@ def filter_projects_with_dockerfiles(changed_projects: List[str], all_projects: 
 def pair_projects(projects: List[str]) -> List[Dict[str, str]]:
     """
     Pair projects into groups of 2 where proj1 and proj2 are always different.
-    Both proj1 and proj2 can be empty strings (meaning no project to build).
+    proj2 can be empty string (meaning no second project to build) when odd number.
     
     Returns:
         List of dicts with keys 'proj1' and 'proj2', where:
         - proj1 != proj2 (always different)
-        - Either can be empty string "" (skip building)
+        - proj1 is always non-empty
+        - proj2 can be empty string "" (skip building) for odd number of projects
     """
     if not projects:
         return []
