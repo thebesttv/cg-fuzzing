@@ -2,7 +2,7 @@ FROM aflplusplus/aflplusplus:latest
 
 # Install basic packages first
 RUN apt-get update && \
-    apt-get install -y htop vim tmux parallel && \
+    apt-get install -y htop vim tmux parallel jdupes rdfind && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

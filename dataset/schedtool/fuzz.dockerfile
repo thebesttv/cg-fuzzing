@@ -1,6 +1,6 @@
 FROM aflplusplus/aflplusplus:latest
 
-RUN apt-get update && apt-get install -y htop vim tmux parallel wget uftrace && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y htop vim tmux parallel jdupes rdfind wget uftrace && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /work
 
