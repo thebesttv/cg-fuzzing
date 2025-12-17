@@ -512,7 +512,7 @@ jobs:
             # Files paths are relative to the workspace root; our created archives live under
             # `dataset/`, so reference them with the dataset prefix.
             dataset/${{ steps.create.outputs.all_archive }}
-            dataset/artifacts/**/*.tar.xz
+            # dataset/artifacts/**/*.tar.xz
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
