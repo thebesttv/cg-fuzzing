@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: $0 <tar_path>
+
+Saves Docker images from stdin (one per line) to a tar file.
+
+Arguments:
+  tar_path  - Path to the output tar file
+
+Example:
+  echo "thebesttv/cflow-bc:latest" | $0 /tmp/images.tar
+  cat images.txt | $0 /tmp/images.tar
+EOF
+}
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
+if [[ $# -ne 1 ]]; then
+  echo "Error: exactly one argument required (tar path)" >&2
+  usage
+  exit 1
+fi
+
+TAR_PATH="$1"
+
+# Read all image names from stdin into an array
+images=()
+while IFS= read -r image; do
+  # Skip empty lines
+  if [[ -n "$image" ]]; then
+    images+=("$image")
+  fi
+done
+
+# Check if we have any images to save
+if [[ ${#images[@]} -eq 0 ]]; then
+  echo "Error: no images provided on stdin" >&2
+  exit 1
+fi
+
+# Call docker save with all images at once
+docker save -o "$TAR_PATH" "${images[@]}"
