@@ -1,4 +1,4 @@
-FROM svftools/svf:latest
+FROM thebesttv/svf:latest
 
 # 1. Install WLLVM
 RUN apt-get update && \

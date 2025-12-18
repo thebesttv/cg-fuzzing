@@ -1,4 +1,4 @@
-FROM svftools/svf:latest
+FROM thebesttv/svf:latest
 
 RUN apt-get update && \
     apt-get install -y pipx python3-tomli python3.10-venv && \

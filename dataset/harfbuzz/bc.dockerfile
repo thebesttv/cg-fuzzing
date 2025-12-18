@@ -1,4 +1,4 @@
-FROM svftools/svf:latest
+FROM thebesttv/svf:latest
 
 # Install wllvm using pipx
 RUN apt-get update && \
@@ -43,7 +43,7 @@ RUN mkdir build && cd build && \
 # Build harfbuzz
 RUN cd build && ninja
 
-# Build a simple test harness  
+# Build a simple test harness
 WORKDIR /home/SVF-tools/harfbuzz-10.1.0
 RUN echo '#include <hb.h>' > test_simple.c && \
     echo '#include <stdio.h>' >> test_simple.c && \

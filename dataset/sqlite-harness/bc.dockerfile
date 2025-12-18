@@ -1,4 +1,4 @@
-FROM svftools/svf:latest
+FROM thebesttv/svf:latest
 
 # Install wllvm using pipx and build dependencies
 RUN apt-get update && \

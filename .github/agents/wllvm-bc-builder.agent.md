@@ -58,7 +58,7 @@ description: 编译开源项目，生成 LLVM bitcode (.bc) 文件和 AFL++ fuzz
 
 ## 基础镜像与工具链
 
-- 必须使用 `svftools/svf:latest` 作为基础镜像
+- 必须使用 `thebesttv/svf:latest ` 作为基础镜像
 - 使用镜像自带的 LLVM/Clang 工具链，**不要额外安装 gcc/llvm/clang**
 - 镜像中的 home 目录是 `/home/SVF-tools`
 
@@ -84,7 +84,7 @@ ENV LLVM_COMPILER=clang
 ## bc.dockerfile 模板
 
 ```dockerfile
-FROM svftools/svf:latest
+FROM thebesttv/svf:latest
 
 # 1. 安装 WLLVM
 RUN apt-get update && \

@@ -1,4 +1,4 @@
-FROM svftools/svf:latest
+FROM thebesttv/svf:latest
 
 # Install wllvm using pipx
 RUN apt-get update && \
@@ -26,7 +26,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Build with CMake and WLLVM 
+# Build with CMake and WLLVM
 # Need to use shared library mode for examples due to link order issues with static lib and -lm
 RUN mkdir build && cd build && \
     CC=wllvm CXX=wllvm++ \

@@ -1,4 +1,4 @@
-FROM svftools/svf:latest
+FROM thebesttv/svf:latest
 
 # Install wllvm using pip3
 RUN apt-get update && \
