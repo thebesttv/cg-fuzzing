@@ -16,15 +16,15 @@ Example:
 EOF
 }
 
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
 if [[ $# -ne 1 ]]; then
   echo "Error: exactly one argument required (tar path)" >&2
   usage
   exit 1
-fi
-
-if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
-  usage
-  exit 0
 fi
 
 TAR_PATH="$1"
