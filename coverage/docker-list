@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: $0 <bc|fuzz>
+
+Lists Docker image names for all projects that have the specified dockerfile type.
+
+Arguments:
+  bc    - List images for projects with bc.dockerfile
+  fuzz  - List images for projects with fuzz.dockerfile
+
+Output format: thebesttv/PROJECT-TYPE:latest (one per line)
+
+Example:
+  $0 bc
+  $0 fuzz
+EOF
+}
+
+if [[ $# -ne 1 ]]; then
+  echo "Error: exactly one argument required" >&2
+  usage
+  exit 1
+fi
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
+TYPE="$1"
+
+if [[ "$TYPE" != "bc" && "$TYPE" != "fuzz" ]]; then
+  echo "Error: argument must be 'bc' or 'fuzz'" >&2
+  usage
+  exit 1
+fi
+
+# Get the repository root directory (parent of coverage directory)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+DATASET_DIR="$REPO_ROOT/dataset"
+
+if [[ ! -d "$DATASET_DIR" ]]; then
+  echo "Error: dataset directory not found at $DATASET_DIR" >&2
+  exit 1
+fi
+
+# Find all projects with the specified dockerfile and output image names
+find "$DATASET_DIR" -mindepth 2 -maxdepth 2 -name "${TYPE}.dockerfile" -type f | while read -r dockerfile; do
+  # Extract project name from the dockerfile path
+  # e.g., /path/to/dataset/cflow/bc.dockerfile -> cflow
+  project=$(basename "$(dirname "$dockerfile")")
+  echo "thebesttv/${project}-${TYPE}:latest"
+done | sort

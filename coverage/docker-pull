@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: $0
+
+Pulls Docker images from stdin (one per line).
+Outputs successfully pulled images to stdout.
+Outputs failed pulls to stderr in format: "Failed to pull: IMAGE_NAME"
+
+Example:
+  echo "thebesttv/cflow-bc:latest" | $0
+  cat images.txt | $0
+EOF
+}
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
+# Read image names from stdin
+while IFS= read -r image; do
+  # Skip empty lines
+  if [[ -z "$image" ]]; then
+    continue
+  fi
+  
+  # Try to pull the image
+  if docker pull "$image" >/dev/null 2>&1; then
+    # Output successful pulls to stdout
+    echo "$image"
+  else
+    # Output failed pulls to stderr
+    echo "Failed to pull: $image" >&2
+  fi
+done
