@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+# 检查是否提供了 root 目录参数
+if [ -z "$1" ]; then
+    echo "用法: cat images.txt | $0 <root_directory>"
+    exit 1
+fi
+
+# 获取绝对路径，防止 docker 挂载时出错
+ROOT_DIR=$(realpath "$1")
+
+# 24h
+TIMEOUT=$((24 * 3600))
+JOBS=$(nproc)
+
+# 定义处理单个 image 的函数，并导出给 parallel 使用
+do_run() {
+    local image=$1
+    local root=$2
+
+    # 逻辑提取 proj:
+    # 1. s|^thebesttv/||   -> 去掉开头的前缀
+    # 2. s|-fuzz.*||       -> 去掉 -fuzz 及其后面可能存在的 :tag
+    local proj=$(echo "$image" | sed -E 's|^thebesttv/||; s|-fuzz.*||')
+
+    echo "[*] Starting $image -> Proj: $proj"
+
+    # 确保宿主机目录存在
+    mkdir -p "$root/$proj/findings"
+
+    # 执行 docker
+    # 注意：在 parallel 中运行多任务时，通常不建议用 -it (可能导致 TTY 冲突)
+    # 如果只是为了自动化运行，建议只用 --rm
+    docker run --rm \
+        -v "$root/$proj/findings":/work/findings \
+        "$image" \
+        ./fuzz.sh
+}
+
+# 导出函数，使其在 parallel 的子 shell 中可见
+export -f do_run
+
+# 从 stdin 读取每一行并运行
+# --tag: 在输出前加上 image 名称作为标记，方便区分日志
+# --line-buffer: 实时输出每一行日志
+parallel -j"$JOBS" \
+    --tag --line-buffer \
+    --timeout "$TIMEOUT" \
+    --termseq INT,10000,KILL,25 \
+    do_run {} "$ROOT_DIR"
