@@ -70,6 +70,7 @@ COPY yara/fuzz/dict /work/dict
 COPY yara/fuzz/in /work/in
 COPY yara/fuzz/fuzz.sh /work/fuzz.sh
 COPY yara/fuzz/whatsup.sh /work/whatsup.sh
+COPY yara/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -62,6 +62,7 @@ COPY unrtf/fuzz/dict /work/dict
 COPY unrtf/fuzz/in /work/in
 COPY unrtf/fuzz/fuzz.sh /work/fuzz.sh
 COPY unrtf/fuzz/whatsup.sh /work/whatsup.sh
+COPY unrtf/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -68,6 +68,7 @@ COPY wren/fuzz/dict /work/dict
 COPY wren/fuzz/in /work/in
 COPY wren/fuzz/fuzz.sh /work/fuzz.sh
 COPY wren/fuzz/whatsup.sh /work/whatsup.sh
+COPY wren/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov/projects/make
