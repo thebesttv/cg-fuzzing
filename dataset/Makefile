@@ -20,10 +20,11 @@ update-fuzz-scripts: $(TEMPLATE)
 		proj=$$(basename $$proj_dir); \
 		if [ -f "$$proj_dir/afl-cmd.template" ]; then \
 			echo "Processing $$proj..."; \
-			cmd=$$(cat "$$proj_dir/afl-cmd.template"); \
 			mkdir -p "$$proj_dir/fuzz"; \
-			sed "s|AFL_CMD_REPLACE_ME|$$cmd|g" $(TEMPLATE) > "$$proj_dir/fuzz/fuzz.sh"; \
-			chmod +x "$$proj_dir/fuzz/fuzz.sh"; \
+			cmd_file="$$proj_dir/afl-cmd.template"; \
+			out_file="$$proj_dir/fuzz/fuzz.sh"; \
+			awk 'BEGIN {getline cmd < "'"$$cmd_file"'"} {gsub(/AFL_CMD_REPLACE_ME/, cmd); print}' $(TEMPLATE) > "$$out_file"; \
+			chmod +x "$$out_file"; \
 		else \
 			echo "Warning: $$proj has fuzz.dockerfile but no afl-cmd.template"; \
 		fi; \
