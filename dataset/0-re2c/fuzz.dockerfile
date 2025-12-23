@@ -64,6 +64,7 @@ COPY 0-re2c/fuzz/dict /work/dict
 COPY 0-re2c/fuzz/in /work/in
 COPY 0-re2c/fuzz/fuzz.sh /work/fuzz.sh
 COPY 0-re2c/fuzz/whatsup.sh /work/whatsup.sh
+COPY 0-re2c/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

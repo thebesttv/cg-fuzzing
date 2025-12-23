@@ -72,6 +72,7 @@ COPY wavpack/fuzz/dict /work/dict
 COPY wavpack/fuzz/in /work/in
 COPY wavpack/fuzz/fuzz.sh /work/fuzz.sh
 COPY wavpack/fuzz/whatsup.sh /work/whatsup.sh
+COPY wavpack/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

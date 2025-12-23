@@ -62,6 +62,7 @@ COPY cflow/fuzz/dict /work/dict
 COPY cflow/fuzz/in /work/in
 COPY cflow/fuzz/fuzz.sh /work/fuzz.sh
 COPY cflow/fuzz/whatsup.sh /work/whatsup.sh
+COPY cflow/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

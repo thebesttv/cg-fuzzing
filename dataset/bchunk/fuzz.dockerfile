@@ -57,6 +57,7 @@ COPY bchunk/fuzz/dict /work/dict
 COPY bchunk/fuzz/in /work/in
 COPY bchunk/fuzz/fuzz.sh /work/fuzz.sh
 COPY bchunk/fuzz/whatsup.sh /work/whatsup.sh
+COPY bchunk/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

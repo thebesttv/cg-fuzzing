@@ -59,6 +59,7 @@ COPY antiword/fuzz/dict /work/dict
 COPY antiword/fuzz/in /work/in
 COPY antiword/fuzz/fuzz.sh /work/fuzz.sh
 COPY antiword/fuzz/whatsup.sh /work/whatsup.sh
+COPY antiword/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

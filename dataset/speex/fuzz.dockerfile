@@ -76,6 +76,7 @@ COPY speex/fuzz/dict /work/dict
 COPY speex/fuzz/in /work/in
 COPY speex/fuzz/fuzz.sh /work/fuzz.sh
 COPY speex/fuzz/whatsup.sh /work/whatsup.sh
+COPY speex/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
