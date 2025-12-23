@@ -70,6 +70,7 @@ COPY cmark/fuzz/dict /work/dict
 COPY cmark/fuzz/in /work/in
 COPY cmark/fuzz/fuzz.sh /work/fuzz.sh
 COPY cmark/fuzz/whatsup.sh /work/whatsup.sh
+COPY cmark/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

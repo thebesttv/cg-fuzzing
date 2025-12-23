@@ -62,6 +62,7 @@ COPY bison/fuzz/dict /work/dict
 COPY bison/fuzz/in /work/in
 COPY bison/fuzz/fuzz.sh /work/fuzz.sh
 COPY bison/fuzz/whatsup.sh /work/whatsup.sh
+COPY bison/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

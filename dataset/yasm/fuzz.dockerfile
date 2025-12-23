@@ -62,6 +62,7 @@ COPY yasm/fuzz/dict /work/dict
 COPY yasm/fuzz/in /work/in
 COPY yasm/fuzz/fuzz.sh /work/fuzz.sh
 COPY yasm/fuzz/whatsup.sh /work/whatsup.sh
+COPY yasm/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
