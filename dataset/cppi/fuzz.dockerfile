@@ -64,6 +64,7 @@ COPY cppi/fuzz/dict /work/dict
 COPY cppi/fuzz/in /work/in
 COPY cppi/fuzz/fuzz.sh /work/fuzz.sh
 COPY cppi/fuzz/whatsup.sh /work/whatsup.sh
+COPY cppi/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

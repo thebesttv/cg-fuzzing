@@ -74,6 +74,7 @@ COPY cjson/fuzz/dict /work/dict
 COPY cjson/fuzz/in /work/in
 COPY cjson/fuzz/fuzz.sh /work/fuzz.sh
 COPY cjson/fuzz/whatsup.sh /work/whatsup.sh
+COPY cjson/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
