@@ -81,6 +81,7 @@ COPY lexbor/fuzz/dict /work/dict
 COPY lexbor/fuzz/in /work/in
 COPY lexbor/fuzz/fuzz.sh /work/fuzz.sh
 COPY lexbor/fuzz/whatsup.sh /work/whatsup.sh
+COPY lexbor/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build library with llvm-cov instrumentation for cov
 WORKDIR /work/build-cov
