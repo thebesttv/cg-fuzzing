@@ -64,6 +64,7 @@ COPY rsync/fuzz/dict /work/dict
 COPY rsync/fuzz/in /work/in
 COPY rsync/fuzz/fuzz.sh /work/fuzz.sh
 COPY rsync/fuzz/whatsup.sh /work/whatsup.sh
+COPY rsync/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
