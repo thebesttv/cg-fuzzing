@@ -62,6 +62,7 @@ COPY time/fuzz/dict /work/dict
 COPY time/fuzz/in /work/in
 COPY time/fuzz/fuzz.sh /work/fuzz.sh
 COPY time/fuzz/whatsup.sh /work/whatsup.sh
+COPY time/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
