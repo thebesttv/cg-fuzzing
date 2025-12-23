@@ -147,6 +147,7 @@ COPY libffi/fuzz/dict /work/dict
 COPY libffi/fuzz/in /work/in
 COPY libffi/fuzz/fuzz.sh /work/fuzz.sh
 COPY libffi/fuzz/whatsup.sh /work/whatsup.sh
+COPY libffi/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

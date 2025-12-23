@@ -97,6 +97,7 @@ COPY libexif/fuzz/dict /work/dict
 COPY libexif/fuzz/in /work/in
 COPY libexif/fuzz/fuzz.sh /work/fuzz.sh
 COPY libexif/fuzz/whatsup.sh /work/whatsup.sh
+COPY libexif/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov: libexif + exif CLI with llvm-cov instrumentation
 WORKDIR /work/build-libexif-cov

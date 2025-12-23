@@ -60,6 +60,7 @@ COPY libsodium/fuzz/dict /work/dict
 COPY libsodium/fuzz/in /work/in
 COPY libsodium/fuzz/fuzz.sh /work/fuzz.sh
 COPY libsodium/fuzz/whatsup.sh /work/whatsup.sh
+COPY libsodium/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -72,6 +72,7 @@ COPY libdeflate/fuzz/dict /work/dict
 COPY libdeflate/fuzz/in /work/in
 COPY libdeflate/fuzz/fuzz.sh /work/fuzz.sh
 COPY libdeflate/fuzz/whatsup.sh /work/whatsup.sh
+COPY libdeflate/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
