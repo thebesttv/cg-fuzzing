@@ -91,6 +91,7 @@ COPY libevent/fuzz/dict /work/dict
 COPY libevent/fuzz/in /work/in
 COPY libevent/fuzz/fuzz.sh /work/fuzz.sh
 COPY libevent/fuzz/whatsup.sh /work/whatsup.sh
+COPY libevent/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
