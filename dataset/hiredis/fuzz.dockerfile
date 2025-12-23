@@ -131,6 +131,7 @@ COPY hiredis/fuzz/dict /work/dict
 COPY hiredis/fuzz/in /work/in
 COPY hiredis/fuzz/fuzz.sh /work/fuzz.sh
 COPY hiredis/fuzz/whatsup.sh /work/whatsup.sh
+COPY hiredis/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

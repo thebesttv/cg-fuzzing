@@ -64,6 +64,7 @@ COPY html2text/fuzz/dict /work/dict
 COPY html2text/fuzz/in /work/in
 COPY html2text/fuzz/fuzz.sh /work/fuzz.sh
 COPY html2text/fuzz/whatsup.sh /work/whatsup.sh
+COPY html2text/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
