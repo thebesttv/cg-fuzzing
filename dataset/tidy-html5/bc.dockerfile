@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract tidy-html5 5.8.0
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: tidy-html5" > /work/proj && \
+    echo "version: 5.8.0" >> /work/proj && \
+    echo "source: https://github.com/htacg/tidy-html5/archive/refs/tags/5.8.0.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/htacg/tidy-html5/archive/refs/tags/5.8.0.tar.gz && \
     tar -xzf 5.8.0.tar.gz && \
+    mv 5.8.0 build && \
     rm 5.8.0.tar.gz
 
-WORKDIR /home/SVF-tools/tidy-html5-5.8.0
+WORKDIR /work/build
 
 # Build with CMake using WLLVM
 RUN rm -rf build && mkdir build && cd build && \
@@ -31,9 +39,9 @@ RUN rm -rf build && mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/tidy && \
-    mv build/tidy.bc ~/bc/
+    mv build/tidy.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

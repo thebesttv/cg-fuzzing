@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract TCC (Tiny C Compiler) v0.9.27
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: tcc" > /work/proj && \
+    echo "version: 0.9.27" >> /work/proj && \
+    echo "source: https://download.savannah.gnu.org/releases/tinycc/tcc-0.9.27.tar.bz2" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://download.savannah.gnu.org/releases/tinycc/tcc-0.9.27.tar.bz2 && \
     tar -xjf tcc-0.9.27.tar.bz2 && \
+    mv tcc-0.9.27 build && \
     rm tcc-0.9.27.tar.bz2
 
-WORKDIR /home/SVF-tools/tcc-0.9.27
+WORKDIR /work/build
 
 # Configure with WLLVM and static linking
 # TCC uses a custom configure script (not autotools)
@@ -33,9 +41,9 @@ RUN ./configure --prefix=/usr/local --disable-bcheck \
 RUN make tcc -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc tcc && \
-    mv tcc.bc ~/bc/
+    mv tcc.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

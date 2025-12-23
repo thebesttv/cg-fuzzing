@@ -16,9 +16,10 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/nih-at/libzip/archive/refs/tags/v1.11.4.tar.gz && \
     tar -xzf v1.11.4.tar.gz && \
+    mv v1.11.4 build && \
     rm v1.11.4.tar.gz
 
-WORKDIR /home/SVF-tools/libzip-1.11.4
+WORKDIR /work/build
 
 # 3. Build with WLLVM using CMake
 # Disable optional compression methods to avoid dynamic linking issues
@@ -44,9 +45,9 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # 4. Extract bitcode files (zipcmp is a good CLI tool for fuzzing)
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/src/zipcmp && \
-    mv build/src/zipcmp.bc ~/bc/
+    mv build/src/zipcmp.bc /work/bc/
 
 # 5. Verify
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

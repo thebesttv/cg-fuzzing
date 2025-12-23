@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract cproto 4.7w
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: cproto" > /work/proj && \
+    echo "version: 4.7w" >> /work/proj && \
+    echo "source: https://invisible-mirror.net/archives/cproto/cproto-4.7w.tgz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://invisible-mirror.net/archives/cproto/cproto-4.7w.tgz && \
     tar -xzf cproto-4.7w.tgz && \
+    mv cproto-4.7w build && \
     rm cproto-4.7w.tgz
 
-WORKDIR /home/SVF-tools/cproto-4.7w
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -35,9 +43,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc cproto && \
-    mv cproto.bc ~/bc/
+    mv cproto.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

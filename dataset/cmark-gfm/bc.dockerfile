@@ -16,9 +16,10 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/github/cmark-gfm/archive/refs/tags/0.29.0.gfm.13.tar.gz && \
     tar -xzf 0.29.0.gfm.13.tar.gz && \
+    mv 0.29.0.gfm.13 build && \
     rm 0.29.0.gfm.13.tar.gz
 
-WORKDIR /home/SVF-tools/cmark-gfm-0.29.0.gfm.13
+WORKDIR /work/build
 
 # 3. Build with WLLVM using CMake
 RUN mkdir build && cd build && \
@@ -34,9 +35,9 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # 4. Extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/src/cmark-gfm && \
-    mv build/src/cmark-gfm.bc ~/bc/
+    mv build/src/cmark-gfm.bc /work/bc/
 
 # 5. Verify
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

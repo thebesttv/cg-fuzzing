@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract libsndfile 1.2.2
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libsndfile" > /work/proj && \
+    echo "version: 1.2.2" >> /work/proj && \
+    echo "source: https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz && \
     tar -xJf libsndfile-1.2.2.tar.xz && \
+    mv libsndfile-1.2.2 build && \
     rm libsndfile-1.2.2.tar.xz
 
-WORKDIR /home/SVF-tools/libsndfile-1.2.2
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, python3 for autogen)
 RUN apt-get update && \
@@ -37,9 +45,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc programs/sndfile-info && \
-    mv programs/sndfile-info.bc ~/bc/
+    mv programs/sndfile-info.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

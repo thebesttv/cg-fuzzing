@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract zstd v1.5.7
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: zstd" > /work/proj && \
+    echo "version: 1.5.7" >> /work/proj && \
+    echo "source: https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz && \
     tar -xzf zstd-1.5.7.tar.gz && \
+    mv zstd-1.5.7 build && \
     rm zstd-1.5.7.tar.gz
 
-WORKDIR /home/SVF-tools/zstd-1.5.7
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -33,9 +41,9 @@ RUN CC=wllvm \
     make -j$(nproc) zstd-release
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc programs/zstd && \
-    mv programs/zstd.bc ~/bc/
+    mv programs/zstd.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

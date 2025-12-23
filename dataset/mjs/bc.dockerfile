@@ -15,9 +15,10 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/cesanta/mjs/archive/refs/tags/2.20.0.tar.gz && \
     tar -xzf 2.20.0.tar.gz && \
+    mv 2.20.0 build && \
     rm 2.20.0.tar.gz
 
-WORKDIR /home/SVF-tools/mjs-2.20.0
+WORKDIR /work/build
 
 # 3. Install build dependencies
 RUN apt-get update && \
@@ -35,9 +36,9 @@ RUN mkdir -p build && \
     -o build/mjs
 
 # 5. Extract bitcode file
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/mjs && \
-    mv build/mjs.bc ~/bc/
+    mv build/mjs.bc /work/bc/
 
 # 6. Verify
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

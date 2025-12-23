@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract squashfs-tools 4.7.4
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: squashfs-tools" > /work/proj && \
+    echo "version: 4.7.4" >> /work/proj && \
+    echo "source: https://github.com/plougher/squashfs-tools/releases/download/4.7.4/squashfs-tools-4.7.4.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/plougher/squashfs-tools/releases/download/4.7.4/squashfs-tools-4.7.4.tar.gz && \
     tar -xzf squashfs-tools-4.7.4.tar.gz && \
+    mv squashfs-tools-4.7.4 build && \
     rm squashfs-tools-4.7.4.tar.gz
 
-WORKDIR /home/SVF-tools/squashfs-tools-4.7.4/squashfs-tools
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, zlib and compression libs)
 RUN apt-get update && \
@@ -33,9 +41,9 @@ RUN CC=wllvm \
     make -j$(nproc) unsquashfs
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc unsquashfs && \
-    mv unsquashfs.bc ~/bc/
+    mv unsquashfs.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

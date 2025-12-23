@@ -17,7 +17,7 @@ RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github
     unzip master.zip && \
     rm master.zip
 
-WORKDIR /home/SVF-tools/tomlc99-master
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -36,9 +36,9 @@ RUN wllvm -g -O0 -Xclang -disable-llvm-passes -o toml_cat_static toml_cat.c libt
     -static -Wl,--allow-multiple-definition
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc toml_cat_static && \
-    mv toml_cat_static.bc ~/bc/toml_cat.bc
+    mv toml_cat_static.bc /work/bc/toml_cat.bc
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

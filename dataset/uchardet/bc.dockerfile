@@ -15,9 +15,10 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.freedesktop.org/software/uchardet/releases/uchardet-0.0.8.tar.xz && \
     tar -xf uchardet-0.0.8.tar.xz && \
+    mv uchardet-0.0.8 build && \
     rm uchardet-0.0.8.tar.xz
 
-WORKDIR /home/SVF-tools/uchardet-0.0.8
+WORKDIR /work/build
 
 # 3. Install build dependencies
 RUN apt-get update && \
@@ -37,9 +38,9 @@ RUN mkdir build && cd build && \
     make -j$(nproc)
 
 # 5. Extract bitcode file
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/src/tools/uchardet && \
-    mv build/src/tools/uchardet.bc ~/bc/
+    mv build/src/tools/uchardet.bc /work/bc/
 
 # 6. Verify
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

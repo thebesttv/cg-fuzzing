@@ -16,9 +16,10 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/dstosberg/odt2txt/archive/refs/tags/v0.5.tar.gz && \
     tar -xzf v0.5.tar.gz && \
+    mv v0.5 build && \
     rm v0.5.tar.gz
 
-WORKDIR /home/SVF-tools/odt2txt-0.5
+WORKDIR /work/build
 
 # 3. Build with WLLVM using Makefile
 # odt2txt uses a simple Makefile
@@ -28,9 +29,9 @@ RUN CC=wllvm \
     make
 
 # 4. Extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc odt2txt && \
-    mv odt2txt.bc ~/bc/
+    mv odt2txt.bc /work/bc/
 
 # 5. Verify
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

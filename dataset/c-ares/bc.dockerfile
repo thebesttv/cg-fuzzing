@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract c-ares v1.34.5
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: c-ares" > /work/proj && \
+    echo "version: 1.34.5" >> /work/proj && \
+    echo "source: https://github.com/c-ares/c-ares/releases/download/v1.34.5/c-ares-1.34.5.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/c-ares/c-ares/releases/download/v1.34.5/c-ares-1.34.5.tar.gz && \
     tar -xzf c-ares-1.34.5.tar.gz && \
+    mv c-ares-1.34.5 build && \
     rm c-ares-1.34.5.tar.gz
 
-WORKDIR /home/SVF-tools/c-ares-1.34.5
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, cmake for build)
 RUN apt-get update && \
@@ -40,9 +48,9 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Create bc directory and extract bitcode files from adig and ahost
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/bin/adig && \
-    mv build/bin/adig.bc ~/bc/
+    mv build/bin/adig.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

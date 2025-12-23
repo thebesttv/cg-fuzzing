@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract libplist 2.7.0
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libplist" > /work/proj && \
+    echo "version: 2.7.0" >> /work/proj && \
+    echo "source: https://github.com/libimobiledevice/libplist/archive/refs/tags/2.7.0.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libimobiledevice/libplist/archive/refs/tags/2.7.0.tar.gz && \
     tar -xzf 2.7.0.tar.gz && \
+    mv 2.7.0 build && \
     rm 2.7.0.tar.gz
 
-WORKDIR /home/SVF-tools/libplist-2.7.0
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -45,11 +53,11 @@ RUN find . -name Makefile -exec sed -i 's/\(plistutil_LDADD = \)/\1-all-static /
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc tools/plistutil && \
-    mv tools/plistutil.bc ~/bc/
+    mv tools/plistutil.bc /work/bc/
 
 # Verify that bc files were created and binary is static
-RUN ls -la ~/bc/ && \
+RUN ls -la /work/bc/ && \
     file tools/plistutil && \
     ldd tools/plistutil 2>&1 || echo "Binary is statically linked"

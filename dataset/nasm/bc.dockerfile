@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract nasm v2.16.03
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: nasm" > /work/proj && \
+    echo "version: 2.16.03" >> /work/proj && \
+    echo "source: https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/nasm-2.16.03.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/nasm-2.16.03.tar.gz && \
     tar -xzf nasm-2.16.03.tar.gz && \
+    mv nasm-2.16.03 build && \
     rm nasm-2.16.03.tar.gz
 
-WORKDIR /home/SVF-tools/nasm-2.16.03
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -35,9 +43,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc nasm && \
-    mv nasm.bc ~/bc/
+    mv nasm.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

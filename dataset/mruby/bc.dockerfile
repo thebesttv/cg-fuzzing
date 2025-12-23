@@ -16,9 +16,10 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/mruby/mruby/archive/refs/tags/3.4.0.tar.gz && \
     tar -xzf 3.4.0.tar.gz && \
+    mv 3.4.0 build && \
     rm 3.4.0.tar.gz
 
-WORKDIR /home/SVF-tools/mruby-3.4.0
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -35,11 +36,11 @@ RUN CC=wllvm \
 
 # Create bc directory and extract bitcode files
 # mruby builds several binaries: mruby (interpreter), mrbc (compiler), mirb (REPL)
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/host/bin/mruby && \
-    mv build/host/bin/mruby.bc ~/bc/ && \
+    mv build/host/bin/mruby.bc /work/bc/ && \
     extract-bc build/host/bin/mrbc && \
-    mv build/host/bin/mrbc.bc ~/bc/
+    mv build/host/bin/mrbc.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

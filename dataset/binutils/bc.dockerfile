@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract binutils v2.43.1
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: binutils" > /work/proj && \
+    echo "version: 2.43.1" >> /work/proj && \
+    echo "source: https://ftpmirror.gnu.org/gnu/binutils/binutils-2.43.1.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/binutils/binutils-2.43.1.tar.gz && \
     tar -xzf binutils-2.43.1.tar.gz && \
+    mv binutils-2.43.1 build && \
     rm binutils-2.43.1.tar.gz
 
-WORKDIR /home/SVF-tools/binutils-2.43.1
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -45,7 +53,7 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files from main tools
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for tool in binutils/readelf binutils/objdump binutils/size \
                 binutils/strings binutils/nm-new binutils/strip-new \
                 binutils/objcopy binutils/addr2line binutils/ar \
@@ -53,9 +61,9 @@ RUN mkdir -p ~/bc && \
         if [ -f "$tool" ] && [ -x "$tool" ]; then \
             extract-bc "$tool" && \
             bcname=$(basename "$tool" | sed 's/-new//').bc && \
-            mv "${tool}.bc" ~/bc/"$bcname" 2>/dev/null || true; \
+            mv "${tool}.bc" /work/bc/"$bcname" 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

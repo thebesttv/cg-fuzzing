@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract chibicc (latest main branch)
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: chibicc" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/rui314/chibicc/archive/refs/heads/main.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/rui314/chibicc/archive/refs/heads/main.tar.gz -O chibicc.tar.gz && \
     tar -xzf chibicc.tar.gz && \
+    mv chibicc build && \
     rm chibicc.tar.gz
 
-WORKDIR /home/SVF-tools/chibicc-main
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -33,9 +41,9 @@ RUN make CC=wllvm \
     -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc chibicc && \
-    mv chibicc.bc ~/bc/
+    mv chibicc.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

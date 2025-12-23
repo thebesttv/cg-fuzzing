@@ -16,9 +16,10 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/skvadrik/re2c/releases/download/4.3/re2c-4.3.tar.xz && \
     tar -xf re2c-4.3.tar.xz && \
+    mv re2c-4.3 build && \
     rm re2c-4.3.tar.xz
 
-WORKDIR /home/SVF-tools/re2c-4.3
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -37,9 +38,9 @@ RUN CC=wllvm CXX=wllvm++ \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc re2c && \
-    mv re2c.bc ~/bc/
+    mv re2c.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

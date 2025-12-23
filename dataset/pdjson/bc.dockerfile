@@ -16,9 +16,10 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/skeeto/pdjson/archive/refs/heads/master.tar.gz -O pdjson.tar.gz && \
     tar -xzf pdjson.tar.gz && \
+    mv pdjson build && \
     rm pdjson.tar.gz
 
-WORKDIR /home/SVF-tools/pdjson-master
+WORKDIR /work/build
 
 # Build with static linking and WLLVM
 # Build the pretty tool which reads and reformats JSON
@@ -27,9 +28,9 @@ RUN wllvm -c -g -O0 -Xclang -disable-llvm-passes -std=c99 pdjson.c -o pdjson.o &
     wllvm -g -O0 -Xclang -disable-llvm-passes -static -Wl,--allow-multiple-definition -o pretty tests/pretty.o pdjson.o
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc pretty && \
-    mv pretty.bc ~/bc/
+    mv pretty.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

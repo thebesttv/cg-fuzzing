@@ -20,7 +20,7 @@ RUN apt-get update && \
 
 RUN git clone --depth 1 https://github.com/nothings/stb.git
 
-WORKDIR /home/SVF-tools/stb
+WORKDIR /work/build
 
 # Create a harness program that uses stb_image to load images
 RUN echo '/* stb_image harness for fuzzing/analysis */' > stb_image_harness.c && \
@@ -47,9 +47,9 @@ RUN wllvm \
     -lm
 
 # Create bc directory and extract bitcode file
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc stb_image_harness && \
-    mv stb_image_harness.bc ~/bc/
+    mv stb_image_harness.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

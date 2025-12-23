@@ -16,9 +16,10 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/svaarala/duktape/releases/download/v2.7.0/duktape-2.7.0.tar.xz && \
     tar -xf duktape-2.7.0.tar.xz && \
+    mv duktape-2.7.0 build && \
     rm duktape-2.7.0.tar.xz
 
-WORKDIR /home/SVF-tools/duktape-2.7.0
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -37,9 +38,9 @@ RUN wllvm -g -O0 -Xclang -disable-llvm-passes -std=c99 \
     -static -Wl,--allow-multiple-definition
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc duk && \
-    mv duk.bc ~/bc/
+    mv duk.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

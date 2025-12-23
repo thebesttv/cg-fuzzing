@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract minisign 0.11
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: minisign" > /work/proj && \
+    echo "version: 0.11" >> /work/proj && \
+    echo "source: https://github.com/jedisct1/minisign/archive/refs/tags/0.11.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jedisct1/minisign/archive/refs/tags/0.11.tar.gz && \
     tar -xzf 0.11.tar.gz && \
+    mv 0.11 build && \
     rm 0.11.tar.gz
 
-WORKDIR /home/SVF-tools/minisign-0.11
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, cmake, libsodium, pkg-config)
 RUN apt-get update && \
@@ -35,14 +43,14 @@ RUN mkdir build && cd build && \
     make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     cd build/CMakeFiles/minisign.dir/src && \
     for obj in *.c.o; do \
         if [ -f "$obj" ]; then \
             extract-bc "$obj" && \
-            mv "${obj}.bc" ~/bc/ 2>/dev/null || true; \
+            mv "${obj}.bc" /work/bc/ 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

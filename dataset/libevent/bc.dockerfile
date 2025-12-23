@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract libevent v2.1.12-stable
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libevent" > /work/proj && \
+    echo "version: 2.1.12-stable" >> /work/proj && \
+    echo "source: https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz && \
     tar -xzf libevent-2.1.12-stable.tar.gz && \
+    mv libevent-2.1.12-stable build && \
     rm libevent-2.1.12-stable.tar.gz
 
-WORKDIR /home/SVF-tools/libevent-2.1.12-stable
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -64,9 +72,9 @@ RUN wllvm -g -O0 -Xclang -disable-llvm-passes \
     -static -Wl,--allow-multiple-definition -lpthread
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc test_event && \
-    mv test_event.bc ~/bc/
+    mv test_event.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract groff v1.23.0
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: groff" > /work/proj && \
+    echo "version: 1.23.0" >> /work/proj && \
+    echo "source: https://ftp.gnu.org/gnu/groff/groff-1.23.0.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftp.gnu.org/gnu/groff/groff-1.23.0.tar.gz && \
     tar -xzf groff-1.23.0.tar.gz && \
+    mv groff-1.23.0 build && \
     rm groff-1.23.0.tar.gz
 
-WORKDIR /home/SVF-tools/groff-1.23.0
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -38,9 +46,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files from groff binary
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc groff && \
-    mv groff.bc ~/bc/ 2>/dev/null || true
+    mv groff.bc /work/bc/ 2>/dev/null || true
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

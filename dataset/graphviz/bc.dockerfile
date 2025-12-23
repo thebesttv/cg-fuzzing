@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract graphviz v12.2.1
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: graphviz" > /work/proj && \
+    echo "version: 12.2.1" >> /work/proj && \
+    echo "source: https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/12.2.1/graphviz-12.2.1.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/12.2.1/graphviz-12.2.1.tar.gz && \
     tar -xzf graphviz-12.2.1.tar.gz && \
+    mv graphviz-12.2.1 build && \
     rm graphviz-12.2.1.tar.gz
 
-WORKDIR /home/SVF-tools/graphviz-12.2.1
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -47,7 +55,7 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files from main tools
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for tool in cmd/dot/dot_static cmd/gvpr/gvpr cmd/lefty/lefty cmd/tools/acyclic \
                 cmd/tools/bcomps cmd/tools/ccomps cmd/tools/dijkstra \
                 cmd/tools/gc cmd/tools/gvcolor cmd/tools/gvpack \
@@ -55,9 +63,9 @@ RUN mkdir -p ~/bc && \
         if [ -f "$tool" ] && [ -x "$tool" ]; then \
             extract-bc "$tool" && \
             bcname=$(basename "$tool" | sed 's/_static//').bc && \
-            mv "${tool}.bc" ~/bc/"$bcname" 2>/dev/null || true; \
+            mv "${tool}.bc" /work/bc/"$bcname" 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

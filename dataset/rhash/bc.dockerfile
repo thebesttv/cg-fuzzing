@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract RHash 1.4.5
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: rhash" > /work/proj && \
+    echo "version: 1.4.5" >> /work/proj && \
+    echo "source: https://github.com/rhash/RHash/archive/refs/tags/v1.4.5.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/rhash/RHash/archive/refs/tags/v1.4.5.tar.gz && \
     tar -xzf v1.4.5.tar.gz && \
+    mv v1.4.5 build && \
     rm v1.4.5.tar.gz
 
-WORKDIR /home/SVF-tools/RHash-1.4.5
+WORKDIR /work/build
 
 # Configure RHash - disable shared library, use static linking, no openssl
 RUN ./configure --cc=wllvm --extra-cflags="-g -O0 -Xclang -disable-llvm-passes" --extra-ldflags="-static -Wl,--allow-multiple-definition" --disable-lib-shared --enable-static --disable-openssl --disable-openssl-runtime
@@ -27,9 +35,9 @@ RUN ./configure --cc=wllvm --extra-cflags="-g -O0 -Xclang -disable-llvm-passes" 
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc rhash && \
-    mv rhash.bc ~/bc/
+    mv rhash.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

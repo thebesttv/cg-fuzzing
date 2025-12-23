@@ -15,9 +15,10 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/mendsley/bsdiff/archive/refs/heads/master.tar.gz && \
     tar -xzf master.tar.gz && \
+    mv master build && \
     rm master.tar.gz
 
-WORKDIR /home/SVF-tools/bsdiff-master
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, bzip2 for compression)
 RUN apt-get update && \
@@ -43,13 +44,13 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for bin in bsdiff bspatch; do \
         if [ -f "$bin" ] && [ -x "$bin" ]; then \
             extract-bc "$bin" && \
-            mv "${bin}.bc" ~/bc/ 2>/dev/null || true; \
+            mv "${bin}.bc" /work/bc/ 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

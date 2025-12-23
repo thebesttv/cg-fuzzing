@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract daemonize v1.7.8
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: daemonize" > /work/proj && \
+    echo "version: 1.7.8" >> /work/proj && \
+    echo "source: https://github.com/bmc/daemonize/archive/refs/tags/release-1.7.8.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/bmc/daemonize/archive/refs/tags/release-1.7.8.tar.gz && \
     tar -xzf release-1.7.8.tar.gz && \
+    mv release-1.7.8 build && \
     rm release-1.7.8.tar.gz
 
-WORKDIR /home/SVF-tools/daemonize-release-1.7.8
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, autotools)
 RUN apt-get update && \
@@ -34,9 +42,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc daemonize && \
-    mv daemonize.bc ~/bc/
+    mv daemonize.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

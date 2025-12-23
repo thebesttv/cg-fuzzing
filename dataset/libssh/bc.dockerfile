@@ -13,9 +13,10 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.libssh.org/files/0.10/libssh-0.10.6.tar.xz && \
     tar -xf libssh-0.10.6.tar.xz && \
+    mv libssh-0.10.6 build && \
     rm libssh-0.10.6.tar.xz
 
-WORKDIR /home/SVF-tools/libssh-0.10.6
+WORKDIR /work/build
 
 RUN apt-get update && \
     apt-get install -y file cmake libssl-dev zlib1g-dev && \
@@ -55,8 +56,8 @@ RUN wllvm -g -O0 -Xclang -disable-llvm-passes \
     build/src/libssh.a \
     -static -Wl,--allow-multiple-definition -lssl -lcrypto -lz -lpthread
 
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc test_ssh && \
-    mv test_ssh.bc ~/bc/
+    mv test_ssh.bc /work/bc/
 
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract ncdu 1.22
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: ncdu" > /work/proj && \
+    echo "version: 1.22" >> /work/proj && \
+    echo "source: https://dev.yorhel.nl/download/ncdu-1.22.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://dev.yorhel.nl/download/ncdu-1.22.tar.gz && \
     tar -xzf ncdu-1.22.tar.gz && \
+    mv ncdu-1.22 build && \
     rm ncdu-1.22.tar.gz
 
-WORKDIR /home/SVF-tools/ncdu-1.22
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -36,13 +44,13 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for bin in ncdu; do \
         if [ -f "$bin" ] && [ -x "$bin" ] && file "$bin" | grep -q "ELF"; then \
             extract-bc "$bin" && \
-            mv "${bin}.bc" ~/bc/ 2>/dev/null || true; \
+            mv "${bin}.bc" /work/bc/ 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract argon2 20190702
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: argon2" > /work/proj && \
+    echo "version: 20190702" >> /work/proj && \
+    echo "source: https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/20190702.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/20190702.tar.gz && \
     tar -xzf 20190702.tar.gz && \
+    mv 20190702 build && \
     rm 20190702.tar.gz
 
-WORKDIR /home/SVF-tools/phc-winner-argon2-20190702
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -34,9 +42,9 @@ RUN make CC=wllvm \
     -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc argon2 && \
-    mv argon2.bc ~/bc/
+    mv argon2.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

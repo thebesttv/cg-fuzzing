@@ -15,9 +15,10 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jpoirier/picoc/archive/refs/tags/v3.2.2.tar.gz && \
     tar -xzf v3.2.2.tar.gz && \
+    mv v3.2.2 build && \
     rm v3.2.2.tar.gz
 
-WORKDIR /home/SVF-tools/picoc-3.2.2
+WORKDIR /work/build
 
 # 3. Install build dependencies
 RUN apt-get update && \
@@ -34,9 +35,9 @@ RUN sed -i 's/#define USE_READLINE/\/\/ #define USE_READLINE/' platform.h && \
     -j$(nproc)
 
 # 5. Extract bitcode file
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc picoc && \
-    mv picoc.bc ~/bc/
+    mv picoc.bc /work/bc/
 
 # 6. Verify
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

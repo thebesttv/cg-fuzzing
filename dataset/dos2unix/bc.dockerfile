@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract dos2unix 7.5.2
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: dos2unix" > /work/proj && \
+    echo "version: 7.5.2" >> /work/proj && \
+    echo "source: https://downloads.sourceforge.net/project/dos2unix/dos2unix/7.5.2/dos2unix-7.5.2.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget "https://downloads.sourceforge.net/project/dos2unix/dos2unix/7.5.2/dos2unix-7.5.2.tar.gz" && \
     tar -xzf dos2unix-7.5.2.tar.gz && \
+    mv dos2unix-7.5.2 build && \
     rm dos2unix-7.5.2.tar.gz
 
-WORKDIR /home/SVF-tools/dos2unix-7.5.2
+WORKDIR /work/build
 
 # Build with static linking and WLLVM
 RUN make CC=wllvm \
@@ -27,11 +35,11 @@ RUN make CC=wllvm \
     ENABLE_NLS=
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc dos2unix && \
-    mv dos2unix.bc ~/bc/ && \
+    mv dos2unix.bc /work/bc/ && \
     extract-bc unix2dos && \
-    mv unix2dos.bc ~/bc/
+    mv unix2dos.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

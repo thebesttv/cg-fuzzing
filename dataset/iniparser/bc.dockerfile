@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract iniparser v4.2.6
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: iniparser" > /work/proj && \
+    echo "version: 4.2.6" >> /work/proj && \
+    echo "source: https://github.com/ndevilla/iniparser/archive/refs/tags/v4.2.6.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ndevilla/iniparser/archive/refs/tags/v4.2.6.tar.gz && \
     tar -xzf v4.2.6.tar.gz && \
+    mv v4.2.6 build && \
     rm v4.2.6.tar.gz
 
-WORKDIR /home/SVF-tools/iniparser-4.2.6
+WORKDIR /work/build
 
 # Build using CMake with WLLVM
 RUN mkdir build && cd build && \
@@ -36,9 +44,9 @@ RUN wllvm -g -O0 -Xclang -disable-llvm-passes -I src \
     example/parse.c build/libiniparser.a -o parse
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc parse && \
-    mv parse.bc ~/bc/
+    mv parse.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

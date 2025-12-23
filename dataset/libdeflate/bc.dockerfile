@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract libdeflate v1.25
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libdeflate" > /work/proj && \
+    echo "version: 1.25" >> /work/proj && \
+    echo "source: https://github.com/ebiggers/libdeflate/releases/download/v1.25/libdeflate-1.25.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ebiggers/libdeflate/releases/download/v1.25/libdeflate-1.25.tar.gz && \
     tar -xzf libdeflate-1.25.tar.gz && \
+    mv libdeflate-1.25 build && \
     rm libdeflate-1.25.tar.gz
 
-WORKDIR /home/SVF-tools/libdeflate-1.25
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, cmake)
 RUN apt-get update && \
@@ -39,9 +47,9 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/programs/libdeflate-gzip && \
-    mv build/programs/libdeflate-gzip.bc ~/bc/
+    mv build/programs/libdeflate-gzip.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

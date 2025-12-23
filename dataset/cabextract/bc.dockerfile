@@ -16,9 +16,10 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.cabextract.org.uk/cabextract-1.11.tar.gz && \
     tar -xzf cabextract-1.11.tar.gz && \
+    mv cabextract-1.11 build && \
     rm cabextract-1.11.tar.gz
 
-WORKDIR /home/SVF-tools/cabextract-1.11
+WORKDIR /work/build
 
 # 3. Build with WLLVM using autotools
 RUN CC=wllvm \
@@ -29,9 +30,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # 4. Extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc cabextract && \
-    mv cabextract.bc ~/bc/
+    mv cabextract.bc /work/bc/
 
 # 5. Verify
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

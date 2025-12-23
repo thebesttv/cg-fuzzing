@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract libtasn1 4.20.0
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libtasn1" > /work/proj && \
+    echo "version: 4.20.0" >> /work/proj && \
+    echo "source: https://ftpmirror.gnu.org/gnu/libtasn1/libtasn1-4.20.0.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/libtasn1/libtasn1-4.20.0.tar.gz && \
     tar -xzf libtasn1-4.20.0.tar.gz && \
+    mv libtasn1-4.20.0 build && \
     rm libtasn1-4.20.0.tar.gz
 
-WORKDIR /home/SVF-tools/libtasn1-4.20.0
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -37,11 +45,11 @@ RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
 # libtasn1 provides: asn1Parser, asn1Coding, asn1Decoding
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc src/asn1Parser && \
     extract-bc src/asn1Decoding && \
-    mv src/asn1Parser.bc ~/bc/ && \
-    mv src/asn1Decoding.bc ~/bc/
+    mv src/asn1Parser.bc /work/bc/ && \
+    mv src/asn1Decoding.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract nginx v1.29.4
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: nginx" > /work/proj && \
+    echo "version: 1.29.4" >> /work/proj && \
+    echo "source: https://nginx.org/download/nginx-1.29.4.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://nginx.org/download/nginx-1.29.4.tar.gz && \
     tar -xzf nginx-1.29.4.tar.gz && \
+    mv nginx-1.29.4 build && \
     rm nginx-1.29.4.tar.gz
 
-WORKDIR /home/SVF-tools/nginx-1.29.4
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, libpcre for nginx)
 RUN apt-get update && \
@@ -38,9 +46,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc objs/nginx && \
-    mv objs/nginx.bc ~/bc/
+    mv objs/nginx.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

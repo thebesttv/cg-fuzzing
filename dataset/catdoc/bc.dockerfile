@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract catdoc 0.95
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: catdoc" > /work/proj && \
+    echo "version: 0.95" >> /work/proj && \
+    echo "source: http://ftp.wagner.pp.ru/pub/catdoc/catdoc-0.95.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget "http://ftp.wagner.pp.ru/pub/catdoc/catdoc-0.95.tar.gz" && \
     tar -xzf catdoc-0.95.tar.gz && \
+    mv catdoc-0.95 build && \
     rm catdoc-0.95.tar.gz
 
-WORKDIR /home/SVF-tools/catdoc-0.95
+WORKDIR /work/build
 
 # Configure with static linking and WLLVM
 RUN CC=wllvm \
@@ -30,9 +38,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc src/catdoc && \
-    mv src/catdoc.bc ~/bc/
+    mv src/catdoc.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

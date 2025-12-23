@@ -17,7 +17,7 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN git clone --depth 1 --branch jq-1.8.1 https://github.com/jqlang/jq.git jq-1.8.1
 
-WORKDIR /home/SVF-tools/jq-1.8.1
+WORKDIR /work/build
 
 # Initialize submodules (for oniguruma)
 RUN git submodule init && git submodule update
@@ -86,9 +86,9 @@ RUN wllvm++ -g -O0 -Xclang -disable-llvm-passes \
     -o jq_fuzz_compile
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc jq_fuzz_compile && \
-    mv jq_fuzz_compile.bc ~/bc/
+    mv jq_fuzz_compile.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

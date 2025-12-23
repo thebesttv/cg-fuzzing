@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract libxslt v1.1.42
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libxslt" > /work/proj && \
+    echo "version: 1.1.42" >> /work/proj && \
+    echo "source: https://download.gnome.org/sources/libxslt/1.1/libxslt-1.1.42.tar.xz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://download.gnome.org/sources/libxslt/1.1/libxslt-1.1.42.tar.xz && \
     tar -xf libxslt-1.1.42.tar.xz && \
+    mv libxslt-1.1.42 build && \
     rm libxslt-1.1.42.tar.xz
 
-WORKDIR /home/SVF-tools/libxslt-1.1.42
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -36,9 +44,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files from xsltproc binary
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc xsltproc/xsltproc && \
-    mv xsltproc/xsltproc.bc ~/bc/ 2>/dev/null || true
+    mv xsltproc/xsltproc.bc /work/bc/ 2>/dev/null || true
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

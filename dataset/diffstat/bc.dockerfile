@@ -9,7 +9,7 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://invisible-island.net/datafiles/release/diffstat.tar.gz && tar -xzf diffstat.tar.gz && rm diffstat.tar.gz
 
-WORKDIR /home/SVF-tools/diffstat-1.68
+WORKDIR /work/build
 
 RUN apt-get update && apt-get install -y file && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -17,6 +17,6 @@ RUN CC=wllvm CFLAGS="-g -O0 -Xclang -disable-llvm-passes" LDFLAGS="-static -Wl,-
 
 RUN make -j$(nproc)
 
-RUN mkdir -p ~/bc && extract-bc diffstat && mv diffstat.bc ~/bc/
+RUN mkdir -p /work/bc && extract-bc diffstat && mv diffstat.bc /work/bc/
 
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

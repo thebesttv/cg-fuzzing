@@ -15,9 +15,10 @@ ENV LLVM_COMPILER=clang
 WORKDIR /home/SVF-tools
 COPY lzip/lzip-1.15.tar.gz /home/SVF-tools/
 RUN tar -xzf lzip-1.15.tar.gz && \
+    mv lzip-1.15 build && \
     rm lzip-1.15.tar.gz
 
-WORKDIR /home/SVF-tools/lzip-1.15
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -38,9 +39,9 @@ RUN CC=wllvm CXX=wllvm++ \
 RUN make CXX=wllvm++ CXXFLAGS="-g -O0 -Xclang -disable-llvm-passes" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc lzip && \
-    mv lzip.bc ~/bc/
+    mv lzip.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

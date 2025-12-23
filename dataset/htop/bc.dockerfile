@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract htop 3.4.1
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: htop" > /work/proj && \
+    echo "version: 3.4.1" >> /work/proj && \
+    echo "source: https://github.com/htop-dev/htop/releases/download/3.4.1/htop-3.4.1.tar.xz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/htop-dev/htop/releases/download/3.4.1/htop-3.4.1.tar.xz && \
     tar -xf htop-3.4.1.tar.xz && \
+    mv htop-3.4.1 build && \
     rm htop-3.4.1.tar.xz
 
-WORKDIR /home/SVF-tools/htop-3.4.1
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -36,13 +44,13 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for bin in htop; do \
         if [ -f "$bin" ] && [ -x "$bin" ] && file "$bin" | grep -q "ELF"; then \
             extract-bc "$bin" && \
-            mv "${bin}.bc" ~/bc/ 2>/dev/null || true; \
+            mv "${bin}.bc" /work/bc/ 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

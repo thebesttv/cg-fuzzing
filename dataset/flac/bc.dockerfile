@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract flac v1.5.0
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: flac" > /work/proj && \
+    echo "version: 1.5.0" >> /work/proj && \
+    echo "source: https://github.com/xiph/flac/releases/download/1.5.0/flac-1.5.0.tar.xz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/xiph/flac/releases/download/1.5.0/flac-1.5.0.tar.xz && \
     tar -xJf flac-1.5.0.tar.xz && \
+    mv flac-1.5.0 build && \
     rm flac-1.5.0.tar.xz
 
-WORKDIR /home/SVF-tools/flac-1.5.0
+WORKDIR /work/build
 
 # Configure with static linking and WLLVM
 RUN CC=wllvm \
@@ -32,9 +40,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc src/flac/flac && \
-    mv src/flac/flac.bc ~/bc/
+    mv src/flac/flac.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

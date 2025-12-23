@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract jq v1.8.1
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: jq" > /work/proj && \
+    echo "version: 1.8.1" >> /work/proj && \
+    echo "source: https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-1.8.1.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-1.8.1.tar.gz && \
     tar -xzf jq-1.8.1.tar.gz && \
+    mv jq-1.8.1 build && \
     rm jq-1.8.1.tar.gz
 
-WORKDIR /home/SVF-tools/jq-1.8.1
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -36,9 +44,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc jq && \
-    mv jq.bc ~/bc/
+    mv jq.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/
