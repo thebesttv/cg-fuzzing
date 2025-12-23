@@ -60,6 +60,7 @@ COPY dosfstools/fuzz/dict /work/dict
 COPY dosfstools/fuzz/in /work/in
 COPY dosfstools/fuzz/fuzz.sh /work/fuzz.sh
 COPY dosfstools/fuzz/whatsup.sh /work/whatsup.sh
+COPY dosfstools/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
