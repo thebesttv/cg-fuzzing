@@ -64,6 +64,7 @@ COPY qrencode/fuzz/dict /work/dict
 COPY qrencode/fuzz/in /work/in
 COPY qrencode/fuzz/fuzz.sh /work/fuzz.sh
 COPY qrencode/fuzz/whatsup.sh /work/whatsup.sh
+COPY qrencode/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
