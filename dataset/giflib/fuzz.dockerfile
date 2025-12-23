@@ -62,6 +62,7 @@ COPY giflib/fuzz/dict /work/dict
 COPY giflib/fuzz/in /work/in
 COPY giflib/fuzz/fuzz.sh /work/fuzz.sh
 COPY giflib/fuzz/whatsup.sh /work/whatsup.sh
+COPY giflib/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
