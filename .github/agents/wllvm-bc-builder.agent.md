@@ -35,10 +35,13 @@ description: 编译开源项目，生成 LLVM bitcode (.bc) 文件和 AFL++ fuzz
     ├── in/            # 初始输入语料库
     ├── fuzz.sh        # 启动 fuzzing 的脚本 (已设置可执行权限)
     ├── whatsup.sh     # 监控 fuzzing 进度的脚本 (已设置可执行权限)
+    ├── cmd.template   # 项目特定的命令模板 (用于生成 1-run-cov.sh)
     └── readme.md      # 资源来源说明
 ```
 
-注意：bc 文件和 fuzz 二进制文件不需要提交到仓库，它们会在 GitHub Actions 构建时生成并发布到 Release 中。
+注意：
+- bc 文件和 fuzz 二进制文件不需要提交到仓库，它们会在 GitHub Actions 构建时生成并发布到 Release 中。
+- `1-run-cov.sh` 是通过 `dataset/makefile` 从 `1-run-cov.template` 和 `cmd.template` 自动生成的，不应手动编辑或提交。
 
 ## 核心要求
 
@@ -286,6 +289,7 @@ COPY <项目>/fuzz/dict /work/dict
 COPY <项目>/fuzz/in /work/in
 COPY <项目>/fuzz/fuzz.sh /work/fuzz.sh
 COPY <项目>/fuzz/whatsup.sh /work/whatsup.sh
+COPY <项目>/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
@@ -587,6 +591,38 @@ else
     afl-whatsup -s "${OUT_DIR}"
 fi
 ```
+
+### cmd.template
+
+`cmd.template` 文件用于定义项目特定的命令，用于生成覆盖率测试脚本 `1-run-cov.sh`。
+
+**格式**：单行命令，使用 `$TARGET_BINARY` 引用二进制文件，使用 `$input_path` 作为输入文件路径。
+
+**示例**：
+
+```bash
+# 简单的输入文件
+    "$TARGET_BINARY" "$input_path" >/dev/null 2>&1
+
+# 带参数的命令
+    "$TARGET_BINARY" -f elf -o /dev/null "$input_path" >/dev/null 2>&1
+
+# jq 特殊语法
+    "$TARGET_BINARY" '.' "$input_path" >/dev/null 2>&1
+
+# 解压缩工具
+    "$TARGET_BINARY" -d -c "$input_path" >/dev/null 2>&1
+```
+
+**注意**：
+- 命令开头应包含缩进（4个空格）以匹配模板中的缩进
+- 必须重定向输出到 `/dev/null` 以避免干扰覆盖率收集
+- 使用 `2>&1` 同时重定向标准错误
+
+**生成过程**：
+1. 在项目的 `fuzz/` 目录下创建 `cmd.template` 文件
+2. 在 `dataset` 目录运行 `make` 生成 `1-run-cov.sh`
+3. 生成的 `1-run-cov.sh` 不应提交到仓库（已在 `.gitignore` 中排除）
 
 ### readme.md
 ```markdown

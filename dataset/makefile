@@ -1,7 +1,7 @@
 # Makefile for generating project-specific 1-run-cov.sh from template
 
 # Find all projects that have cmd.template file
-PROJECTS_WITH_CMD := $(shell find . -maxdepth 2 -name "cmd.template" | sed 's|^\./||' | sed 's|/fuzz/cmd.template$$||')
+PROJECTS_WITH_CMD := $(shell find . -maxdepth 3 -path "*/fuzz/cmd.template" | sed 's|^\./||' | sed 's|/fuzz/cmd.template$$||')
 
 # Generate target list: for each project, we want to generate <proj>/fuzz/1-run-cov.sh
 TARGETS := $(addsuffix /fuzz/1-run-cov.sh,$(PROJECTS_WITH_CMD))
