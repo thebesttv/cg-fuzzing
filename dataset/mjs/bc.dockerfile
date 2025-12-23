@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # 2. Download mjs source code
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: mjs" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/cesanta/mjs/archive/refs/tags/2.20.0.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/cesanta/mjs/archive/refs/tags/2.20.0.tar.gz && \
     tar -xzf 2.20.0.tar.gz && \
+    mv 2.20.0 build && \
     rm 2.20.0.tar.gz
 
-WORKDIR /home/SVF-tools/mjs-2.20.0
+WORKDIR /work/build
 
 # 3. Install build dependencies
 RUN apt-get update && \
@@ -35,9 +43,9 @@ RUN mkdir -p build && \
     -o build/mjs
 
 # 5. Extract bitcode file
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/mjs && \
-    mv build/mjs.bc ~/bc/
+    mv build/mjs.bc /work/bc/
 
 # 6. Verify
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

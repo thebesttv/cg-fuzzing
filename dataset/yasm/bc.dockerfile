@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract yasm 1.3.0
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: yasm" > /work/proj && \
+    echo "version: 1.3.0" >> /work/proj && \
+    echo "source: https://github.com/yasm/yasm/releases/download/v1.3.0/yasm-1.3.0.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/yasm/yasm/releases/download/v1.3.0/yasm-1.3.0.tar.gz && \
     tar -xzf yasm-1.3.0.tar.gz && \
+    mv yasm-1.3.0 build && \
     rm yasm-1.3.0.tar.gz
 
-WORKDIR /home/SVF-tools/yasm-1.3.0
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -35,9 +43,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc yasm && \
-    mv yasm.bc ~/bc/
+    mv yasm.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

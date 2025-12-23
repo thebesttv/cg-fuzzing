@@ -12,14 +12,21 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract GNU ed 1.22
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: ed" > /work/proj && \
+    echo "version: 1.22" >> /work/proj && \
+    echo "source: unknown" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/ed/ed-1.22.tar.lz && \
     apt-get update && apt-get install -y lzip && \
     tar --lzip -xf ed-1.22.tar.lz && \
     rm ed-1.22.tar.lz && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /home/SVF-tools/ed-1.22
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -37,9 +44,9 @@ RUN ./configure CC=wllvm \
 RUN make CC=wllvm CFLAGS="-g -O0 -Xclang -disable-llvm-passes" LDFLAGS="-static -Wl,--allow-multiple-definition" -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc ed && \
-    mv ed.bc ~/bc/
+    mv ed.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

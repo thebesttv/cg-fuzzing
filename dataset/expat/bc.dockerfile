@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # 2. Download expat source code
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: expat" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/libexpat/libexpat/releases/download/R_2_7_3/expat-2.7.3.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libexpat/libexpat/releases/download/R_2_7_3/expat-2.7.3.tar.gz && \
     tar -xzf expat-2.7.3.tar.gz && \
+    mv expat-2.7.3 build && \
     rm expat-2.7.3.tar.gz
 
-WORKDIR /home/SVF-tools/expat-2.7.3
+WORKDIR /work/build
 
 # 3. Install build dependencies
 RUN apt-get update && \
@@ -34,9 +42,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # 5. Extract bitcode file for xmlwf
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc xmlwf/xmlwf && \
-    mv xmlwf/xmlwf.bc ~/bc/
+    mv xmlwf/xmlwf.bc /work/bc/
 
 # 6. Verify
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

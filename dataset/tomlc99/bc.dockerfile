@@ -12,12 +12,19 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download tomlc99 from master branch (commit 26b9c1ea770dab2378e5041b695d24ccebe58a7a)
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: tomlc99" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: unknown" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/cktan/tomlc99/archive/refs/heads/master.zip && \
     unzip master.zip && \
     rm master.zip
 
-WORKDIR /home/SVF-tools/tomlc99-master
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -36,9 +43,9 @@ RUN wllvm -g -O0 -Xclang -disable-llvm-passes -o toml_cat_static toml_cat.c libt
     -static -Wl,--allow-multiple-definition
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc toml_cat_static && \
-    mv toml_cat_static.bc ~/bc/toml_cat.bc
+    mv toml_cat_static.bc /work/bc/toml_cat.bc
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

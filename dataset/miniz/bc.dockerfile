@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract miniz v3.1.0
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: miniz" > /work/proj && \
+    echo "version: 3.1.0" >> /work/proj && \
+    echo "source: https://github.com/richgel999/miniz/archive/refs/tags/3.1.0.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/richgel999/miniz/archive/refs/tags/3.1.0.tar.gz && \
     tar -xzf 3.1.0.tar.gz && \
+    mv 3.1.0 build && \
     rm 3.1.0.tar.gz
 
-WORKDIR /home/SVF-tools/miniz-3.1.0
+WORKDIR /work/build
 
 # Build with CMake to generate export header and library
 RUN mkdir build && cd build && \
@@ -32,7 +40,7 @@ RUN mkdir build && cd build && \
     make -j$(nproc)
 
 # Create a simple fuzzing harness that reads from file and decompresses
-WORKDIR /home/SVF-tools/miniz-3.1.0
+WORKDIR /work/build
 RUN echo '#include <stdio.h>' > fuzz_harness.c && \
     echo '#include <stdlib.h>' >> fuzz_harness.c && \
     echo '#include <string.h>' >> fuzz_harness.c && \
@@ -87,9 +95,9 @@ RUN wllvm \
     fuzz_harness.c build/libminiz.a
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc miniz_fuzz && \
-    mv miniz_fuzz.bc ~/bc/
+    mv miniz_fuzz.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

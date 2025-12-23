@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract banner v1.3.2
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: banner" > /work/proj && \
+    echo "version: 1.3.2" >> /work/proj && \
+    echo "source: https://shh.thathost.com/pub-unix/files/banner-1.3.2.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://shh.thathost.com/pub-unix/files/banner-1.3.2.tar.gz && \
     tar -xzf banner-1.3.2.tar.gz && \
+    mv banner-1.3.2 build && \
     rm banner-1.3.2.tar.gz
 
-WORKDIR /home/SVF-tools/banner-1.3.2
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, shhmsg and shhopt for banner)
 RUN apt-get update && \
@@ -37,7 +45,7 @@ RUN cd /tmp && \
     cd shhopt-1.1.7 && \
     make && make INSTBASEDIR=/usr install
 
-WORKDIR /home/SVF-tools/banner-1.3.2
+WORKDIR /work/build
 
 # Build with WLLVM - override CC in Makefile and use OPTIM for flags
 RUN make dep
@@ -47,9 +55,9 @@ RUN make CC=wllvm \
     LDFLAGS="-static -Wl,--allow-multiple-definition"
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc banner && \
-    mv banner.bc ~/bc/
+    mv banner.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

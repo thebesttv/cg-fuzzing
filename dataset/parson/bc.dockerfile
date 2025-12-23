@@ -13,13 +13,21 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download parson from GitHub (version 1.5.3, latest commit)
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: parson" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/kgabis/parson/archive/ba29f4eda9ea7703a9f6a9cf2b0532a2605723c3.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/kgabis/parson/archive/ba29f4eda9ea7703a9f6a9cf2b0532a2605723c3.tar.gz -O parson.tar.gz && \
     tar -xzf parson.tar.gz && \
+    mv parson build && \
     rm parson.tar.gz && \
     mv parson-ba29f4eda9ea7703a9f6a9cf2b0532a2605723c3 parson
 
-WORKDIR /home/SVF-tools/parson
+WORKDIR /work/build
 
 # Copy the harness
 COPY parson/fuzz/harness.c harness.c
@@ -33,9 +41,9 @@ RUN wllvm -g -O0 -Xclang -disable-llvm-passes -I. harness.c parson.o -o parson_h
     -static -Wl,--allow-multiple-definition
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc parson_harness && \
-    mv parson_harness.bc ~/bc/
+    mv parson_harness.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

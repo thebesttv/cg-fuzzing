@@ -14,10 +14,16 @@ ENV LLVM_COMPILER=clang
 
 # Clone jq from git (tag jq-1.8.1) to get harness files
 # The release tarball doesn't include tests/jq_fuzz_*.c files
-WORKDIR /home/SVF-tools
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: jq-harness" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: unknown" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN git clone --depth 1 --branch jq-1.8.1 https://github.com/jqlang/jq.git jq-1.8.1
 
-WORKDIR /home/SVF-tools/jq-1.8.1
+WORKDIR /work/build
 
 # Initialize submodules (for oniguruma)
 RUN git submodule init && git submodule update
@@ -86,9 +92,9 @@ RUN wllvm++ -g -O0 -Xclang -disable-llvm-passes \
     -o jq_fuzz_compile
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc jq_fuzz_compile && \
-    mv jq_fuzz_compile.bc ~/bc/
+    mv jq_fuzz_compile.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract mpg123 v1.32.7
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: mpg123" > /work/proj && \
+    echo "version: 1.32.7" >> /work/proj && \
+    echo "source: https://downloads.sourceforge.net/project/mpg123/mpg123/1.32.7/mpg123-1.32.7.tar.bz2" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://downloads.sourceforge.net/project/mpg123/mpg123/1.32.7/mpg123-1.32.7.tar.bz2 && \
     tar -xjf mpg123-1.32.7.tar.bz2 && \
+    mv mpg123-1.32.7 build && \
     rm mpg123-1.32.7.tar.bz2
 
-WORKDIR /home/SVF-tools/mpg123-1.32.7
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -37,14 +45,14 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for bin in src/mpg123 src/out123; do \
         if [ -f "$bin" ] && [ -x "$bin" ] && file "$bin" | grep -q "ELF"; then \
             extract-bc "$bin" && \
             basename_bc=$(basename "$bin").bc && \
-            mv "${bin}.bc" ~/bc/"${basename_bc}" 2>/dev/null || true; \
+            mv "${bin}.bc" /work/bc/"${basename_bc}" 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

@@ -12,9 +12,17 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract lzop v1.04
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: lzop" > /work/proj && \
+    echo "version: 1.04" >> /work/proj && \
+    echo "source: https://www.lzop.org/download/lzop-1.04.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.lzop.org/download/lzop-1.04.tar.gz && \
     tar -xzf lzop-1.04.tar.gz && \
+    mv lzop-1.04 build && \
     rm lzop-1.04.tar.gz
 
 # Download and build lzo library (dependency)
@@ -22,7 +30,7 @@ RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.ob
     tar -xzf lzo-2.10.tar.gz && \
     rm lzo-2.10.tar.gz
 
-WORKDIR /home/SVF-tools/lzo-2.10
+WORKDIR /work/build
 
 # Build lzo library with wllvm
 RUN apt-get update && \
@@ -38,7 +46,7 @@ RUN make -j$(nproc)
 RUN make install
 
 # Build lzop
-WORKDIR /home/SVF-tools/lzop-1.04
+WORKDIR /work/build
 
 RUN CC=wllvm \
     CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
@@ -48,9 +56,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc src/lzop && \
-    mv src/lzop.bc ~/bc/
+    mv src/lzop.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

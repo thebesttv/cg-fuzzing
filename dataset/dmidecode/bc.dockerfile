@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract dmidecode 3.6
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: dmidecode" > /work/proj && \
+    echo "version: 3.6" >> /work/proj && \
+    echo "source: https://download.savannah.gnu.org/releases/dmidecode/dmidecode-3.6.tar.xz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://download.savannah.gnu.org/releases/dmidecode/dmidecode-3.6.tar.xz && \
     tar -xJf dmidecode-3.6.tar.xz && \
+    mv dmidecode-3.6 build && \
     rm dmidecode-3.6.tar.xz
 
-WORKDIR /home/SVF-tools/dmidecode-3.6
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -32,13 +40,13 @@ RUN CC=wllvm \
     make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for bin in dmidecode biosdecode ownership vpddecode; do \
         if [ -f "$bin" ] && [ -x "$bin" ] && file "$bin" | grep -q "ELF"; then \
             extract-bc "$bin" && \
-            mv "${bin}.bc" ~/bc/ 2>/dev/null || true; \
+            mv "${bin}.bc" /work/bc/ 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

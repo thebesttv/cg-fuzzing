@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract quickjs 2024-01-13
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: quickjs" > /work/proj && \
+    echo "version: 2024-01-13" >> /work/proj && \
+    echo "source: https://bellard.org/quickjs/quickjs-2024-01-13.tar.xz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://bellard.org/quickjs/quickjs-2024-01-13.tar.xz && \
     tar -xJf quickjs-2024-01-13.tar.xz && \
+    mv quickjs-2024-01-13 build && \
     rm quickjs-2024-01-13.tar.xz
 
-WORKDIR /home/SVF-tools/quickjs-2024-01-13
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -39,9 +47,9 @@ RUN make CC=wllvm \
     -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc qjs && \
-    mv qjs.bc ~/bc/
+    mv qjs.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

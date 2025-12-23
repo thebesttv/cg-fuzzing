@@ -61,6 +61,7 @@ description: 编译开源项目，生成 LLVM bitcode (.bc) 文件和 AFL++ fuzz
 - 必须使用 `thebesttv/svf:latest ` 作为基础镜像
 - 使用镜像自带的 LLVM/Clang 工具链，**不要额外安装 gcc/llvm/clang**
 - 镜像中的 home 目录是 `/home/SVF-tools`
+- **工作目录统一使用 `/work`**，源码解压到 `/work/build`
 
 ### WLLVM 安装
 ```dockerfile
@@ -97,21 +98,27 @@ RUN pipx install wllvm
 ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
-# 2. 下载源代码
-WORKDIR /home/SVF-tools
+# 2. 创建工作目录并保存项目元信息
+WORKDIR /work
+RUN echo "project: <项目名>" > /work/proj && \
+    echo "version: <版本号>" >> /work/proj && \
+    echo "source: <源码URL>" >> /work/proj
+
+# 3. 下载源代码并解压到 /work/build
 RUN wget <源码下载URL> && \
     tar -xzf <压缩包> && \
-    rm <压缩包>
+    rm <压缩包> && \
+    mv <源码目录> build
 
-WORKDIR /home/SVF-tools/<项目目录>
+WORKDIR /work/build
 
-# 3. 安装构建依赖
+# 4. 安装构建依赖
 RUN apt-get update && \
     apt-get install -y <构建依赖> file && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# 4. 配置和编译（autotools 项目）
+# 5. 配置和编译（autotools 项目）
 RUN CC=wllvm \
     CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
@@ -120,23 +127,24 @@ RUN CC=wllvm \
 
 RUN make -j$(nproc)
 
-# 5. 提取 bitcode 文件
-RUN mkdir -p ~/bc && \
+# 6. 提取 bitcode 文件
+RUN mkdir -p /work/bc && \
     for bin in <二进制文件路径>/*; do \
         if [ -f "$bin" ] && [ -x "$bin" ] && file "$bin" | grep -q "ELF"; then \
             extract-bc "$bin" && \
-            mv "${bin}.bc" ~/bc/ 2>/dev/null || true; \
+            mv "${bin}.bc" /work/bc/ 2>/dev/null || true; \
         fi; \
     done
 
-# 6. 验证
-RUN ls -la ~/bc/
+# 7. 验证
+RUN ls -la /work/bc/
 ```
 
 ## 针对不同构建系统的处理
 
 ### Autotools 项目 (./configure && make)
 ```dockerfile
+WORKDIR /work/build
 RUN CC=wllvm CFLAGS="-g -O0 -Xclang -disable-llvm-passes" LDFLAGS="-static -Wl,--allow-multiple-definition" \
     ./configure --disable-shared
 RUN make -j$(nproc)
@@ -144,16 +152,18 @@ RUN make -j$(nproc)
 
 ### CMake 项目
 ```dockerfile
-RUN mkdir build && cd build && \
+WORKDIR /work/build
+RUN mkdir cmake-build && cd cmake-build && \
     CC=wllvm CXX=wllvm++ \
     cmake .. -DCMAKE_C_FLAGS="-g -O0 -Xclang -disable-llvm-passes" \
              -DCMAKE_EXE_LINKER_FLAGS="-static -Wl,--allow-multiple-definition" \
              -DBUILD_SHARED_LIBS=OFF
-RUN cd build && make -j$(nproc)
+RUN cd cmake-build && make -j$(nproc)
 ```
 
 ### 需要 bootstrap 的项目（如 coreutils）
 ```dockerfile
+WORKDIR /work/build
 RUN git init && \
     git config user.email "build@example.com" && \
     git config user.name "Build" && \
@@ -174,12 +184,12 @@ RUN ./bootstrap --skip-po --gnulib-srcdir=<依赖目录>
 
 2. 验证 .bc 文件生成：
    ```bash
-   docker run --rm <项目>-bc sh -c 'ls ~/bc/*.bc | wc -l'
+   docker run --rm <项目>-bc sh -c 'ls /work/bc/*.bc | wc -l'
    ```
 
 3. 验证静态链接（检查未定义符号）：
    ```bash
-   docker run --rm <项目>-bc sh -c 'llvm-nm -u ~/bc/*.bc'
+   docker run --rm <项目>-bc sh -c 'llvm-nm -u /work/bc/*.bc'
    ```
 
    **验证标准**：输出应该只包含标准 libc/系统库函数（如 `malloc`, `printf`, `pthread_*` 等）

@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract groonga v15.2.1
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: groonga" > /work/proj && \
+    echo "version: 15.2.1" >> /work/proj && \
+    echo "source: https://github.com/groonga/groonga/releases/download/v15.2.1/groonga-15.2.1.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/groonga/groonga/releases/download/v15.2.1/groonga-15.2.1.tar.gz && \
     tar -xzf groonga-15.2.1.tar.gz && \
+    mv groonga-15.2.1 build && \
     rm groonga-15.2.1.tar.gz
 
-WORKDIR /home/SVF-tools/groonga-15.2.1
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, development libraries for groonga)
 RUN apt-get update && \
@@ -37,14 +45,14 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files from binaries
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for bin in src/groonga src/grndb src/grnslap src/grndump; do \
         if [ -f "$bin" ] && [ -x "$bin" ] && file "$bin" | grep -q "ELF"; then \
             extract-bc "$bin" && \
             basename_bc=$(basename "$bin").bc && \
-            mv "${bin}.bc" ~/bc/"${basename_bc}" 2>/dev/null || true; \
+            mv "${bin}.bc" /work/bc/"${basename_bc}" 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

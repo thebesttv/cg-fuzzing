@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract moreutils 0.69
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: moreutils" > /work/proj && \
+    echo "version: 0.69" >> /work/proj && \
+    echo "source: https://git.joeyh.name/index.cgi/moreutils.git/snapshot/moreutils-0.69.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://git.joeyh.name/index.cgi/moreutils.git/snapshot/moreutils-0.69.tar.gz && \
     tar -xzf moreutils-0.69.tar.gz && \
+    mv moreutils-0.69 build && \
     rm moreutils-0.69.tar.gz
 
-WORKDIR /home/SVF-tools/moreutils-0.69
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -32,13 +40,13 @@ RUN CC=wllvm \
     make -j$(nproc) || true
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for bin in sponge chronic ts pee ifne; do \
         if [ -f "$bin" ]; then \
             extract-bc "$bin" && \
-            mv "${bin}.bc" ~/bc/ 2>/dev/null || true; \
+            mv "${bin}.bc" /work/bc/ 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

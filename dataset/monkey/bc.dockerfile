@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract monkey v1.5.5
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: monkey" > /work/proj && \
+    echo "version: 1.5.5" >> /work/proj && \
+    echo "source: https://github.com/monkey/monkey/archive/refs/tags/v1.5.5.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/monkey/monkey/archive/refs/tags/v1.5.5.tar.gz && \
     tar -xzf v1.5.5.tar.gz && \
+    mv v1.5.5 build && \
     rm v1.5.5.tar.gz
 
-WORKDIR /home/SVF-tools/monkey-1.5.5
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -37,10 +45,10 @@ RUN make -C src -j$(nproc)
 # Note: Monkey uses thread-local storage (TLS) which causes "symbol multiply defined" errors
 # during LLVM bitcode extraction. This is a known limitation.
 # For now, we'll generate individual .o.bc files but skip the linking step.
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     cd src && \
     for f in *.o; do extract-bc "$f" 2>/dev/null || true; done && \
-    mv *.o.bc ~/bc/ 2>/dev/null || true
+    mv *.o.bc /work/bc/ 2>/dev/null || true
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

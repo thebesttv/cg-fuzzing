@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract libjpeg-turbo 3.1.2
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libjpeg-turbo" > /work/proj && \
+    echo "version: 3.1.2" >> /work/proj && \
+    echo "source: https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.2.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.2.tar.gz && \
     tar -xzf 3.1.2.tar.gz && \
+    mv 3.1.2 build && \
     rm 3.1.2.tar.gz
 
-WORKDIR /home/SVF-tools/libjpeg-turbo-3.1.2
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, cmake for build, nasm for SIMD)
 RUN apt-get update && \
@@ -42,9 +50,9 @@ RUN cd build && make -j$(nproc)
 
 # Create bc directory and extract bitcode files for djpeg (JPEG decoder - good for fuzzing)
 # Note: When building static only, the binary is named djpeg-static
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/djpeg-static && \
-    mv build/djpeg-static.bc ~/bc/djpeg.bc
+    mv build/djpeg-static.bc /work/bc/djpeg.bc
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

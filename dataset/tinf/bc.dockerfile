@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # 2. Download tinf source code
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: tinf" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/jibsen/tinf/archive/refs/tags/v1.2.1.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jibsen/tinf/archive/refs/tags/v1.2.1.tar.gz && \
     tar -xzf v1.2.1.tar.gz && \
+    mv v1.2.1 build && \
     rm v1.2.1.tar.gz
 
-WORKDIR /home/SVF-tools/tinf-1.2.1
+WORKDIR /work/build
 
 # 3. Install build dependencies
 RUN apt-get update && \
@@ -35,10 +43,10 @@ RUN mkdir build && cd build && \
     make -j$(nproc)
 
 # 5. Extract bitcode file for tgunzip
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     find build -name "tgunzip" -type f -executable && \
     extract-bc build/tgunzip && \
-    mv build/tgunzip.bc ~/bc/
+    mv build/tgunzip.bc /work/bc/
 
 # 6. Verify
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

@@ -11,12 +11,20 @@ RUN pip3 install --break-system-packages wllvm
 ENV LLVM_COMPILER=clang
 
 # Download and extract stress-ng v0.18.05
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: stress-ng" > /work/proj && \
+    echo "version: 0.18.05" >> /work/proj && \
+    echo "source: https://github.com/ColinIanKing/stress-ng/archive/V0.18.05.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ColinIanKing/stress-ng/archive/V0.18.05.tar.gz && \
     tar -xzf V0.18.05.tar.gz && \
+    mv V0.18.05 build && \
     rm V0.18.05.tar.gz
 
-WORKDIR /home/SVF-tools/stress-ng-0.18.05
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -32,11 +40,11 @@ RUN CC=wllvm \
     make -j$(nproc) STATIC=1
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     if [ -f "stress-ng" ] && [ -x "stress-ng" ] && file "stress-ng" | grep -q "ELF"; then \
         extract-bc stress-ng && \
-        mv stress-ng.bc ~/bc/ 2>/dev/null || true; \
+        mv stress-ng.bc /work/bc/ 2>/dev/null || true; \
     fi
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

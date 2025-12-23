@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract c-blosc v1.21.6
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: c-blosc" > /work/proj && \
+    echo "version: 1.21.6" >> /work/proj && \
+    echo "source: https://github.com/Blosc/c-blosc/archive/refs/tags/v1.21.6.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/Blosc/c-blosc/archive/refs/tags/v1.21.6.tar.gz && \
     tar -xzf v1.21.6.tar.gz && \
+    mv v1.21.6 build && \
     rm v1.21.6.tar.gz
 
-WORKDIR /home/SVF-tools/c-blosc-1.21.6
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -40,9 +48,9 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Create bc directory and extract bitcode from shared library
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/blosc/libblosc.so && \
-    mv build/blosc/libblosc.so.bc ~/bc/
+    mv build/blosc/libblosc.so.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

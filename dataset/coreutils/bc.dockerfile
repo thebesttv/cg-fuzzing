@@ -12,7 +12,14 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract coreutils v9.5 (using official release tarball which doesn't require bootstrap)
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: coreutils" > /work/proj && \
+    echo "version: 9.5" >> /work/proj && \
+    echo "source: https://ftpmirror.gnu.org/gnu/coreutils/coreutils-9.5.tar.xz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN apt-get update && \
     apt-get install -y xz-utils file && \
     apt-get clean && \
@@ -20,9 +27,10 @@ RUN apt-get update && \
 
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/coreutils/coreutils-9.5.tar.xz && \
     tar -xf coreutils-9.5.tar.xz && \
+    mv coreutils-9.5 build && \
     rm coreutils-9.5.tar.xz
 
-WORKDIR /home/SVF-tools/coreutils-9.5
+WORKDIR /work/build
 
 # Configure with static linking and WLLVM
 # Disable stdbuf to avoid conflict between static linking and shared library
@@ -38,13 +46,13 @@ RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
 # Note: Some binaries may fail extract-bc (e.g., if they don't have embedded bitcode), which is expected
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for bin in src/*; do \
         if [ -f "$bin" ] && [ -x "$bin" ] && file "$bin" | grep -q "ELF"; then \
             extract-bc "$bin" && \
-            mv "${bin}.bc" ~/bc/ 2>/dev/null || true; \
+            mv "${bin}.bc" /work/bc/ 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

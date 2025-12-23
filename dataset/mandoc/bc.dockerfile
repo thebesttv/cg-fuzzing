@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract mandoc 1.14.6
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: mandoc" > /work/proj && \
+    echo "version: 1.14.6" >> /work/proj && \
+    echo "source: https://mandoc.bsd.lv/snapshots/mandoc.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://mandoc.bsd.lv/snapshots/mandoc.tar.gz && \
     tar -xzf mandoc.tar.gz && \
+    mv mandoc build && \
     rm mandoc.tar.gz
 
-WORKDIR /home/SVF-tools/mandoc-1.14.6
+WORKDIR /work/build
 
 # Configure mandoc with WLLVM
 # mandoc uses its own configure script, set CC in configure.local
@@ -30,9 +38,9 @@ RUN ./configure
 RUN make mandoc -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc mandoc && \
-    mv mandoc.bc ~/bc/
+    mv mandoc.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

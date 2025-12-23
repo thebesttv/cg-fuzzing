@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract grep 3.12
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: grep" > /work/proj && \
+    echo "version: 3.12" >> /work/proj && \
+    echo "source: https://ftpmirror.gnu.org/gnu/grep/grep-3.12.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/grep/grep-3.12.tar.gz && \
     tar -xzf grep-3.12.tar.gz && \
+    mv grep-3.12 build && \
     rm grep-3.12.tar.gz
 
-WORKDIR /home/SVF-tools/grep-3.12
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -36,9 +44,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc src/grep && \
-    mv src/grep.bc ~/bc/
+    mv src/grep.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

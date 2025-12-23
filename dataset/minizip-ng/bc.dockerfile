@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract minizip-ng v4.0.10
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: minizip-ng" > /work/proj && \
+    echo "version: 4.0.10" >> /work/proj && \
+    echo "source: https://github.com/zlib-ng/minizip-ng/archive/refs/tags/4.0.10.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/zlib-ng/minizip-ng/archive/refs/tags/4.0.10.tar.gz && \
     tar -xzf 4.0.10.tar.gz && \
+    mv 4.0.10 build && \
     rm 4.0.10.tar.gz
 
-WORKDIR /home/SVF-tools/minizip-ng-4.0.10
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -39,9 +47,9 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Create bc directory and extract bitcode from minizip CLI
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/minizip && \
-    mv build/minizip.bc ~/bc/
+    mv build/minizip.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

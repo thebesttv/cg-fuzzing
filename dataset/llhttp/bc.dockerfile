@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract llhttp v9.2.1
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: llhttp" > /work/proj && \
+    echo "version: 9.2.1" >> /work/proj && \
+    echo "source: https://github.com/nodejs/llhttp/archive/refs/tags/release/v9.2.1.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/nodejs/llhttp/archive/refs/tags/release/v9.2.1.tar.gz && \
     tar -xzf v9.2.1.tar.gz && \
+    mv v9.2.1 build && \
     rm v9.2.1.tar.gz
 
-WORKDIR /home/SVF-tools/llhttp-release-v9.2.1
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -88,9 +96,9 @@ RUN printf '%s\n' '#include "llhttp.h"' \
 RUN wllvm -g -O0 -Xclang -disable-llvm-passes -I./include -L./build -o llhttp_harness harness.c build/libllhttp.a -static -Wl,--allow-multiple-definition
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc llhttp_harness && \
-    mv llhttp_harness.bc ~/bc/
+    mv llhttp_harness.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

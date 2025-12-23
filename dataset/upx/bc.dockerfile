@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract upx v5.0.2
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: upx" > /work/proj && \
+    echo "version: 5.0.2" >> /work/proj && \
+    echo "source: https://github.com/upx/upx/releases/download/v5.0.2/upx-5.0.2-src.tar.xz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/upx/upx/releases/download/v5.0.2/upx-5.0.2-src.tar.xz && \
     tar -xf upx-5.0.2-src.tar.xz && \
+    mv upx-5.0.2-src build && \
     rm upx-5.0.2-src.tar.xz
 
-WORKDIR /home/SVF-tools/upx-5.0.2-src
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, cmake for building)
 RUN apt-get update && \
@@ -38,9 +46,9 @@ RUN mkdir build && cd build && \
 RUN cd build && ninja -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/upx && \
-    mv build/upx.bc ~/bc/
+    mv build/upx.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

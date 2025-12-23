@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract base64 v0.5.2
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: base64" > /work/proj && \
+    echo "version: 0.5.2" >> /work/proj && \
+    echo "source: https://github.com/aklomp/base64/archive/refs/tags/v0.5.2.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/aklomp/base64/archive/refs/tags/v0.5.2.tar.gz && \
     tar -xzf v0.5.2.tar.gz && \
+    mv v0.5.2 build && \
     rm v0.5.2.tar.gz
 
-WORKDIR /home/SVF-tools/base64-0.5.2
+WORKDIR /work/build
 
 # Install build dependencies (cmake and file for extract-bc)
 RUN apt-get update && \
@@ -37,9 +45,9 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/bin/base64 && \
-    mv build/bin/base64.bc ~/bc/
+    mv build/bin/base64.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

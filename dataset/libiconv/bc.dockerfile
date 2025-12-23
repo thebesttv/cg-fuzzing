@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract libiconv 1.18
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libiconv" > /work/proj && \
+    echo "version: 1.18" >> /work/proj && \
+    echo "source: https://ftpmirror.gnu.org/gnu/libiconv/libiconv-1.18.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/libiconv/libiconv-1.18.tar.gz && \
     tar -xzf libiconv-1.18.tar.gz && \
+    mv libiconv-1.18 build && \
     rm libiconv-1.18.tar.gz
 
-WORKDIR /home/SVF-tools/libiconv-1.18
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -36,9 +44,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc src/iconv_no_i18n && \
-    mv src/iconv_no_i18n.bc ~/bc/iconv.bc
+    mv src/iconv_no_i18n.bc /work/bc/iconv.bc
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

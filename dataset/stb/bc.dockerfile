@@ -12,7 +12,14 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download stb (latest commit)
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: stb" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: unknown" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN apt-get update && \
     apt-get install -y file git && \
     apt-get clean && \
@@ -20,7 +27,7 @@ RUN apt-get update && \
 
 RUN git clone --depth 1 https://github.com/nothings/stb.git
 
-WORKDIR /home/SVF-tools/stb
+WORKDIR /work/build
 
 # Create a harness program that uses stb_image to load images
 RUN echo '/* stb_image harness for fuzzing/analysis */' > stb_image_harness.c && \
@@ -47,9 +54,9 @@ RUN wllvm \
     -lm
 
 # Create bc directory and extract bitcode file
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc stb_image_harness && \
-    mv stb_image_harness.bc ~/bc/
+    mv stb_image_harness.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

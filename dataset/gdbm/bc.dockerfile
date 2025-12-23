@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract gdbm 1.26
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: gdbm" > /work/proj && \
+    echo "version: 1.26" >> /work/proj && \
+    echo "source: https://ftpmirror.gnu.org/gnu/gdbm/gdbm-1.26.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/gdbm/gdbm-1.26.tar.gz && \
     tar -xzf gdbm-1.26.tar.gz && \
+    mv gdbm-1.26 build && \
     rm gdbm-1.26.tar.gz
 
-WORKDIR /home/SVF-tools/gdbm-1.26
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -36,14 +44,14 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for bin in tools/gdbm_load tools/gdbm_dump tools/gdbmtool; do \
         if [ -f "$bin" ] && [ -x "$bin" ]; then \
             extract-bc "$bin" && \
             name=$(basename "$bin") && \
-            mv "${bin}.bc" ~/bc/${name}.bc 2>/dev/null || true; \
+            mv "${bin}.bc" /work/bc/${name}.bc 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

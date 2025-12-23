@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract msgpack-c v6.1.0
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: msgpack-c" > /work/proj && \
+    echo "version: 6.1.0" >> /work/proj && \
+    echo "source: https://github.com/msgpack/msgpack-c/archive/refs/tags/c-6.1.0.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget -O msgpack-c-6.1.0.tar.gz https://github.com/msgpack/msgpack-c/archive/refs/tags/c-6.1.0.tar.gz && \
     tar -xzf msgpack-c-6.1.0.tar.gz && \
+    mv msgpack-c-6.1.0 build && \
     rm msgpack-c-6.1.0.tar.gz
 
-WORKDIR /home/SVF-tools/msgpack-c-c-6.1.0
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, cmake for building)
 RUN apt-get update && \
@@ -37,17 +45,17 @@ RUN mkdir build && cd build && \
         -DMSGPACK_BUILD_EXAMPLES=ON
 
 # Build msgpack-c
-WORKDIR /home/SVF-tools/msgpack-c-c-6.1.0/build
+WORKDIR /work/build/build
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files from examples
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for bin in example/*; do \
         if [ -f "$bin" ] && [ -x "$bin" ] && file "$bin" | grep -q "ELF"; then \
             extract-bc "$bin" && \
-            mv "${bin}.bc" ~/bc/ 2>/dev/null || true; \
+            mv "${bin}.bc" /work/bc/ 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

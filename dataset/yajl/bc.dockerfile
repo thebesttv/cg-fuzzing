@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract yajl 2.1.0
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: yajl" > /work/proj && \
+    echo "version: 2.1.0" >> /work/proj && \
+    echo "source: https://github.com/lloyd/yajl/archive/refs/tags/2.1.0.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/lloyd/yajl/archive/refs/tags/2.1.0.tar.gz && \
     tar -xzf 2.1.0.tar.gz && \
+    mv 2.1.0 build && \
     rm 2.1.0.tar.gz
 
-WORKDIR /home/SVF-tools/yajl-2.1.0
+WORKDIR /work/build
 
 # Install build dependencies (cmake, file for extract-bc)
 RUN apt-get update && \
@@ -42,15 +50,15 @@ RUN cd build && make -j$(nproc) yajl_s json_verify json_reformat
 
 # Create bc directory and extract bitcode files
 # json_verify is the main CLI binary for JSON validation
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     find build -type f -name "json_verify" -executable | while read bin; do \
         extract-bc "$bin" && \
-        mv "${bin}.bc" ~/bc/json_verify.bc 2>/dev/null || true; \
+        mv "${bin}.bc" /work/bc/json_verify.bc 2>/dev/null || true; \
     done && \
     find build -type f -name "json_reformat" -executable | while read bin; do \
         extract-bc "$bin" && \
-        mv "${bin}.bc" ~/bc/json_reformat.bc 2>/dev/null || true; \
+        mv "${bin}.bc" /work/bc/json_reformat.bc 2>/dev/null || true; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

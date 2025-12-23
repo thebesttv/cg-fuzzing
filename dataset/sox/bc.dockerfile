@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract SoX v14.4.2
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: sox" > /work/proj && \
+    echo "version: 14.4.2" >> /work/proj && \
+    echo "source: https://downloads.sourceforge.net/project/sox/sox/14.4.2/sox-14.4.2.tar.bz2" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://downloads.sourceforge.net/project/sox/sox/14.4.2/sox-14.4.2.tar.bz2 && \
     tar -xjf sox-14.4.2.tar.bz2 && \
+    mv sox-14.4.2 build && \
     rm sox-14.4.2.tar.bz2
 
-WORKDIR /home/SVF-tools/sox-14.4.2
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -40,14 +48,14 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for bin in src/sox; do \
         if [ -f "$bin" ] && [ -x "$bin" ] && file "$bin" | grep -q "ELF"; then \
             extract-bc "$bin" && \
             basename_bc=$(basename "$bin").bc && \
-            mv "${bin}.bc" ~/bc/"${basename_bc}" 2>/dev/null || true; \
+            mv "${bin}.bc" /work/bc/"${basename_bc}" 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract potrace 1.16
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: potrace" > /work/proj && \
+    echo "version: 1.16" >> /work/proj && \
+    echo "source: https://potrace.sourceforge.net/download/1.16/potrace-1.16.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://potrace.sourceforge.net/download/1.16/potrace-1.16.tar.gz && \
     tar -xzf potrace-1.16.tar.gz && \
+    mv potrace-1.16 build && \
     rm potrace-1.16.tar.gz
 
-WORKDIR /home/SVF-tools/potrace-1.16
+WORKDIR /work/build
 
 # Configure and build with WLLVM for bitcode extraction
 # potrace uses autotools
@@ -30,11 +38,11 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc src/potrace && \
-    mv src/potrace.bc ~/bc/ && \
+    mv src/potrace.bc /work/bc/ && \
     extract-bc src/mkbitmap && \
-    mv src/mkbitmap.bc ~/bc/
+    mv src/mkbitmap.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

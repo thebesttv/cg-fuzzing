@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract xdelta v3.1.0
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: xdelta" > /work/proj && \
+    echo "version: 3.1.0" >> /work/proj && \
+    echo "source: https://github.com/jmacd/xdelta/archive/refs/tags/v3.1.0.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jmacd/xdelta/archive/refs/tags/v3.1.0.tar.gz && \
     tar -xzf v3.1.0.tar.gz && \
+    mv v3.1.0 build && \
     rm v3.1.0.tar.gz
 
-WORKDIR /home/SVF-tools/xdelta-3.1.0/xdelta3
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -39,11 +47,11 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     if [ -f "xdelta3" ] && [ -x "xdelta3" ]; then \
         extract-bc xdelta3 && \
-        mv xdelta3.bc ~/bc/ 2>/dev/null || true; \
+        mv xdelta3.bc /work/bc/ 2>/dev/null || true; \
     fi
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

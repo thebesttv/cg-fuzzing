@@ -10,12 +10,19 @@ RUN pipx install wllvm
 ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
-WORKDIR /home/SVF-tools
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libunistring" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://ftpmirror.gnu.org/gnu/libunistring/libunistring-1.2.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/libunistring/libunistring-1.2.tar.gz && \
     tar -xzf libunistring-1.2.tar.gz && \
+    mv libunistring-1.2 build && \
     rm libunistring-1.2.tar.gz
 
-WORKDIR /home/SVF-tools/libunistring-1.2
+WORKDIR /work/build
 
 RUN apt-get update && \
     apt-get install -y file && \
@@ -52,8 +59,8 @@ RUN wllvm -g -O0 -Xclang -disable-llvm-passes \
     -I./lib lib/.libs/libunistring.a \
     -static -Wl,--allow-multiple-definition
 
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc test_unistring && \
-    mv test_unistring.bc ~/bc/
+    mv test_unistring.bc /work/bc/
 
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

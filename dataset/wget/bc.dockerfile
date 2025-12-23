@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract wget v1.24.5
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: wget" > /work/proj && \
+    echo "version: 1.24.5" >> /work/proj && \
+    echo "source: https://ftpmirror.gnu.org/gnu/wget/wget-1.24.5.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/wget/wget-1.24.5.tar.gz && \
     tar -xzf wget-1.24.5.tar.gz && \
+    mv wget-1.24.5 build && \
     rm wget-1.24.5.tar.gz
 
-WORKDIR /home/SVF-tools/wget-1.24.5
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -36,9 +44,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc src/wget && \
-    mv src/wget.bc ~/bc/
+    mv src/wget.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

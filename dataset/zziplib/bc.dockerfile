@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract zziplib v0.13.80
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: zziplib" > /work/proj && \
+    echo "version: 0.13.80" >> /work/proj && \
+    echo "source: https://github.com/gdraheim/zziplib/archive/refs/tags/v0.13.80.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/gdraheim/zziplib/archive/refs/tags/v0.13.80.tar.gz && \
     tar -xzf v0.13.80.tar.gz && \
+    mv v0.13.80 build && \
     rm v0.13.80.tar.gz
 
-WORKDIR /home/SVF-tools/zziplib-0.13.80
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, cmake for building, zlib for compression)
 RUN apt-get update && \
@@ -48,13 +56,13 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for bin in build/bins/unzip-mem build/bins/zzcat build/bins/zzdir build/bins/zziptest build/bins/zzxorcat build/bins/zzxorcopy; do \
         if [ -f "$bin" ] && [ -x "$bin" ]; then \
             extract-bc "$bin" && \
-            mv "${bin}.bc" ~/bc/ 2>/dev/null || true; \
+            mv "${bin}.bc" /work/bc/ 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

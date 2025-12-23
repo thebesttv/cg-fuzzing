@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract libxml2 v2.15.1
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libxml2" > /work/proj && \
+    echo "version: 2.15.1" >> /work/proj && \
+    echo "source: https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.1.tar.xz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.1.tar.xz && \
     tar -xJf libxml2-2.15.1.tar.xz && \
+    mv libxml2-2.15.1 build && \
     rm libxml2-2.15.1.tar.xz
 
-WORKDIR /home/SVF-tools/libxml2-2.15.1
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, cmake for build)
 RUN apt-get update && \
@@ -45,9 +53,9 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/xmllint && \
-    mv build/xmllint.bc ~/bc/
+    mv build/xmllint.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

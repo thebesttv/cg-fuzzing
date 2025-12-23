@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract findutils v4.10.0
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: findutils" > /work/proj && \
+    echo "version: 4.10.0" >> /work/proj && \
+    echo "source: https://ftpmirror.gnu.org/gnu/findutils/findutils-4.10.0.tar.xz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/findutils/findutils-4.10.0.tar.xz && \
     tar -xJf findutils-4.10.0.tar.xz && \
+    mv findutils-4.10.0 build && \
     rm findutils-4.10.0.tar.xz
 
-WORKDIR /home/SVF-tools/findutils-4.10.0
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, xz for extraction)
 RUN apt-get update && \
@@ -35,11 +43,11 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc find/find && \
     extract-bc xargs/xargs && \
-    mv find/find.bc ~/bc/ && \
-    mv xargs/xargs.bc ~/bc/
+    mv find/find.bc /work/bc/ && \
+    mv xargs/xargs.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

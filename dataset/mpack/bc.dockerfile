@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract mpack 1.1.1 (amalgamation version)
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: mpack" > /work/proj && \
+    echo "version: 1.1.1" >> /work/proj && \
+    echo "source: https://github.com/ludocode/mpack/releases/download/v1.1.1/mpack-amalgamation-1.1.1.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/ludocode/mpack/releases/download/v1.1.1/mpack-amalgamation-1.1.1.tar.gz && \
     tar -xzf mpack-amalgamation-1.1.1.tar.gz && \
+    mv mpack-amalgamation-1.1.1 build && \
     rm mpack-amalgamation-1.1.1.tar.gz
 
-WORKDIR /home/SVF-tools/mpack-amalgamation-1.1.1
+WORKDIR /work/build
 
 # Copy the fuzzing harness
 COPY mpack/fuzz_mpack.c .
@@ -30,9 +38,9 @@ RUN wllvm -g -O0 -Xclang -disable-llvm-passes -DMPACK_READER=1 -DMPACK_EXTENSION
     -o fuzz_mpack fuzz_mpack.c src/mpack/mpack.c -lm
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc fuzz_mpack && \
-    mv fuzz_mpack.bc ~/bc/
+    mv fuzz_mpack.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

@@ -12,13 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract libcyaml 1.4.2
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libcyaml" > /work/proj && \
+    echo "version: 1.4.2" >> /work/proj && \
+    echo "source: unknown" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget -O libcyaml-1.4.2.tar.gz "https://api.github.com/repos/tlsa/libcyaml/tarball/v1.4.2" && \
     tar -xzf libcyaml-1.4.2.tar.gz && \
     mv tlsa-libcyaml-* libcyaml-1.4.2 && \
     rm libcyaml-1.4.2.tar.gz
 
-WORKDIR /home/SVF-tools/libcyaml-1.4.2
+WORKDIR /work/build
 
 # Install build dependencies (libyaml-dev is required, file for extract-bc)
 RUN apt-get update && \
@@ -37,9 +44,9 @@ RUN cd examples/numerical && \
         -o numerical main.c ../../build/release/libcyaml.a -lyaml
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc examples/numerical/numerical && \
-    mv examples/numerical/numerical.bc ~/bc/
+    mv examples/numerical/numerical.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

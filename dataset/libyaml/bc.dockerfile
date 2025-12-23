@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract libyaml 0.2.5
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libyaml" > /work/proj && \
+    echo "version: 0.2.5" >> /work/proj && \
+    echo "source: https://github.com/yaml/libyaml/releases/download/0.2.5/yaml-0.2.5.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/yaml/libyaml/releases/download/0.2.5/yaml-0.2.5.tar.gz && \
     tar -xzf yaml-0.2.5.tar.gz && \
+    mv yaml-0.2.5 build && \
     rm yaml-0.2.5.tar.gz
 
-WORKDIR /home/SVF-tools/yaml-0.2.5
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -37,9 +45,9 @@ RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
 # run-parser is the CLI tool for parsing YAML files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc tests/run-parser && \
-    mv tests/run-parser.bc ~/bc/
+    mv tests/run-parser.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract SQLite version-3.51.0
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: sqlite" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/sqlite/sqlite/archive/refs/tags/version-3.51.0.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/sqlite/sqlite/archive/refs/tags/version-3.51.0.tar.gz && \
     tar -xzf version-3.51.0.tar.gz && \
+    mv version-3.51.0 build && \
     rm version-3.51.0.tar.gz
 
-WORKDIR /home/SVF-tools/sqlite-version-3.51.0
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc)
 RUN apt-get update && \
@@ -37,11 +45,11 @@ RUN CC=wllvm \
 RUN make sqlite3 -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     if [ -f "sqlite3" ] && [ -x "sqlite3" ] && file "sqlite3" | grep -q "ELF"; then \
         extract-bc "sqlite3" && \
-        mv "sqlite3.bc" ~/bc/ 2>/dev/null || true; \
+        mv "sqlite3.bc" /work/bc/ 2>/dev/null || true; \
     fi
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

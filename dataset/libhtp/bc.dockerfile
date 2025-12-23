@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract libhtp v0.5.52
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libhtp" > /work/proj && \
+    echo "version: 0.5.52" >> /work/proj && \
+    echo "source: https://github.com/OISF/libhtp/archive/refs/tags/0.5.52.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/OISF/libhtp/archive/refs/tags/0.5.52.tar.gz && \
     tar -xzf 0.5.52.tar.gz && \
+    mv 0.5.52 build && \
     rm 0.5.52.tar.gz
 
-WORKDIR /home/SVF-tools/libhtp-0.5.52
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -41,9 +49,9 @@ RUN make -j$(nproc)
 RUN cd test && make test_fuzz
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc test/test_fuzz && \
-    mv test/test_fuzz.bc ~/bc/
+    mv test/test_fuzz.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

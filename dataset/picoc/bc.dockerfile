@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # 2. Download picoc source code
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: picoc" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/jpoirier/picoc/archive/refs/tags/v3.2.2.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jpoirier/picoc/archive/refs/tags/v3.2.2.tar.gz && \
     tar -xzf v3.2.2.tar.gz && \
+    mv v3.2.2 build && \
     rm v3.2.2.tar.gz
 
-WORKDIR /home/SVF-tools/picoc-3.2.2
+WORKDIR /work/build
 
 # 3. Install build dependencies
 RUN apt-get update && \
@@ -34,9 +42,9 @@ RUN sed -i 's/#define USE_READLINE/\/\/ #define USE_READLINE/' platform.h && \
     -j$(nproc)
 
 # 5. Extract bitcode file
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc picoc && \
-    mv picoc.bc ~/bc/
+    mv picoc.bc /work/bc/
 
 # 6. Verify
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

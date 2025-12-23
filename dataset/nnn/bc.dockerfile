@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract nnn v5.1
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: nnn" > /work/proj && \
+    echo "version: 5.1" >> /work/proj && \
+    echo "source: https://github.com/jarun/nnn/archive/refs/tags/v5.1.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jarun/nnn/archive/refs/tags/v5.1.tar.gz && \
     tar -xzf v5.1.tar.gz && \
+    mv v5.1 build && \
     rm v5.1.tar.gz
 
-WORKDIR /home/SVF-tools/nnn-5.1
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, ncurses for nnn, readline)
 RUN apt-get update && \
@@ -33,9 +41,9 @@ RUN CC=wllvm \
     make strip -j$(nproc)
 
 # Create bc directory and extract bitcode file
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc nnn && \
-    mv nnn.bc ~/bc/
+    mv nnn.bc /work/bc/
 
 # Verify that bc file was created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

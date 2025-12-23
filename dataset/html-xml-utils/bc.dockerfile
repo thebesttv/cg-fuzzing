@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract html-xml-utils v8.6
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: html-xml-utils" > /work/proj && \
+    echo "version: 8.6" >> /work/proj && \
+    echo "source: https://www.w3.org/Tools/HTML-XML-utils/html-xml-utils-8.6.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.w3.org/Tools/HTML-XML-utils/html-xml-utils-8.6.tar.gz && \
     tar -xzf html-xml-utils-8.6.tar.gz && \
+    mv html-xml-utils-8.6 build && \
     rm html-xml-utils-8.6.tar.gz
 
-WORKDIR /home/SVF-tools/html-xml-utils-8.6
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -35,13 +43,13 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files for main tools
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for bin in hxnormalize hxselect hxpipe hxclean hxcount; do \
         if [ -f "$bin" ] && [ -x "$bin" ]; then \
             extract-bc "$bin" && \
-            mv "${bin}.bc" ~/bc/ 2>/dev/null || true; \
+            mv "${bin}.bc" /work/bc/ 2>/dev/null || true; \
         fi; \
     done
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

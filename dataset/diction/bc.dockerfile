@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract diction 1.11
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: diction" > /work/proj && \
+    echo "version: 1.11" >> /work/proj && \
+    echo "source: https://ftpmirror.gnu.org/gnu/diction/diction-1.11.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://ftpmirror.gnu.org/gnu/diction/diction-1.11.tar.gz && \
     tar -xzf diction-1.11.tar.gz && \
+    mv diction-1.11 build && \
     rm diction-1.11.tar.gz
 
-WORKDIR /home/SVF-tools/diction-1.11
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -37,11 +45,11 @@ RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
 # diction builds both 'diction' and 'style' binaries
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc diction && \
     extract-bc style && \
-    mv diction.bc ~/bc/ && \
-    mv style.bc ~/bc/
+    mv diction.bc /work/bc/ && \
+    mv style.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

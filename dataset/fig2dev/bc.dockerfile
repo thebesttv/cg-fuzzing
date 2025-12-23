@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract fig2dev v3.2.9
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: fig2dev" > /work/proj && \
+    echo "version: 3.2.9" >> /work/proj && \
+    echo "source: https://sourceforge.net/projects/mcj/files/fig2dev-3.2.9.tar.xz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://sourceforge.net/projects/mcj/files/fig2dev-3.2.9.tar.xz && \
     tar -xf fig2dev-3.2.9.tar.xz && \
+    mv fig2dev-3.2.9 build && \
     rm fig2dev-3.2.9.tar.xz
 
-WORKDIR /home/SVF-tools/fig2dev-3.2.9
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -36,9 +44,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files from fig2dev
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc fig2dev/fig2dev && \
-    mv fig2dev/fig2dev.bc ~/bc/ 2>/dev/null || true
+    mv fig2dev/fig2dev.bc /work/bc/ 2>/dev/null || true
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

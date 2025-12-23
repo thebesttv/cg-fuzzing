@@ -10,12 +10,19 @@ RUN pipx install wllvm
 ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
-WORKDIR /home/SVF-tools
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: 0-libssh2" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/libssh2/libssh2/releases/download/libssh2-1.11.1/libssh2-1.11.1.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget https://github.com/libssh2/libssh2/releases/download/libssh2-1.11.1/libssh2-1.11.1.tar.gz && \
     tar -xzf libssh2-1.11.1.tar.gz && \
+    mv libssh2-1.11.1 build && \
     rm libssh2-1.11.1.tar.gz
 
-WORKDIR /home/SVF-tools/libssh2-1.11.1
+WORKDIR /work/build
 
 RUN apt-get update && \
     apt-get install -y file cmake libssl-dev zlib1g-dev && \
@@ -53,15 +60,15 @@ RUN mkdir build && cd build && \
         -DBUILD_EXAMPLES=ON \
         -DBUILD_TESTING=OFF
 
-WORKDIR /home/SVF-tools/libssh2-1.11.1/build
+WORKDIR /work/build
 RUN make -j$(nproc)
 
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     for bin in example/*; do \
         if [ -f "$bin" ] && [ -x "$bin" ] && file "$bin" | grep -q "ELF"; then \
             extract-bc "$bin" && \
-            mv "${bin}.bc" ~/bc/ 2>/dev/null || true; \
+            mv "${bin}.bc" /work/bc/ 2>/dev/null || true; \
         fi; \
     done
 
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

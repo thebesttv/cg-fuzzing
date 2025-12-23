@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract libarchive 3.8.3
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libarchive" > /work/proj && \
+    echo "version: 3.8.3" >> /work/proj && \
+    echo "source: https://github.com/libarchive/libarchive/releases/download/v3.8.3/libarchive-3.8.3.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/libarchive/libarchive/releases/download/v3.8.3/libarchive-3.8.3.tar.gz && \
     tar -xzf libarchive-3.8.3.tar.gz && \
+    mv libarchive-3.8.3 build && \
     rm libarchive-3.8.3.tar.gz
 
-WORKDIR /home/SVF-tools/libarchive-3.8.3
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, plus compression libraries)
 RUN apt-get update && \
@@ -37,9 +45,9 @@ RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
 # bsdtar is the main CLI binary
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc bsdtar && \
-    mv bsdtar.bc ~/bc/
+    mv bsdtar.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

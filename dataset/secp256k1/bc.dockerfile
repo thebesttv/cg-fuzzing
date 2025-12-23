@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract secp256k1 v0.7.0
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: secp256k1" > /work/proj && \
+    echo "version: 0.7.0" >> /work/proj && \
+    echo "source: https://github.com/bitcoin-core/secp256k1/archive/refs/tags/v0.7.0.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/bitcoin-core/secp256k1/archive/refs/tags/v0.7.0.tar.gz && \
     tar -xzf v0.7.0.tar.gz && \
+    mv v0.7.0 build && \
     rm v0.7.0.tar.gz
 
-WORKDIR /home/SVF-tools/secp256k1-0.7.0
+WORKDIR /work/build
 
 # Install build dependencies
 RUN apt-get update && \
@@ -44,13 +52,13 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/bin/bench && \
-    mv build/bin/bench.bc ~/bc/ && \
+    mv build/bin/bench.bc /work/bc/ && \
     extract-bc build/bin/bench_internal && \
-    mv build/bin/bench_internal.bc ~/bc/
+    mv build/bin/bench_internal.bc /work/bc/
 
 # Verify that bc files were created and binary is static
-RUN ls -la ~/bc/ && \
+RUN ls -la /work/bc/ && \
     file build/bin/bench && \
     ldd build/bin/bench 2>&1 || echo "Binary is statically linked"

@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract ssdeep 2.14.1
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: ssdeep" > /work/proj && \
+    echo "version: 2.14.1" >> /work/proj && \
+    echo "source: https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget "https://github.com/ssdeep-project/ssdeep/releases/download/release-2.14.1/ssdeep-2.14.1.tar.gz" && \
     tar -xzf ssdeep-2.14.1.tar.gz && \
+    mv ssdeep-2.14.1 build && \
     rm ssdeep-2.14.1.tar.gz
 
-WORKDIR /home/SVF-tools/ssdeep-2.14.1
+WORKDIR /work/build
 
 # Configure with static linking and WLLVM
 RUN CC=wllvm \
@@ -32,9 +40,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc ssdeep && \
-    mv ssdeep.bc ~/bc/
+    mv ssdeep.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

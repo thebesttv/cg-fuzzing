@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract utf8proc v2.11.2
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: utf8proc" > /work/proj && \
+    echo "version: 2.11.2" >> /work/proj && \
+    echo "source: https://github.com/JuliaStrings/utf8proc/archive/refs/tags/v2.11.2.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/JuliaStrings/utf8proc/archive/refs/tags/v2.11.2.tar.gz && \
     tar -xzf v2.11.2.tar.gz && \
+    mv v2.11.2 build && \
     rm v2.11.2.tar.gz
 
-WORKDIR /home/SVF-tools/utf8proc-2.11.2
+WORKDIR /work/build
 
 # Build utf8proc library as static with WLLVM
 RUN CC=wllvm \
@@ -35,9 +43,9 @@ RUN wllvm \
     test/fuzz_main.c test/fuzzer.c libutf8proc.a
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc utf8proc_fuzz && \
-    mv utf8proc_fuzz.bc ~/bc/
+    mv utf8proc_fuzz.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract uriparser 0.9.9
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: uriparser" > /work/proj && \
+    echo "version: 0.9.9" >> /work/proj && \
+    echo "source: https://github.com/uriparser/uriparser/releases/download/uriparser-0.9.9/uriparser-0.9.9.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/uriparser/uriparser/releases/download/uriparser-0.9.9/uriparser-0.9.9.tar.gz && \
     tar -xzf uriparser-0.9.9.tar.gz && \
+    mv uriparser-0.9.9 build && \
     rm uriparser-0.9.9.tar.gz
 
-WORKDIR /home/SVF-tools/uriparser-0.9.9
+WORKDIR /work/build
 
 # Install build dependencies (cmake, file for extract-bc)
 RUN apt-get update && \
@@ -40,9 +48,9 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/uriparse && \
-    mv build/uriparse.bc ~/bc/
+    mv build/uriparse.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

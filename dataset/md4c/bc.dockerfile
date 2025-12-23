@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract md4c release-0.5.2
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: md4c" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/mity/md4c/archive/refs/tags/release-0.5.2.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/mity/md4c/archive/refs/tags/release-0.5.2.tar.gz && \
     tar -xzf release-0.5.2.tar.gz && \
+    mv release-0.5.2 build && \
     rm release-0.5.2.tar.gz
 
-WORKDIR /home/SVF-tools/md4c-release-0.5.2
+WORKDIR /work/build
 
 # Install build dependencies (cmake and file for extract-bc)
 RUN apt-get update && \
@@ -36,9 +44,9 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc build/md2html/md2html && \
-    mv build/md2html/md2html.bc ~/bc/
+    mv build/md2html/md2html.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

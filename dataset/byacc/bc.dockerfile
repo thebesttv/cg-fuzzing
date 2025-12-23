@@ -13,12 +13,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract byacc 20240109
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: byacc" > /work/proj && \
+    echo "version: 20240109" >> /work/proj && \
+    echo "source: https://invisible-mirror.net/archives/byacc/byacc-20240109.tgz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://invisible-mirror.net/archives/byacc/byacc-20240109.tgz && \
     tar -xzf byacc-20240109.tgz && \
+    mv byacc-20240109 build && \
     rm byacc-20240109.tgz
 
-WORKDIR /home/SVF-tools/byacc-20240109
+WORKDIR /work/build
 
 # Configure with static linking and WLLVM
 RUN CC=wllvm \
@@ -30,9 +38,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc yacc && \
-    mv yacc.bc ~/bc/
+    mv yacc.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/

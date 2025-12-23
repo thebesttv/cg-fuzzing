@@ -12,12 +12,20 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download and extract less v668
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: less" > /work/proj && \
+    echo "version: 668" >> /work/proj && \
+    echo "source: https://greenwoodsoftware.com/less/less-668.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://greenwoodsoftware.com/less/less-668.tar.gz && \
     tar -xzf less-668.tar.gz && \
+    mv less-668 build && \
     rm less-668.tar.gz
 
-WORKDIR /home/SVF-tools/less-668
+WORKDIR /work/build
 
 # Install build dependencies (file for extract-bc, ncurses for less)
 RUN apt-get update && \
@@ -35,9 +43,9 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files
-RUN mkdir -p ~/bc && \
+RUN mkdir -p /work/bc && \
     extract-bc less && \
-    mv less.bc ~/bc/
+    mv less.bc /work/bc/
 
 # Verify that bc files were created
-RUN ls -la ~/bc/
+RUN ls -la /work/bc/
