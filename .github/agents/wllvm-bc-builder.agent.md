@@ -602,22 +602,21 @@ fi
 
 ```bash
 # 简单的输入文件
-    "$TARGET_BINARY" "$input_path" >/dev/null 2>&1
+"$TARGET_BINARY" "$input_path"
 
 # 带参数的命令
-    "$TARGET_BINARY" -f elf -o /dev/null "$input_path" >/dev/null 2>&1
+"$TARGET_BINARY" -f elf -o /dev/null "$input_path"
 
 # jq 特殊语法
-    "$TARGET_BINARY" '.' "$input_path" >/dev/null 2>&1
+"$TARGET_BINARY" '.' "$input_path"
 
 # 解压缩工具
-    "$TARGET_BINARY" -d -c "$input_path" >/dev/null 2>&1
+"$TARGET_BINARY" -d -c "$input_path"
 ```
 
 **注意**：
-- 命令开头应包含缩进（4个空格）以匹配模板中的缩进
-- 必须重定向输出到 `/dev/null` 以避免干扰覆盖率收集
-- 使用 `2>&1` 同时重定向标准错误
+- 命令前后不要有多余空格
+- 不要重定向 stdout/stderr
 
 **生成过程**：
 1. 在项目的 `fuzz/` 目录下创建 `cmd.template` 文件

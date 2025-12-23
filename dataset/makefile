@@ -13,8 +13,7 @@ all: $(TARGETS)
 # Rule to generate 1-run-cov.sh from template and cmd.template
 %/fuzz/1-run-cov.sh: 1-run-cov.template %/fuzz/cmd.template
 	@echo "Generating $@ from template..."
-	@sed '/CMD_REPLACE_ME/r $*/fuzz/cmd.template' 1-run-cov.template | \
-		sed '/CMD_REPLACE_ME/d' > $@
+	@perl -pe 'BEGIN{ open $$f, "<", "$(word 2,$^)"; $$c = join("", <$$f>); chomp $$c } s/CMD_REPLACE_ME/$$c/g' $< > $@
 	@chmod +x $@
 
 # List all projects with cmd.template

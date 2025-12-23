@@ -58,7 +58,7 @@ process_one_to_one() {
 
     # 2. 运行并生成 .profraw
     export LLVM_PROFILE_FILE="$profraw_file"
-    CMD_REPLACE_ME
+    CMD_REPLACE_ME >/dev/null 2>&1
 
     # 3. 检查是否生成了 .profraw (有些 crash 可能导致未生成)
     if [ -f "$profraw_file" ]; then
