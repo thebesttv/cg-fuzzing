@@ -59,6 +59,7 @@ COPY lua/fuzz/dict /work/dict
 COPY lua/fuzz/in /work/in
 COPY lua/fuzz/fuzz.sh /work/fuzz.sh
 COPY lua/fuzz/whatsup.sh /work/whatsup.sh
+COPY lua/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

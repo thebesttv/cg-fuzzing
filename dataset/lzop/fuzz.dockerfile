@@ -89,6 +89,7 @@ COPY lzop/fuzz/dict /work/dict
 COPY lzop/fuzz/in /work/in
 COPY lzop/fuzz/fuzz.sh /work/fuzz.sh
 COPY lzop/fuzz/whatsup.sh /work/whatsup.sh
+COPY lzop/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov: lzo library first
 WORKDIR /work/lzo-build-cov
