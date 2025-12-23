@@ -60,6 +60,7 @@ COPY dmidecode/fuzz/dict /work/dict
 COPY dmidecode/fuzz/in /work/in
 COPY dmidecode/fuzz/fuzz.sh /work/fuzz.sh
 COPY dmidecode/fuzz/whatsup.sh /work/whatsup.sh
+COPY dmidecode/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

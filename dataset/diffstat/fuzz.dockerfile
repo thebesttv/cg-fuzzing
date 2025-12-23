@@ -60,6 +60,7 @@ COPY diffstat/fuzz/dict /work/dict
 COPY diffstat/fuzz/in /work/in
 COPY diffstat/fuzz/fuzz.sh /work/fuzz.sh
 COPY diffstat/fuzz/whatsup.sh /work/whatsup.sh
+COPY diffstat/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
