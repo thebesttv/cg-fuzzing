@@ -64,6 +64,7 @@ COPY gperf/fuzz/dict /work/dict
 COPY gperf/fuzz/in /work/in
 COPY gperf/fuzz/fuzz.sh /work/fuzz.sh
 COPY gperf/fuzz/whatsup.sh /work/whatsup.sh
+COPY gperf/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
