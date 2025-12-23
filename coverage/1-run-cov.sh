@@ -2,10 +2,12 @@
 
 # ================= 配置 =================
 TARGET_BINARY="./bin-cov"
-FINDINGS_DIR="findings"
-OUTPUT_DIR="profiles"
+# FINDINGS_DIR="/out/minimized_corpus"
+# OUTPUT_DIR="/out/minimized_profiles"
+FINDINGS_DIR="/out/raw_corpus"
+OUTPUT_DIR="/out/raw_profiles"
 # JOBS=$(nproc)
-JOBS=1
+JOBS=64
 
 LLVM_SUFFIX=""
 if [ "$IS_DOCKER" = "1" ]; then
@@ -25,8 +27,8 @@ mkdir -p "$OUTPUT_DIR"
 process_one_to_one() {
     local input_path="$1"
 
-    # 1. 生成唯一标识名 (把路径里的 / 换成 _)
-    local safe_name=$(echo "$input_path" | tr '/' '_')
+    # filename without directory
+    local safe_name=$(basename "$input_path")
 
     # 定义文件名
     local profraw_file="$OUTPUT_DIR/${safe_name}.profraw"
@@ -34,7 +36,12 @@ process_one_to_one() {
 
     # 2. 运行并生成 .profraw
     export LLVM_PROFILE_FILE="$profraw_file"
-    "$TARGET_BINARY" . "$input_path" > /dev/null 2>&1
+    # cmark / capstone
+    # "$TARGET_BINARY" "$input_path" >/dev/null 2>&1
+    # bison
+    # "$TARGET_BINARY" -o /dev/null "$input_path" >/dev/null 2>&1
+    # yasm
+    "$TARGET_BINARY" -f elf -o /dev/null "$input_path" >/dev/null 2>&1
 
     # 3. 检查是否生成了 .profraw (有些 crash 可能导致未生成)
     if [ -f "$profraw_file" ]; then
@@ -53,5 +60,5 @@ echo "Starting individual coverage generation..."
 echo "Output directory: $OUTPUT_DIR"
 
 # 并行执行
-find "$FINDINGS_DIR" -path "*/queue/id:*" -type f | \
+find "$FINDINGS_DIR" -type f | \
     parallel --bar -j "$JOBS" process_one_to_one {}

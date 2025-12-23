@@ -2,10 +2,10 @@
 
 # ================= 配置 =================
 TARGET_BINARY="./bin-cov"
-FINDINGS_DIR="findings"
-OUTPUT_DIR="profiles"
+OUTPUT_DIR="/out/minimized_profiles"
+# OUTPUT_DIR="/out/raw_profiles"
 # JOBS=$(nproc)
-JOBS=1
+JOBS=64
 
 LLVM_SUFFIX=""
 if [ "$IS_DOCKER" = "1" ]; then
