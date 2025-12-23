@@ -84,6 +84,7 @@ COPY jq-harness/fuzz/dict /work/dict
 COPY jq-harness/fuzz/in /work/in
 COPY jq-harness/fuzz/fuzz.sh /work/fuzz.sh
 COPY jq-harness/fuzz/whatsup.sh /work/whatsup.sh
+COPY jq-harness/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # ==================== Build cov binary ====================
 WORKDIR /work/build-cov
