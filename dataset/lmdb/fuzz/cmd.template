@@ -1,0 +1,1 @@
+tmpdb=$(mktemp -d) && trap 'rm -rf "$tmpdb"' EXIT && "$TARGET_BINARY" -n "$tmpdb" -f "$input_path"
