@@ -60,6 +60,7 @@ COPY daemonize/fuzz/dict /work/dict
 COPY daemonize/fuzz/in /work/in
 COPY daemonize/fuzz/fuzz.sh /work/fuzz.sh
 COPY daemonize/fuzz/whatsup.sh /work/whatsup.sh
+COPY daemonize/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

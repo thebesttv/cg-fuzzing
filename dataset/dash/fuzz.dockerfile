@@ -62,6 +62,7 @@ COPY dash/fuzz/dict /work/dict
 COPY dash/fuzz/in /work/in
 COPY dash/fuzz/fuzz.sh /work/fuzz.sh
 COPY dash/fuzz/whatsup.sh /work/whatsup.sh
+COPY dash/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
