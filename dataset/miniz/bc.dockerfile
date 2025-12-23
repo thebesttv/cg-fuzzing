@@ -40,7 +40,7 @@ RUN mkdir build && cd build && \
     make -j$(nproc)
 
 # Create a simple fuzzing harness that reads from file and decompresses
-WORKDIR /home/SVF-tools/miniz-3.1.0
+WORKDIR /work/build
 RUN echo '#include <stdio.h>' > fuzz_harness.c && \
     echo '#include <stdlib.h>' >> fuzz_harness.c && \
     echo '#include <string.h>' >> fuzz_harness.c && \

@@ -44,7 +44,7 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Build a simple test program to get an executable with bitcode
-WORKDIR /home/SVF-tools/libffi-3.4.6
+WORKDIR /work/build
 RUN echo '#include <stdio.h>' > test_simple.c && \
     echo '#include <ffi.h>' >> test_simple.c && \
     echo 'void test_func(int a, int b) { printf("Called: %d, %d\\n", a, b); }' >> test_simple.c && \

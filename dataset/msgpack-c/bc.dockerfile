@@ -45,7 +45,7 @@ RUN mkdir build && cd build && \
         -DMSGPACK_BUILD_EXAMPLES=ON
 
 # Build msgpack-c
-WORKDIR /home/SVF-tools/msgpack-c-c-6.1.0/build
+WORKDIR /work/build/build
 RUN make -j$(nproc)
 
 # Create bc directory and extract bitcode files from examples

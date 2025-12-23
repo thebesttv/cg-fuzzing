@@ -43,7 +43,7 @@ RUN CC=wllvm \
 RUN make -j$(nproc)
 
 # Build png2pnm (the CLI tool for fuzzing)
-WORKDIR /home/SVF-tools/libpng-1.6.47/contrib/pngminus
+WORKDIR /work/build/contrib/pngminus
 RUN wllvm -g -O0 -Xclang -disable-llvm-passes -I../.. -L../../.libs png2pnm.c -o png2pnm -lpng16 -lz -lm \
     -static -Wl,--allow-multiple-definition
 

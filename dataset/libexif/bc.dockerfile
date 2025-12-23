@@ -48,7 +48,7 @@ RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github
     tar -xzf exif-0.6.22.tar.gz && \
     rm exif-0.6.22.tar.gz
 
-WORKDIR /home/SVF-tools/exif-0.6.22
+WORKDIR /work/build
 
 # Install popt for exif CLI
 RUN apt-get update && \

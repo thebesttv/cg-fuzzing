@@ -50,7 +50,7 @@ RUN make -j$(nproc)
 RUN make install
 
 # Build tcpdump
-WORKDIR /home/SVF-tools/tcpdump-4.99.5
+WORKDIR /work/build
 
 RUN CC=wllvm \
     CFLAGS="-g -O0" \

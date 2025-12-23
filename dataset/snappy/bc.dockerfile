@@ -48,7 +48,7 @@ RUN mkdir build && cd build && \
 RUN cd build && make -j$(nproc)
 
 # Build a simple test harness
-WORKDIR /home/SVF-tools/snappy-1.2.1
+WORKDIR /work/build
 RUN echo '#include <snappy.h>' > test_simple.cc && \
     echo '#include <string>' >> test_simple.cc && \
     echo '#include <stdio.h>' >> test_simple.cc && \

@@ -46,7 +46,7 @@ RUN make -j$(nproc)
 RUN make install
 
 # Build lzop
-WORKDIR /home/SVF-tools/lzop-1.04
+WORKDIR /work/build
 
 RUN CC=wllvm \
     CFLAGS="-g -O0 -Xclang -disable-llvm-passes" \

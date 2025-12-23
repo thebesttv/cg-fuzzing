@@ -36,7 +36,7 @@ RUN CC=wllvm \
 # Copy the harness
 COPY wren/harness.c /home/SVF-tools/wren-0.4.0/harness.c
 
-WORKDIR /home/SVF-tools/wren-0.4.0
+WORKDIR /work/build
 
 # Build the harness
 RUN wllvm -g -O0 -Xclang -disable-llvm-passes -I src/include \

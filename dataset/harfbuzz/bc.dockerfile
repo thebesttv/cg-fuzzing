@@ -52,7 +52,7 @@ RUN mkdir build && cd build && \
 RUN cd build && ninja
 
 # Build a simple test harness
-WORKDIR /home/SVF-tools/harfbuzz-10.1.0
+WORKDIR /work/build
 RUN echo '#include <hb.h>' > test_simple.c && \
     echo '#include <stdio.h>' >> test_simple.c && \
     echo 'int main() {' >> test_simple.c && \

@@ -45,7 +45,7 @@ RUN cd /tmp && \
     cd shhopt-1.1.7 && \
     make && make INSTBASEDIR=/usr install
 
-WORKDIR /home/SVF-tools/banner-1.3.2
+WORKDIR /work/build
 
 # Build with WLLVM - override CC in Makefile and use OPTIM for flags
 RUN make dep
