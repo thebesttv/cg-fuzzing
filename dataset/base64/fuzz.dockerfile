@@ -100,8 +100,9 @@ RUN mkdir build && cd build && \
 
 WORKDIR /work
 RUN ln -s install-uftrace/bin/base64 bin-uftrace && \
-    echo "base64 uftrace binary created" && \
-    rm -f gmon.out
+    echo "test" | uftrace record /work/bin-uftrace || true && \
+    uftrace report || true && \
+    rm -rf uftrace.data gmon.out
 
 # Default to bash in /work
 WORKDIR /work

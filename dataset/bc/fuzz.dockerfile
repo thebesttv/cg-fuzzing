@@ -90,7 +90,9 @@ RUN CC=clang \
 WORKDIR /work
 RUN ln -s build-uftrace/bc/bc bin-uftrace && \
     echo "1+1" | /work/bin-uftrace && \
-    rm -f gmon.out
+    echo "1+1" | uftrace record /work/bin-uftrace && \
+    uftrace report && \
+    rm -rf uftrace.data gmon.out
 
 # Default to bash in /work
 WORKDIR /work

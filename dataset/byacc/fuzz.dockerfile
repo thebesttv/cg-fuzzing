@@ -89,7 +89,9 @@ RUN CC=clang \
 WORKDIR /work
 RUN ln -s build-uftrace/yacc bin-uftrace && \
     /work/bin-uftrace -V && \
-    rm -f gmon.out
+    uftrace record /work/bin-uftrace -V && \
+    uftrace report && \
+    rm -rf uftrace.data gmon.out
 
 # Default to bash in /work
 WORKDIR /work
