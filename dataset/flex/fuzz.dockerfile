@@ -62,6 +62,7 @@ COPY flex/fuzz/dict /work/dict
 COPY flex/fuzz/in /work/in
 COPY flex/fuzz/fuzz.sh /work/fuzz.sh
 COPY flex/fuzz/whatsup.sh /work/whatsup.sh
+COPY flex/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

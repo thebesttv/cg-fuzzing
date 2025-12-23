@@ -77,6 +77,7 @@ COPY git/fuzz/dict /work/dict
 COPY git/fuzz/in /work/in
 COPY git/fuzz/fuzz.sh /work/fuzz.sh
 COPY git/fuzz/whatsup.sh /work/whatsup.sh
+COPY git/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
