@@ -1,0 +1,1 @@
+"$TARGET_BINARY" -u NONE -i NONE -e -s -c "qa!" -S "$input_path"
