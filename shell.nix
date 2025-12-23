@@ -15,6 +15,7 @@ pkgs.mkShell
 {
   packages = with pkgs; [
     aflplusplus
+    gnuplot
     uftraceFull
     wllvm
     libllvm
