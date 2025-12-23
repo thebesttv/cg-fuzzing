@@ -62,6 +62,7 @@ COPY jimtcl/fuzz/dict /work/dict
 COPY jimtcl/fuzz/in /work/in
 COPY jimtcl/fuzz/fuzz.sh /work/fuzz.sh
 COPY jimtcl/fuzz/whatsup.sh /work/whatsup.sh
+COPY jimtcl/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
