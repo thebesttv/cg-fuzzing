@@ -55,6 +55,7 @@ COPY enchive/fuzz/dict /work/dict
 COPY enchive/fuzz/in /work/in
 COPY enchive/fuzz/fuzz.sh /work/fuzz.sh
 COPY enchive/fuzz/whatsup.sh /work/whatsup.sh
+COPY enchive/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -57,6 +57,7 @@ COPY frozen/fuzz/dict /work/dict
 COPY frozen/fuzz/in /work/in
 COPY frozen/fuzz/fuzz.sh /work/fuzz.sh
 COPY frozen/fuzz/whatsup.sh /work/whatsup.sh
+COPY frozen/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

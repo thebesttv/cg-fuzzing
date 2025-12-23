@@ -62,6 +62,7 @@ COPY fig2dev/fuzz/dict /work/dict
 COPY fig2dev/fuzz/in /work/in
 COPY fig2dev/fuzz/fuzz.sh /work/fuzz.sh
 COPY fig2dev/fuzz/whatsup.sh /work/whatsup.sh
+COPY fig2dev/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -58,6 +58,7 @@ COPY csvquote/fuzz/dict /work/dict
 COPY csvquote/fuzz/in /work/in
 COPY csvquote/fuzz/fuzz.sh /work/fuzz.sh
 COPY csvquote/fuzz/whatsup.sh /work/whatsup.sh
+COPY csvquote/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

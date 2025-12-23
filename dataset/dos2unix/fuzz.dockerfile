@@ -59,6 +59,7 @@ COPY dos2unix/fuzz/dict /work/dict
 COPY dos2unix/fuzz/in /work/in
 COPY dos2unix/fuzz/fuzz.sh /work/fuzz.sh
 COPY dos2unix/fuzz/whatsup.sh /work/whatsup.sh
+COPY dos2unix/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

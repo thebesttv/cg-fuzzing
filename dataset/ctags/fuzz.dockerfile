@@ -74,6 +74,7 @@ COPY ctags/fuzz/dict /work/dict
 COPY ctags/fuzz/in /work/in
 COPY ctags/fuzz/fuzz.sh /work/fuzz.sh
 COPY ctags/fuzz/whatsup.sh /work/whatsup.sh
+COPY ctags/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

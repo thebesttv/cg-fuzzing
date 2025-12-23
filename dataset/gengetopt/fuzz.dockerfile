@@ -62,6 +62,7 @@ COPY gengetopt/fuzz/dict /work/dict
 COPY gengetopt/fuzz/in /work/in
 COPY gengetopt/fuzz/fuzz.sh /work/fuzz.sh
 COPY gengetopt/fuzz/whatsup.sh /work/whatsup.sh
+COPY gengetopt/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

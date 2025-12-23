@@ -62,6 +62,7 @@ COPY dateutils/fuzz/dict /work/dict
 COPY dateutils/fuzz/in /work/in
 COPY dateutils/fuzz/fuzz.sh /work/fuzz.sh
 COPY dateutils/fuzz/whatsup.sh /work/whatsup.sh
+COPY dateutils/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

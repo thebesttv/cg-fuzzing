@@ -60,6 +60,7 @@ COPY discount/fuzz/dict /work/dict
 COPY discount/fuzz/in /work/in
 COPY discount/fuzz/fuzz.sh /work/fuzz.sh
 COPY discount/fuzz/whatsup.sh /work/whatsup.sh
+COPY discount/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
