@@ -62,6 +62,7 @@ COPY libfyaml/fuzz/dict /work/dict
 COPY libfyaml/fuzz/in /work/in
 COPY libfyaml/fuzz/fuzz.sh /work/fuzz.sh
 COPY libfyaml/fuzz/whatsup.sh /work/whatsup.sh
+COPY libfyaml/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
