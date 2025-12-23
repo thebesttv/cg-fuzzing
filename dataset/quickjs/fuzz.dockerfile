@@ -63,6 +63,7 @@ COPY quickjs/fuzz/dict /work/dict
 COPY quickjs/fuzz/in /work/in
 COPY quickjs/fuzz/fuzz.sh /work/fuzz.sh
 COPY quickjs/fuzz/whatsup.sh /work/whatsup.sh
+COPY quickjs/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build quickjs with llvm-cov instrumentation for cov
 WORKDIR /work/build-cov
