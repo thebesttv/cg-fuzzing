@@ -71,6 +71,7 @@ COPY serd/fuzz/dict /work/dict
 COPY serd/fuzz/in /work/in
 COPY serd/fuzz/fuzz.sh /work/fuzz.sh
 COPY serd/fuzz/whatsup.sh /work/whatsup.sh
+COPY serd/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
