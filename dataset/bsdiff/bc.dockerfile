@@ -12,7 +12,14 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download bsdiff from GitHub (mendsley's mirror)
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: bsdiff" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/mendsley/bsdiff/archive/refs/heads/master.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/mendsley/bsdiff/archive/refs/heads/master.tar.gz && \
     tar -xzf master.tar.gz && \
     mv master build && \

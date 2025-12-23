@@ -12,7 +12,14 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download stb (latest commit)
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: stb" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: unknown" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN apt-get update && \
     apt-get install -y file git && \
     apt-get clean && \

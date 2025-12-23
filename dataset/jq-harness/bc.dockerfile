@@ -14,7 +14,13 @@ ENV LLVM_COMPILER=clang
 
 # Clone jq from git (tag jq-1.8.1) to get harness files
 # The release tarball doesn't include tests/jq_fuzz_*.c files
-WORKDIR /home/SVF-tools
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: jq-harness" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: unknown" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN git clone --depth 1 --branch jq-1.8.1 https://github.com/jqlang/jq.git jq-1.8.1
 
 WORKDIR /work/build

@@ -13,7 +13,14 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download re2c 4.3
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: 0-re2c" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/skvadrik/re2c/releases/download/4.3/re2c-4.3.tar.xz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/skvadrik/re2c/releases/download/4.3/re2c-4.3.tar.xz && \
     tar -xf re2c-4.3.tar.xz && \
     mv re2c-4.3 build && \

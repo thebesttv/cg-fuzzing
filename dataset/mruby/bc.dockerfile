@@ -13,7 +13,14 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download mruby 3.4.0
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: mruby" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/mruby/mruby/archive/refs/tags/3.4.0.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/mruby/mruby/archive/refs/tags/3.4.0.tar.gz && \
     tar -xzf 3.4.0.tar.gz && \
     mv 3.4.0 build && \

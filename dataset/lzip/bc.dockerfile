@@ -12,7 +12,13 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Copy and extract lzip v1.15
-WORKDIR /home/SVF-tools
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: lzip" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: unknown" >> /work/proj
+
+# Download source code and extract to /work/build
 COPY lzip/lzip-1.15.tar.gz /home/SVF-tools/
 RUN tar -xzf lzip-1.15.tar.gz && \
     mv lzip-1.15 build && \

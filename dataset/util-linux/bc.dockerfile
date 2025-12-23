@@ -10,7 +10,13 @@ RUN pipx install wllvm
 ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
-WORKDIR /home/SVF-tools
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: util-linux" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/util-linux/util-linux/archive/refs/tags/v2.40.2.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget https://github.com/util-linux/util-linux/archive/refs/tags/v2.40.2.tar.gz && \
     tar -xzf v2.40.2.tar.gz && \
     mv v2.40.2 build && \

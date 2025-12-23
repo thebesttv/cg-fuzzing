@@ -13,7 +13,14 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download duktape 2.7.0
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: duktape" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/svaarala/duktape/releases/download/v2.7.0/duktape-2.7.0.tar.xz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/svaarala/duktape/releases/download/v2.7.0/duktape-2.7.0.tar.xz && \
     tar -xf duktape-2.7.0.tar.xz && \
     mv duktape-2.7.0 build && \

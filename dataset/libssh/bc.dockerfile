@@ -10,7 +10,13 @@ RUN pipx install wllvm
 ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
-WORKDIR /home/SVF-tools
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libssh" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://www.libssh.org/files/0.10/libssh-0.10.6.tar.xz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.libssh.org/files/0.10/libssh-0.10.6.tar.xz && \
     tar -xf libssh-0.10.6.tar.xz && \
     mv libssh-0.10.6 build && \

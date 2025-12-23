@@ -13,7 +13,14 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # 2. Download libzip source code (v1.11.4)
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: libzip" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/nih-at/libzip/archive/refs/tags/v1.11.4.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/nih-at/libzip/archive/refs/tags/v1.11.4.tar.gz && \
     tar -xzf v1.11.4.tar.gz && \
     mv v1.11.4 build && \

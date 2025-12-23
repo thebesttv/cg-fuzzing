@@ -13,7 +13,14 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # 2. Download lhasa source code (v0.4.0 - latest stable)
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: lhasa" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/fragglet/lhasa/releases/download/v0.4.0/lhasa-0.4.0.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/fragglet/lhasa/releases/download/v0.4.0/lhasa-0.4.0.tar.gz && \
     tar -xzf lhasa-0.4.0.tar.gz && \
     mv lhasa-0.4.0 build && \

@@ -12,7 +12,14 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download tomlc99 from master branch (commit 26b9c1ea770dab2378e5041b695d24ccebe58a7a)
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: tomlc99" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: unknown" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/cktan/tomlc99/archive/refs/heads/master.zip && \
     unzip master.zip && \
     rm master.zip

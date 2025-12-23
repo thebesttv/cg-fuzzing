@@ -12,7 +12,14 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # 2. Download uchardet source code
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: uchardet" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://www.freedesktop.org/software/uchardet/releases/uchardet-0.0.8.tar.xz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://www.freedesktop.org/software/uchardet/releases/uchardet-0.0.8.tar.xz && \
     tar -xf uchardet-0.0.8.tar.xz && \
     mv uchardet-0.0.8 build && \

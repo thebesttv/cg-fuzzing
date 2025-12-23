@@ -12,7 +12,14 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # Download inih r62
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: inih" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/benhoyt/inih/archive/refs/tags/r62.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/benhoyt/inih/archive/refs/tags/r62.tar.gz && \
     tar -xzf r62.tar.gz && \
     mv r62 build && \

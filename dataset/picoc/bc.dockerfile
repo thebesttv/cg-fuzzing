@@ -12,7 +12,14 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # 2. Download picoc source code
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: picoc" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/jpoirier/picoc/archive/refs/tags/v3.2.2.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jpoirier/picoc/archive/refs/tags/v3.2.2.tar.gz && \
     tar -xzf v3.2.2.tar.gz && \
     mv v3.2.2 build && \

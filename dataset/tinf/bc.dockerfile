@@ -12,7 +12,14 @@ ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
 # 2. Download tinf source code
-WORKDIR /home/SVF-tools
+
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: tinf" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://github.com/jibsen/tinf/archive/refs/tags/v1.2.1.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://github.com/jibsen/tinf/archive/refs/tags/v1.2.1.tar.gz && \
     tar -xzf v1.2.1.tar.gz && \
     mv v1.2.1 build && \

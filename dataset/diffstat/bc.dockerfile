@@ -6,7 +6,13 @@ RUN pipx install wllvm
 ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
-WORKDIR /home/SVF-tools
+# Create working directory and save project metadata
+WORKDIR /work
+RUN echo "project: diffstat" > /work/proj && \
+    echo "version: unknown" >> /work/proj && \
+    echo "source: https://invisible-island.net/datafiles/release/diffstat.tar.gz" >> /work/proj
+
+# Download source code and extract to /work/build
 RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://invisible-island.net/datafiles/release/diffstat.tar.gz && tar -xzf diffstat.tar.gz && rm diffstat.tar.gz
 
 WORKDIR /work/build
