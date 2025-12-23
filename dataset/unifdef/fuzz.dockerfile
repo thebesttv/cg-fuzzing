@@ -51,6 +51,7 @@ COPY unifdef/fuzz/dict /work/dict
 COPY unifdef/fuzz/in /work/in
 COPY unifdef/fuzz/fuzz.sh /work/fuzz.sh
 COPY unifdef/fuzz/whatsup.sh /work/whatsup.sh
+COPY unifdef/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
