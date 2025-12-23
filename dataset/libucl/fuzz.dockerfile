@@ -64,6 +64,7 @@ COPY libucl/fuzz/dict /work/dict
 COPY libucl/fuzz/in /work/in
 COPY libucl/fuzz/fuzz.sh /work/fuzz.sh
 COPY libucl/fuzz/whatsup.sh /work/whatsup.sh
+COPY libucl/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -91,6 +91,7 @@ COPY libssh/fuzz/dict /work/dict
 COPY libssh/fuzz/in /work/in
 COPY libssh/fuzz/fuzz.sh /work/fuzz.sh
 COPY libssh/fuzz/whatsup.sh /work/whatsup.sh
+COPY libssh/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

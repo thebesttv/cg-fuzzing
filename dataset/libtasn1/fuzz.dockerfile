@@ -62,6 +62,7 @@ COPY libtasn1/fuzz/dict /work/dict
 COPY libtasn1/fuzz/in /work/in
 COPY libtasn1/fuzz/fuzz.sh /work/fuzz.sh
 COPY libtasn1/fuzz/whatsup.sh /work/whatsup.sh
+COPY libtasn1/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
