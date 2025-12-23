@@ -1,0 +1,1 @@
+"$TARGET_BINARY" somesalt123 -t 1 -m 10 -p 1 -l 16 "$input_path"

@@ -1,0 +1,1 @@
+FIGLET_FONTDIR=./fonts "$TARGET_BINARY" < "$input_path"

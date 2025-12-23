@@ -62,6 +62,7 @@ COPY argon2/fuzz/dict /work/dict
 COPY argon2/fuzz/in /work/in
 COPY argon2/fuzz/fuzz.sh /work/fuzz.sh
 COPY argon2/fuzz/whatsup.sh /work/whatsup.sh
+COPY argon2/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
