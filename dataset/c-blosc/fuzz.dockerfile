@@ -85,6 +85,7 @@ COPY c-blosc/fuzz/dict /work/dict
 COPY c-blosc/fuzz/in /work/in
 COPY c-blosc/fuzz/fuzz.sh /work/fuzz.sh
 COPY c-blosc/fuzz/whatsup.sh /work/whatsup.sh
+COPY c-blosc/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov library with llvm-cov instrumentation
 WORKDIR /work/build-cov

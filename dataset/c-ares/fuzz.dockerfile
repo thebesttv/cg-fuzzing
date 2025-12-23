@@ -72,6 +72,7 @@ COPY c-ares/fuzz/dict /work/dict
 COPY c-ares/fuzz/in /work/in
 COPY c-ares/fuzz/fuzz.sh /work/fuzz.sh
 COPY c-ares/fuzz/whatsup.sh /work/whatsup.sh
+COPY c-ares/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

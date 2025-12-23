@@ -62,6 +62,7 @@ COPY cabextract/fuzz/dict /work/dict
 COPY cabextract/fuzz/in /work/in
 COPY cabextract/fuzz/fuzz.sh /work/fuzz.sh
 COPY cabextract/fuzz/whatsup.sh /work/whatsup.sh
+COPY cabextract/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
