@@ -59,6 +59,7 @@ COPY tcc/fuzz/dict /work/dict
 COPY tcc/fuzz/in /work/in
 COPY tcc/fuzz/fuzz.sh /work/fuzz.sh
 COPY tcc/fuzz/whatsup.sh /work/whatsup.sh
+COPY tcc/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

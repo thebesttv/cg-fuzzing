@@ -67,6 +67,7 @@ COPY uchardet/fuzz/dict /work/dict
 COPY uchardet/fuzz/in /work/in
 COPY uchardet/fuzz/fuzz.sh /work/fuzz.sh
 COPY uchardet/fuzz/whatsup.sh /work/whatsup.sh
+COPY uchardet/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

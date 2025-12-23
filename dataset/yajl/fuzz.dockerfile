@@ -68,6 +68,7 @@ COPY yajl/fuzz/dict /work/dict
 COPY yajl/fuzz/in /work/in
 COPY yajl/fuzz/fuzz.sh /work/fuzz.sh
 COPY yajl/fuzz/whatsup.sh /work/whatsup.sh
+COPY yajl/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

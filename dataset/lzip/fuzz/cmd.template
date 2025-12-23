@@ -1,0 +1,1 @@
+"$TARGET_BINARY" -d -o /tmp/output "$input_path"

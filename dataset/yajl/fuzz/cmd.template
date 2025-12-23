@@ -1,0 +1,1 @@
+/bin/sh -c "$TARGET_BINARY < $input_path"

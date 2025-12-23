@@ -71,6 +71,7 @@ COPY flac/fuzz/dict /work/dict
 COPY flac/fuzz/in /work/in
 COPY flac/fuzz/fuzz.sh /work/fuzz.sh
 COPY flac/fuzz/whatsup.sh /work/whatsup.sh
+COPY flac/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 RUN clang -c /tmp/alloc_check.c -o /tmp/alloc_check_cov.o

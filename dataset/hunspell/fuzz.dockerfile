@@ -64,6 +64,7 @@ COPY hunspell/fuzz/dict /work/dict
 COPY hunspell/fuzz/in /work/in
 COPY hunspell/fuzz/fuzz.sh /work/fuzz.sh
 COPY hunspell/fuzz/whatsup.sh /work/whatsup.sh
+COPY hunspell/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

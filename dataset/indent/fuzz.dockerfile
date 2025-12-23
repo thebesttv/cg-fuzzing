@@ -62,6 +62,7 @@ COPY indent/fuzz/dict /work/dict
 COPY indent/fuzz/in /work/in
 COPY indent/fuzz/fuzz.sh /work/fuzz.sh
 COPY indent/fuzz/whatsup.sh /work/whatsup.sh
+COPY indent/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
