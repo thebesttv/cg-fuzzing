@@ -59,6 +59,7 @@ COPY mawk/fuzz/dict /work/dict
 COPY mawk/fuzz/in /work/in
 COPY mawk/fuzz/fuzz.sh /work/fuzz.sh
 COPY mawk/fuzz/whatsup.sh /work/whatsup.sh
+COPY mawk/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

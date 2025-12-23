@@ -64,6 +64,7 @@ COPY minicom/fuzz/dict /work/dict
 COPY minicom/fuzz/in /work/in
 COPY minicom/fuzz/fuzz.sh /work/fuzz.sh
 COPY minicom/fuzz/whatsup.sh /work/whatsup.sh
+COPY minicom/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
