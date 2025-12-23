@@ -64,6 +64,7 @@ COPY sed/fuzz/dict /work/dict
 COPY sed/fuzz/in /work/in
 COPY sed/fuzz/fuzz.sh /work/fuzz.sh
 COPY sed/fuzz/whatsup.sh /work/whatsup.sh
+COPY sed/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
