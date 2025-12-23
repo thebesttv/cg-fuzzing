@@ -1,3 +1,7 @@
 /*/fuzz/findings/
 /.direnv/
 config.log
+
+# Ignore generated fuzz.sh files in project directories
+# (Keep only the template at dataset/fuzz.sh)
+dataset/*/fuzz/fuzz.sh
