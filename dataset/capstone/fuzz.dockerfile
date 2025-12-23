@@ -102,6 +102,7 @@ COPY capstone/fuzz/dict /work/dict
 COPY capstone/fuzz/in /work/in
 COPY capstone/fuzz/fuzz.sh /work/fuzz.sh
 COPY capstone/fuzz/whatsup.sh /work/whatsup.sh
+COPY capstone/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build Capstone library with llvm-cov instrumentation
 WORKDIR /work/build-cov
