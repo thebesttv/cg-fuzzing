@@ -58,6 +58,7 @@ COPY aha/fuzz/dict /work/dict
 COPY aha/fuzz/in /work/in
 COPY aha/fuzz/fuzz.sh /work/fuzz.sh
 COPY aha/fuzz/whatsup.sh /work/whatsup.sh
+COPY aha/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

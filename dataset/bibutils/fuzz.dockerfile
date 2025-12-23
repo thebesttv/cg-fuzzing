@@ -57,6 +57,7 @@ COPY bibutils/fuzz/dict /work/dict
 COPY bibutils/fuzz/in /work/in
 COPY bibutils/fuzz/fuzz.sh /work/fuzz.sh
 COPY bibutils/fuzz/whatsup.sh /work/whatsup.sh
+COPY bibutils/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
