@@ -70,6 +70,7 @@ COPY lighttpd/fuzz/dict /work/dict
 COPY lighttpd/fuzz/in /work/in
 COPY lighttpd/fuzz/fuzz.sh /work/fuzz.sh
 COPY lighttpd/fuzz/whatsup.sh /work/whatsup.sh
+COPY lighttpd/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
