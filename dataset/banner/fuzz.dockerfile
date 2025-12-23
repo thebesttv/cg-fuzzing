@@ -73,6 +73,7 @@ COPY banner/fuzz/dict /work/dict
 COPY banner/fuzz/in /work/in
 COPY banner/fuzz/fuzz.sh /work/fuzz.sh
 COPY banner/fuzz/whatsup.sh /work/whatsup.sh
+COPY banner/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
