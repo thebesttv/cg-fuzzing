@@ -151,6 +151,7 @@ COPY harfbuzz/fuzz/dict /work/dict
 COPY harfbuzz/fuzz/in /work/in
 COPY harfbuzz/fuzz/fuzz.sh /work/fuzz.sh
 COPY harfbuzz/fuzz/whatsup.sh /work/whatsup.sh
+COPY harfbuzz/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
