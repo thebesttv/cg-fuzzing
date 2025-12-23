@@ -1,0 +1,1 @@
+dd if=/dev/zero bs=100 count=1 of=/tmp/oldfile 2>/dev/null && "$TARGET_BINARY" /tmp/oldfile /tmp/newfile "$input_path"
