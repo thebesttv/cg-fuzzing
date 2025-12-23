@@ -80,6 +80,7 @@ COPY yyjson/fuzz/dict /work/dict
 COPY yyjson/fuzz/in /work/in
 COPY yyjson/fuzz/fuzz.sh /work/fuzz.sh
 COPY yyjson/fuzz/whatsup.sh /work/whatsup.sh
+COPY yyjson/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -64,6 +64,7 @@ COPY tidy-html5/fuzz/dict /work/dict
 COPY tidy-html5/fuzz/in /work/in
 COPY tidy-html5/fuzz/fuzz.sh /work/fuzz.sh
 COPY tidy-html5/fuzz/whatsup.sh /work/whatsup.sh
+COPY tidy-html5/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -70,6 +70,7 @@ COPY zlib-ng/fuzz/dict /work/dict
 COPY zlib-ng/fuzz/in /work/in
 COPY zlib-ng/fuzz/fuzz.sh /work/fuzz.sh
 COPY zlib-ng/fuzz/whatsup.sh /work/whatsup.sh
+COPY zlib-ng/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
