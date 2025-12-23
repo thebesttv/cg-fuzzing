@@ -73,6 +73,7 @@ COPY civetweb/fuzz/dict /work/dict
 COPY civetweb/fuzz/in /work/in
 COPY civetweb/fuzz/fuzz.sh /work/fuzz.sh
 COPY civetweb/fuzz/whatsup.sh /work/whatsup.sh
+COPY civetweb/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
