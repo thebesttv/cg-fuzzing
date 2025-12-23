@@ -62,6 +62,7 @@ COPY sqlite/fuzz/dict /work/dict
 COPY sqlite/fuzz/in /work/in
 COPY sqlite/fuzz/fuzz.sh /work/fuzz.sh
 COPY sqlite/fuzz/whatsup.sh /work/whatsup.sh
+COPY sqlite/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
