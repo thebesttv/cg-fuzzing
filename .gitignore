@@ -1,3 +1,5 @@
 /*/fuzz/findings/
 /.direnv/
 config.log
+# Generated coverage scripts
+dataset/*/fuzz/1-run-cov.sh
