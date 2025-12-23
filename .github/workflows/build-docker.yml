@@ -130,6 +130,10 @@ jobs:
         with:
           lfs: true
 
+      - name: Run make
+        run: |
+          make
+
       - name: Validate project names
         run: |
           # Validate both project names contain only safe characters (allow empty string)
