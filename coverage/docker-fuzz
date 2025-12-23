@@ -9,29 +9,36 @@ fi
 # 获取绝对路径，防止 docker 挂载时出错
 ROOT_DIR=$(realpath "$1")
 
-# 24h
-TIMEOUT=$((24 * 3600))
+# parallel 的超时时间，单位秒
+TIMEOUT=$((60 * 3600))
+# 定义并发任务数（同时也作为 CPU 取模的基数）
 JOBS=$(nproc)
 
-# 定义处理单个 image 的函数，并导出给 parallel 使用
+# 定义处理单个 image 的函数
 do_run() {
     local image=$1
     local root=$2
+    local seq=$3      # 并行任务的序号 (1, 2, 3...)
+    local max_jobs=$4 # 总任务并发数
 
-    # 逻辑提取 proj:
-    # 1. s|^thebesttv/||   -> 去掉开头的前缀
-    # 2. s|-fuzz.*||       -> 去掉 -fuzz 及其后面可能存在的 :tag
+    # 计算该任务绑定的 CPU ID
+    # 公式：(序号 - 1) % JOBS
+    # 结果范围是 0 到 JOBS-1
+    local cpu_id=$(( (seq - 1) % max_jobs ))
+
+    # 逻辑提取 proj
     local proj=$(echo "$image" | sed -E 's|^thebesttv/||; s|-fuzz.*||')
 
-    echo "[*] Starting $image -> Proj: $proj"
+    echo "[*] Starting $image -> Proj: $proj (Assigned CPU: $cpu_id)"
 
     # 确保宿主机目录存在
     mkdir -p "$root/$proj/findings"
 
     # 执行 docker
-    # 注意：在 parallel 中运行多任务时，通常不建议用 -it (可能导致 TTY 冲突)
-    # 如果只是为了自动化运行，建议只用 --rm
+    # --cpuset-cpus 指定该容器只能使用特定的 CPU 核心
     docker run --rm \
+        --name "tjt_fuzz_${proj}_${cpu_id}" \
+        --cpuset-cpus="$cpu_id" \
         -v "$root/$proj/findings":/work/findings \
         "$image" \
         ./fuzz.sh
@@ -41,10 +48,11 @@ do_run() {
 export -f do_run
 
 # 从 stdin 读取每一行并运行
-# --tag: 在输出前加上 image 名称作为标记，方便区分日志
-# --line-buffer: 实时输出每一行日志
+# {}: 当前行内容 (image name)
+# {#}: GNU Parallel 自动提供的作业序号 (Job sequence number)
+# $JOBS: 传递总任务数用于取模计算
 parallel -j"$JOBS" \
     --tag --line-buffer \
     --timeout "$TIMEOUT" \
     --termseq INT,10000,KILL,25 \
-    do_run {} "$ROOT_DIR"
+    do_run {} "$ROOT_DIR" "{#}" "$JOBS"
