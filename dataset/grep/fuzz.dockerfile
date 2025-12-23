@@ -64,6 +64,7 @@ COPY grep/fuzz/dict /work/dict
 COPY grep/fuzz/in /work/in
 COPY grep/fuzz/fuzz.sh /work/fuzz.sh
 COPY grep/fuzz/whatsup.sh /work/whatsup.sh
+COPY grep/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

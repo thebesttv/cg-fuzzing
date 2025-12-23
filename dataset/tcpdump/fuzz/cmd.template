@@ -1,0 +1,1 @@
+"$TARGET_BINARY" -nr "$input_path"

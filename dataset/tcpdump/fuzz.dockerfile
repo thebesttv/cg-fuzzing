@@ -90,6 +90,7 @@ COPY tcpdump/fuzz/dict /work/dict
 COPY tcpdump/fuzz/in /work/in
 COPY tcpdump/fuzz/fuzz.sh /work/fuzz.sh
 COPY tcpdump/fuzz/whatsup.sh /work/whatsup.sh
+COPY tcpdump/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build libpcap for cov
 WORKDIR /work/libpcap-cov

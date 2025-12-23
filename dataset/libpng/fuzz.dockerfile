@@ -70,6 +70,7 @@ COPY libpng/fuzz/dict /work/dict
 COPY libpng/fuzz/in /work/in
 COPY libpng/fuzz/fuzz.sh /work/fuzz.sh
 COPY libpng/fuzz/whatsup.sh /work/whatsup.sh
+COPY libpng/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
