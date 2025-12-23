@@ -64,6 +64,7 @@ COPY jansson/fuzz/dict /work/dict
 COPY jansson/fuzz/in /work/in
 COPY jansson/fuzz/fuzz.sh /work/fuzz.sh
 COPY jansson/fuzz/whatsup.sh /work/whatsup.sh
+COPY jansson/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

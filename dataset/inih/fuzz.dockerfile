@@ -79,6 +79,7 @@ COPY inih/fuzz/dict /work/dict
 COPY inih/fuzz/in /work/in
 COPY inih/fuzz/fuzz.sh /work/fuzz.sh
 COPY inih/fuzz/whatsup.sh /work/whatsup.sh
+COPY inih/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

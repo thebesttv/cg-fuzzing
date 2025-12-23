@@ -59,6 +59,7 @@ COPY jhead/fuzz/dict /work/dict
 COPY jhead/fuzz/in /work/in
 COPY jhead/fuzz/fuzz.sh /work/fuzz.sh
 COPY jhead/fuzz/whatsup.sh /work/whatsup.sh
+COPY jhead/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

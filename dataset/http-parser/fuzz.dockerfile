@@ -66,6 +66,7 @@ COPY http-parser/fuzz/dict /work/dict
 COPY http-parser/fuzz/in /work/in
 COPY http-parser/fuzz/fuzz.sh /work/fuzz.sh
 COPY http-parser/fuzz/whatsup.sh /work/whatsup.sh
+COPY http-parser/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

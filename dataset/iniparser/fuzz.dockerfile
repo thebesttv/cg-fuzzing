@@ -72,6 +72,7 @@ COPY iniparser/fuzz/dict /work/dict
 COPY iniparser/fuzz/in /work/in
 COPY iniparser/fuzz/fuzz.sh /work/fuzz.sh
 COPY iniparser/fuzz/whatsup.sh /work/whatsup.sh
+COPY iniparser/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -58,6 +58,7 @@ COPY hoedown/fuzz/dict /work/dict
 COPY hoedown/fuzz/in /work/in
 COPY hoedown/fuzz/fuzz.sh /work/fuzz.sh
 COPY hoedown/fuzz/whatsup.sh /work/whatsup.sh
+COPY hoedown/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
