@@ -2,12 +2,34 @@
 
 # ================= 配置 =================
 TARGET_BINARY="./bin-cov"
-# FINDINGS_DIR="/out/minimized_corpus"
-# OUTPUT_DIR="/out/minimized_profiles"
-FINDINGS_DIR="/out/raw_corpus"
-OUTPUT_DIR="/out/raw_profiles"
-# JOBS=$(nproc)
-JOBS=64
+JOBS=1  # 默认值
+
+# 解析命令行参数
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -j*)
+            JOBS="${1#-j}"
+            shift
+            ;;
+        *)
+            if [ -z "$FINDINGS_DIR" ]; then
+                FINDINGS_DIR="$1"
+            else
+                OUTPUT_DIR="$1"
+            fi
+            shift
+            ;;
+    esac
+done
+
+# 检查参数是否被设定
+if [ -z "$FINDINGS_DIR" ] || [ -z "$OUTPUT_DIR" ]; then
+    echo "Usage: $0 <FINDINGS_DIR> <OUTPUT_DIR> [-jN]"
+    echo "  FINDINGS_DIR: Directory containing input files"
+    echo "  OUTPUT_DIR: Directory for output profiles"
+    echo "  -jN: Number of parallel jobs (default: 1)"
+    exit 1
+fi
 
 LLVM_SUFFIX=""
 if [ "$IS_DOCKER" = "1" ]; then

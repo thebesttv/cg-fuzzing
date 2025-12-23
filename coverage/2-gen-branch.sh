@@ -2,10 +2,29 @@
 
 # ================= 配置 =================
 TARGET_BINARY="./bin-cov"
-OUTPUT_DIR="/out/minimized_profiles"
-# OUTPUT_DIR="/out/raw_profiles"
-# JOBS=$(nproc)
-JOBS=64
+JOBS=1  # 默认值
+
+# 解析命令行参数
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -j*)
+            JOBS="${1#-j}"
+            shift
+            ;;
+        *)
+            OUTPUT_DIR="$1"
+            shift
+            ;;
+    esac
+done
+
+# 检查 OUTPUT_DIR 是否被设定
+if [ -z "$OUTPUT_DIR" ]; then
+    echo "Usage: $0 <OUTPUT_DIR> [-jN]"
+    echo "  OUTPUT_DIR: Directory containing .profdata files"
+    echo "  -jN: Number of parallel jobs (default: 1)"
+    exit 1
+fi
 
 LLVM_SUFFIX=""
 if [ "$IS_DOCKER" = "1" ]; then
