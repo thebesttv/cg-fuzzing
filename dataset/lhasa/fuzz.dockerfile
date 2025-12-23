@@ -62,6 +62,7 @@ COPY lhasa/fuzz/dict /work/dict
 COPY lhasa/fuzz/in /work/in
 COPY lhasa/fuzz/fuzz.sh /work/fuzz.sh
 COPY lhasa/fuzz/whatsup.sh /work/whatsup.sh
+COPY lhasa/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
