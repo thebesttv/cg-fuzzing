@@ -20,9 +20,9 @@ RUN echo "project: moreutils" > /work/proj && \
     echo "version: 0.69" >> /work/proj && \
     echo "source: https://git.joeyh.name/index.cgi/moreutils.git/snapshot/moreutils-0.69.tar.gz" >> /work/proj
 
-# Download source once and extract to multiple build directories
-RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://git.joeyh.name/index.cgi/moreutils.git/snapshot/moreutils-0.69.tar.gz && \
-    tar -xzf moreutils-0.69.tar.gz && \
+# Copy source once and extract to multiple build directories
+COPY moreutils/moreutils-0.69.tar.gz /work/
+RUN tar -xzf moreutils-0.69.tar.gz && \
     rm moreutils-0.69.tar.gz && \
     cp -a moreutils-0.69 build-fuzz && \
     cp -a moreutils-0.69 build-cmplog && \
