@@ -64,6 +64,7 @@ COPY xdelta/fuzz/dict /work/dict
 COPY xdelta/fuzz/in /work/in
 COPY xdelta/fuzz/fuzz.sh /work/fuzz.sh
 COPY xdelta/fuzz/whatsup.sh /work/whatsup.sh
+COPY xdelta/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov/xdelta3
