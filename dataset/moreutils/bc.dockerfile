@@ -11,10 +11,10 @@ RUN pipx install wllvm
 ENV PATH="/home/SVF-tools/.local/bin:${PATH}"
 ENV LLVM_COMPILER=clang
 
-# Download and extract moreutils 0.69
+# Copy and extract moreutils 0.69
 WORKDIR /home/SVF-tools
-RUN wget --inet4-only --tries=3 --retry-connrefused --waitretry=5 https://git.joeyh.name/index.cgi/moreutils.git/snapshot/moreutils-0.69.tar.gz && \
-    tar -xzf moreutils-0.69.tar.gz && \
+COPY moreutils/moreutils-0.69.tar.gz /home/SVF-tools/
+RUN tar -xzf moreutils-0.69.tar.gz && \
     rm moreutils-0.69.tar.gz
 
 WORKDIR /home/SVF-tools/moreutils-0.69
