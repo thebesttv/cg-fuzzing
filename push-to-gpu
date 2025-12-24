@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+# 设置目标主机名
+TARGET_HOST="nju-pc"
+
+# 尝试获取主机名
+# 优先使用 uname -n，如果没有则尝试读取环境变量 HOSTNAME，如果还是没有则读取 /etc/hostname
+if command -v uname >/dev/null 2>&1; then
+    CURRENT_HOST=$(uname -n)
+else
+    # 备选方案：直接使用环境变量 (Bash 特有) 或者读取文件
+    CURRENT_HOST="${HOSTNAME:-$(cat /etc/hostname 2>/dev/null)}"
+fi
+
+# 去除可能存在的空白字符
+CURRENT_HOST=$(echo "$CURRENT_HOST" | xargs)
+
+if [[ "$CURRENT_HOST" == "$TARGET_HOST" ]]; then
+    echo "✅ [Check Passed] Current host: $CURRENT_HOST"
+
+    echo "----------------------------------------"
+    echo "🚀 Pushing to amax..."
+    GIT_LFS_SKIP_PUSH=1 git push amax main
+
+    echo "----------------------------------------"
+    echo "🚀 Pushing to bmax..."
+    GIT_LFS_SKIP_PUSH=1 git push bmax main
+
+    echo "----------------------------------------"
+    echo "🎉 Done."
+else
+    echo "⚠️  [Check Failed] Current host is '$CURRENT_HOST', but expected '$TARGET_HOST'."
+    echo "🚫 Push skipped."
+fi
