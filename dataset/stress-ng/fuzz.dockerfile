@@ -60,6 +60,7 @@ COPY stress-ng/fuzz/dict /work/dict
 COPY stress-ng/fuzz/in /work/in
 COPY stress-ng/fuzz/fuzz.sh /work/fuzz.sh
 COPY stress-ng/fuzz/whatsup.sh /work/whatsup.sh
+COPY stress-ng/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
