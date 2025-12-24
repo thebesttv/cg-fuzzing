@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+# 检查是否提供了 root 目录参数
+if [ -z "$1" ]; then
+    echo "用法: cat images.txt | $0 <root_directory>"
+    exit 1
+fi
+
+# 获取绝对路径，防止 docker 挂载时出错
+ROOT_DIR=$(realpath "$1")
+
+# 定义并发任务数（同时也作为 CPU 取模的基数）
+# JOBS=$(nproc)
+JOBS=128
+
+# 定义处理单个 image 的函数
+do_run() {
+    local image=$1
+    local root=$2
+    local seq=$3      # 并行任务的序号 (1, 2, 3...)
+    local max_jobs=$4 # 总任务并发数
+
+    # 计算该任务绑定的 CPU ID
+    # 公式：(序号 - 1) % JOBS
+    # 结果范围是 0 到 JOBS-1
+    local cpu_id=$(( (seq - 1) % max_jobs ))
+
+    # 逻辑提取 proj
+    local proj=$(echo "$image" | sed -E 's|^thebesttv/||; s|-fuzz.*||')
+
+    echo "[*] Starting $image -> Proj: $proj (Assigned CPU: $cpu_id)"
+
+    local findings_dir="$root/$proj/findings"
+    local profiles_dir="$root/$proj/profiles"
+
+    mkdir -p "$profiles_dir"
+
+    # 执行 docker
+    # --cpuset-cpus 指定该容器只能使用特定的 CPU 核心
+    docker run -t --rm \
+        --name "tjt_fuzz_${proj}_${cpu_id}" \
+        --cpuset-cpus="$cpu_id" \
+        -v "$findings_dir":/work/findings:ro \
+        -v "$profiles_dir":/work/profiles \
+        "$image" \
+        ./1-run-cov.sh ./findings/default/queue ./profiles
+}
+
+# 导出函数，使其在 parallel 的子 shell 中可见
+export -f do_run
+
+# 从 stdin 读取每一行并运行
+# {}: 当前行内容 (image name)
+# {#}: GNU Parallel 自动提供的作业序号 (Job sequence number)
+# $JOBS: 传递总任务数用于取模计算
+parallel -j"$JOBS" \
+    --tag --line-buffer \
+    do_run {} "$ROOT_DIR" "{#}" "$JOBS"
