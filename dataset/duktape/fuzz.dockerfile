@@ -64,6 +64,8 @@ COPY duktape/fuzz/in /work/in
 COPY duktape/fuzz/fuzz.sh /work/fuzz.sh
 COPY duktape/fuzz/whatsup.sh /work/whatsup.sh
 COPY duktape/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY duktape/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY duktape/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

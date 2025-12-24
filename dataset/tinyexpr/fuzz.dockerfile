@@ -54,6 +54,8 @@ COPY tinyexpr/fuzz/in /work/in
 COPY tinyexpr/fuzz/fuzz.sh /work/fuzz.sh
 COPY tinyexpr/fuzz/whatsup.sh /work/whatsup.sh
 COPY tinyexpr/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY tinyexpr/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY tinyexpr/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

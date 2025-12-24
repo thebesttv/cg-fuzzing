@@ -73,6 +73,8 @@ COPY mbedtls/fuzz/in /work/in
 COPY mbedtls/fuzz/fuzz.sh /work/fuzz.sh
 COPY mbedtls/fuzz/whatsup.sh /work/whatsup.sh
 COPY mbedtls/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY mbedtls/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY mbedtls/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

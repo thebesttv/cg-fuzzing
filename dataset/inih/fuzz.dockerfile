@@ -80,6 +80,8 @@ COPY inih/fuzz/in /work/in
 COPY inih/fuzz/fuzz.sh /work/fuzz.sh
 COPY inih/fuzz/whatsup.sh /work/whatsup.sh
 COPY inih/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY inih/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY inih/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

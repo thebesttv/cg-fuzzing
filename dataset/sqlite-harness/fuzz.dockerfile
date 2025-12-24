@@ -69,6 +69,8 @@ COPY sqlite-harness/fuzz/in /work/in
 COPY sqlite-harness/fuzz/fuzz.sh /work/fuzz.sh
 COPY sqlite-harness/fuzz/whatsup.sh /work/whatsup.sh
 COPY sqlite-harness/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY sqlite-harness/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY sqlite-harness/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

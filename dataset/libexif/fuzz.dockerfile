@@ -98,6 +98,8 @@ COPY libexif/fuzz/in /work/in
 COPY libexif/fuzz/fuzz.sh /work/fuzz.sh
 COPY libexif/fuzz/whatsup.sh /work/whatsup.sh
 COPY libexif/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY libexif/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY libexif/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov: libexif + exif CLI with llvm-cov instrumentation
 WORKDIR /work/build-libexif-cov

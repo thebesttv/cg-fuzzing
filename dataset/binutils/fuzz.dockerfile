@@ -79,6 +79,8 @@ COPY binutils/fuzz/in /work/in
 COPY binutils/fuzz/fuzz.sh /work/fuzz.sh
 COPY binutils/fuzz/whatsup.sh /work/whatsup.sh
 COPY binutils/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY binutils/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY binutils/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

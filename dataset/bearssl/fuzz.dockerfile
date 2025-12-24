@@ -72,6 +72,8 @@ COPY bearssl/fuzz/in /work/in
 COPY bearssl/fuzz/fuzz.sh /work/fuzz.sh
 COPY bearssl/fuzz/whatsup.sh /work/whatsup.sh
 COPY bearssl/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY bearssl/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY bearssl/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

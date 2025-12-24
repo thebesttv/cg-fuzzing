@@ -63,6 +63,8 @@ COPY expat/fuzz/in /work/in
 COPY expat/fuzz/fuzz.sh /work/fuzz.sh
 COPY expat/fuzz/whatsup.sh /work/whatsup.sh
 COPY expat/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY expat/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY expat/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

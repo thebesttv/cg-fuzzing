@@ -57,6 +57,8 @@ COPY parson/fuzz/in /work/in
 COPY parson/fuzz/fuzz.sh /work/fuzz.sh
 COPY parson/fuzz/whatsup.sh /work/whatsup.sh
 COPY parson/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY parson/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY parson/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

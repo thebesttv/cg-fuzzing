@@ -63,6 +63,8 @@ COPY sysstat/fuzz/in /work/in
 COPY sysstat/fuzz/fuzz.sh /work/fuzz.sh
 COPY sysstat/fuzz/whatsup.sh /work/whatsup.sh
 COPY sysstat/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY sysstat/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY sysstat/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

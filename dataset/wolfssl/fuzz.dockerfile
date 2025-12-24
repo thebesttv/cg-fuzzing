@@ -62,6 +62,8 @@ COPY wolfssl/fuzz/in /work/in
 COPY wolfssl/fuzz/fuzz.sh /work/fuzz.sh
 COPY wolfssl/fuzz/whatsup.sh /work/whatsup.sh
 COPY wolfssl/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY wolfssl/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY wolfssl/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

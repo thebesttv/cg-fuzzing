@@ -84,6 +84,8 @@ COPY minizip-ng/fuzz/in /work/in
 COPY minizip-ng/fuzz/fuzz.sh /work/fuzz.sh
 COPY minizip-ng/fuzz/whatsup.sh /work/whatsup.sh
 COPY minizip-ng/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY minizip-ng/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY minizip-ng/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

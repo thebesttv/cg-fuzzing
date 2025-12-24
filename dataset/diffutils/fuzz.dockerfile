@@ -65,6 +65,8 @@ COPY diffutils/fuzz/in /work/in
 COPY diffutils/fuzz/fuzz.sh /work/fuzz.sh
 COPY diffutils/fuzz/whatsup.sh /work/whatsup.sh
 COPY diffutils/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY diffutils/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY diffutils/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

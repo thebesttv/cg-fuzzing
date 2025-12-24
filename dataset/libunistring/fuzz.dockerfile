@@ -87,6 +87,8 @@ COPY libunistring/fuzz/in /work/in
 COPY libunistring/fuzz/fuzz.sh /work/fuzz.sh
 COPY libunistring/fuzz/whatsup.sh /work/whatsup.sh
 COPY libunistring/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY libunistring/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY libunistring/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

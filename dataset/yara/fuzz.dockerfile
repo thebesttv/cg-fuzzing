@@ -71,6 +71,8 @@ COPY yara/fuzz/in /work/in
 COPY yara/fuzz/fuzz.sh /work/fuzz.sh
 COPY yara/fuzz/whatsup.sh /work/whatsup.sh
 COPY yara/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY yara/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY yara/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

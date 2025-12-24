@@ -63,6 +63,8 @@ COPY ncdu/fuzz/in /work/in
 COPY ncdu/fuzz/fuzz.sh /work/fuzz.sh
 COPY ncdu/fuzz/whatsup.sh /work/whatsup.sh
 COPY ncdu/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY ncdu/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY ncdu/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

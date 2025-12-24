@@ -63,6 +63,8 @@ COPY fribidi/fuzz/in /work/in
 COPY fribidi/fuzz/fuzz.sh /work/fuzz.sh
 COPY fribidi/fuzz/whatsup.sh /work/whatsup.sh
 COPY fribidi/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY fribidi/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY fribidi/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

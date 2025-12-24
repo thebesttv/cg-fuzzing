@@ -61,6 +61,8 @@ COPY dosfstools/fuzz/in /work/in
 COPY dosfstools/fuzz/fuzz.sh /work/fuzz.sh
 COPY dosfstools/fuzz/whatsup.sh /work/whatsup.sh
 COPY dosfstools/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY dosfstools/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY dosfstools/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

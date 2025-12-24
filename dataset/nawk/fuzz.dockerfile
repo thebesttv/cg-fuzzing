@@ -56,6 +56,8 @@ COPY nawk/fuzz/in /work/in
 COPY nawk/fuzz/fuzz.sh /work/fuzz.sh
 COPY nawk/fuzz/whatsup.sh /work/whatsup.sh
 COPY nawk/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY nawk/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY nawk/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -63,6 +63,8 @@ COPY xz/fuzz/in /work/in
 COPY xz/fuzz/fuzz.sh /work/fuzz.sh
 COPY xz/fuzz/whatsup.sh /work/whatsup.sh
 COPY xz/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY xz/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY xz/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

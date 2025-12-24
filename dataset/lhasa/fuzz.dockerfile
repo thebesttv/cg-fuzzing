@@ -63,6 +63,8 @@ COPY lhasa/fuzz/in /work/in
 COPY lhasa/fuzz/fuzz.sh /work/fuzz.sh
 COPY lhasa/fuzz/whatsup.sh /work/whatsup.sh
 COPY lhasa/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY lhasa/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY lhasa/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
