@@ -29,6 +29,7 @@ COPY schedtool/fuzz/dict /work/dict
 COPY schedtool/fuzz/in /work/in
 COPY schedtool/fuzz/fuzz.sh /work/fuzz.sh
 COPY schedtool/fuzz/whatsup.sh /work/whatsup.sh
+COPY schedtool/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 WORKDIR /work/build-cov
 RUN make CC=clang CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
