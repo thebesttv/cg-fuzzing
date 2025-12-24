@@ -64,6 +64,7 @@ COPY procps/fuzz/dict /work/dict
 COPY procps/fuzz/in /work/in
 COPY procps/fuzz/fuzz.sh /work/fuzz.sh
 COPY procps/fuzz/whatsup.sh /work/whatsup.sh
+COPY procps/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

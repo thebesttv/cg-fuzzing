@@ -58,6 +58,7 @@ COPY qbe/fuzz/dict /work/dict
 COPY qbe/fuzz/in /work/in
 COPY qbe/fuzz/fuzz.sh /work/fuzz.sh
 COPY qbe/fuzz/whatsup.sh /work/whatsup.sh
+COPY qbe/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
