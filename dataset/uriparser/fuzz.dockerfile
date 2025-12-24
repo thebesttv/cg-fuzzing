@@ -72,6 +72,7 @@ COPY uriparser/fuzz/dict /work/dict
 COPY uriparser/fuzz/in /work/in
 COPY uriparser/fuzz/fuzz.sh /work/fuzz.sh
 COPY uriparser/fuzz/whatsup.sh /work/whatsup.sh
+COPY uriparser/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
