@@ -66,6 +66,7 @@ COPY nginx/fuzz/dict /work/dict
 COPY nginx/fuzz/in /work/in
 COPY nginx/fuzz/fuzz.sh /work/fuzz.sh
 COPY nginx/fuzz/whatsup.sh /work/whatsup.sh
+COPY nginx/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

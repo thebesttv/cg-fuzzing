@@ -69,6 +69,7 @@ COPY nghttp2/fuzz/dict /work/dict
 COPY nghttp2/fuzz/in /work/in
 COPY nghttp2/fuzz/fuzz.sh /work/fuzz.sh
 COPY nghttp2/fuzz/whatsup.sh /work/whatsup.sh
+COPY nghttp2/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
