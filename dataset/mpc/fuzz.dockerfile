@@ -53,6 +53,7 @@ COPY mpc/fuzz/dict /work/dict
 COPY mpc/fuzz/in /work/in
 COPY mpc/fuzz/fuzz.sh /work/fuzz.sh
 COPY mpc/fuzz/whatsup.sh /work/whatsup.sh
+COPY mpc/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

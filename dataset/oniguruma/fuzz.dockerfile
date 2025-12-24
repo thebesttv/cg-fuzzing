@@ -70,6 +70,7 @@ COPY oniguruma/fuzz/dict /work/dict
 COPY oniguruma/fuzz/in /work/in
 COPY oniguruma/fuzz/fuzz.sh /work/fuzz.sh
 COPY oniguruma/fuzz/whatsup.sh /work/whatsup.sh
+COPY oniguruma/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build oniguruma with llvm-cov instrumentation for cov
 WORKDIR /work/build-cov

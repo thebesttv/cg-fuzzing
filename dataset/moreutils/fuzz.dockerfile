@@ -60,6 +60,7 @@ COPY moreutils/fuzz/dict /work/dict
 COPY moreutils/fuzz/in /work/in
 COPY moreutils/fuzz/fuzz.sh /work/fuzz.sh
 COPY moreutils/fuzz/whatsup.sh /work/whatsup.sh
+COPY moreutils/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -56,6 +56,7 @@ COPY ncompress/fuzz/dict /work/dict
 COPY ncompress/fuzz/in /work/in
 COPY ncompress/fuzz/fuzz.sh /work/fuzz.sh
 COPY ncompress/fuzz/whatsup.sh /work/whatsup.sh
+COPY ncompress/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

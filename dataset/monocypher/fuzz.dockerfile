@@ -118,6 +118,7 @@ COPY monocypher/fuzz/dict /work/dict
 COPY monocypher/fuzz/in /work/in
 COPY monocypher/fuzz/fuzz.sh /work/fuzz.sh
 COPY monocypher/fuzz/whatsup.sh /work/whatsup.sh
+COPY monocypher/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

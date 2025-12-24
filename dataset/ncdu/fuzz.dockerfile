@@ -62,6 +62,7 @@ COPY ncdu/fuzz/dict /work/dict
 COPY ncdu/fuzz/in /work/in
 COPY ncdu/fuzz/fuzz.sh /work/fuzz.sh
 COPY ncdu/fuzz/whatsup.sh /work/whatsup.sh
+COPY ncdu/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

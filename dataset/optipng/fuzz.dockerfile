@@ -60,6 +60,7 @@ COPY optipng/fuzz/dict /work/dict
 COPY optipng/fuzz/in /work/in
 COPY optipng/fuzz/fuzz.sh /work/fuzz.sh
 COPY optipng/fuzz/whatsup.sh /work/whatsup.sh
+COPY optipng/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

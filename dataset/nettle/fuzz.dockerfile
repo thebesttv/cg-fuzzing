@@ -62,6 +62,7 @@ COPY nettle/fuzz/dict /work/dict
 COPY nettle/fuzz/in /work/in
 COPY nettle/fuzz/fuzz.sh /work/fuzz.sh
 COPY nettle/fuzz/whatsup.sh /work/whatsup.sh
+COPY nettle/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
