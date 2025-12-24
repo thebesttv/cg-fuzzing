@@ -64,6 +64,7 @@ COPY ssdeep/fuzz/dict /work/dict
 COPY ssdeep/fuzz/in /work/in
 COPY ssdeep/fuzz/fuzz.sh /work/fuzz.sh
 COPY ssdeep/fuzz/whatsup.sh /work/whatsup.sh
+COPY ssdeep/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

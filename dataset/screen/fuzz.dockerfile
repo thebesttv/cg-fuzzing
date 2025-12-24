@@ -62,6 +62,7 @@ COPY screen/fuzz/dict /work/dict
 COPY screen/fuzz/in /work/in
 COPY screen/fuzz/fuzz.sh /work/fuzz.sh
 COPY screen/fuzz/whatsup.sh /work/whatsup.sh
+COPY screen/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build screen with llvm-cov instrumentation for cov
 WORKDIR /work/build-cov
