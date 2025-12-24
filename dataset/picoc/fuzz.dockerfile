@@ -57,6 +57,7 @@ COPY picoc/fuzz/dict /work/dict
 COPY picoc/fuzz/in /work/in
 COPY picoc/fuzz/fuzz.sh /work/fuzz.sh
 COPY picoc/fuzz/whatsup.sh /work/whatsup.sh
+COPY picoc/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

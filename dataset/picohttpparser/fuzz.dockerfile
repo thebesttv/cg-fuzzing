@@ -66,6 +66,7 @@ COPY picohttpparser/fuzz/dict /work/dict
 COPY picohttpparser/fuzz/in /work/in
 COPY picohttpparser/fuzz/fuzz.sh /work/fuzz.sh
 COPY picohttpparser/fuzz/whatsup.sh /work/whatsup.sh
+COPY picohttpparser/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
