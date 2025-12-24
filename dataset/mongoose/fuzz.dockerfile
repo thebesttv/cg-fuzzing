@@ -61,6 +61,7 @@ COPY mongoose/fuzz/dict /work/dict
 COPY mongoose/fuzz/in /work/in
 COPY mongoose/fuzz/fuzz.sh /work/fuzz.sh
 COPY mongoose/fuzz/whatsup.sh /work/whatsup.sh
+COPY mongoose/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

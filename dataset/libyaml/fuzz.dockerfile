@@ -62,6 +62,7 @@ COPY libyaml/fuzz/dict /work/dict
 COPY libyaml/fuzz/in /work/in
 COPY libyaml/fuzz/fuzz.sh /work/fuzz.sh
 COPY libyaml/fuzz/whatsup.sh /work/whatsup.sh
+COPY libyaml/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -66,6 +66,7 @@ COPY lzfse/fuzz/dict /work/dict
 COPY lzfse/fuzz/in /work/in
 COPY lzfse/fuzz/fuzz.sh /work/fuzz.sh
 COPY lzfse/fuzz/whatsup.sh /work/whatsup.sh
+COPY lzfse/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -83,6 +83,7 @@ COPY minizip-ng/fuzz/dict /work/dict
 COPY minizip-ng/fuzz/in /work/in
 COPY minizip-ng/fuzz/fuzz.sh /work/fuzz.sh
 COPY minizip-ng/fuzz/whatsup.sh /work/whatsup.sh
+COPY minizip-ng/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
