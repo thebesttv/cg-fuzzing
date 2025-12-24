@@ -70,6 +70,7 @@ COPY mxml/fuzz/dict /work/dict
 COPY mxml/fuzz/in /work/in
 COPY mxml/fuzz/fuzz.sh /work/fuzz.sh
 COPY mxml/fuzz/whatsup.sh /work/whatsup.sh
+COPY mxml/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
