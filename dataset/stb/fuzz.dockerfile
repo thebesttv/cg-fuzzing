@@ -77,6 +77,7 @@ COPY stb/fuzz/dict /work/dict
 COPY stb/fuzz/in /work/in
 COPY stb/fuzz/fuzz.sh /work/fuzz.sh
 COPY stb/fuzz/whatsup.sh /work/whatsup.sh
+COPY stb/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
