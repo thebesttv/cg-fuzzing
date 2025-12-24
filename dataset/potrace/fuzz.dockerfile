@@ -62,6 +62,7 @@ COPY potrace/fuzz/dict /work/dict
 COPY potrace/fuzz/in /work/in
 COPY potrace/fuzz/fuzz.sh /work/fuzz.sh
 COPY potrace/fuzz/whatsup.sh /work/whatsup.sh
+COPY potrace/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

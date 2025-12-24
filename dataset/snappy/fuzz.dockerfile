@@ -145,6 +145,7 @@ COPY snappy/fuzz/dict /work/dict
 COPY snappy/fuzz/in /work/in
 COPY snappy/fuzz/fuzz.sh /work/fuzz.sh
 COPY snappy/fuzz/whatsup.sh /work/whatsup.sh
+COPY snappy/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

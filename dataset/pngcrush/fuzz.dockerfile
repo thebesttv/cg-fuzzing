@@ -59,6 +59,7 @@ COPY pngcrush/fuzz/dict /work/dict
 COPY pngcrush/fuzz/in /work/in
 COPY pngcrush/fuzz/fuzz.sh /work/fuzz.sh
 COPY pngcrush/fuzz/whatsup.sh /work/whatsup.sh
+COPY pngcrush/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

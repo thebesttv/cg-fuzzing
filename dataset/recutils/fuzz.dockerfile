@@ -64,6 +64,7 @@ COPY recutils/fuzz/dict /work/dict
 COPY recutils/fuzz/in /work/in
 COPY recutils/fuzz/fuzz.sh /work/fuzz.sh
 COPY recutils/fuzz/whatsup.sh /work/whatsup.sh
+COPY recutils/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

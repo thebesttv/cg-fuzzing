@@ -60,6 +60,7 @@ COPY squashfs-tools/fuzz/dict /work/dict
 COPY squashfs-tools/fuzz/in /work/in
 COPY squashfs-tools/fuzz/fuzz.sh /work/fuzz.sh
 COPY squashfs-tools/fuzz/whatsup.sh /work/whatsup.sh
+COPY squashfs-tools/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov/squashfs-tools
