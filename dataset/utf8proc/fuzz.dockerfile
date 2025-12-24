@@ -70,6 +70,7 @@ COPY utf8proc/fuzz/dict /work/dict
 COPY utf8proc/fuzz/in /work/in
 COPY utf8proc/fuzz/fuzz.sh /work/fuzz.sh
 COPY utf8proc/fuzz/whatsup.sh /work/whatsup.sh
+COPY utf8proc/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
