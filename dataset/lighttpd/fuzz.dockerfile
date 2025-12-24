@@ -71,6 +71,8 @@ COPY lighttpd/fuzz/in /work/in
 COPY lighttpd/fuzz/fuzz.sh /work/fuzz.sh
 COPY lighttpd/fuzz/whatsup.sh /work/whatsup.sh
 COPY lighttpd/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY lighttpd/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY lighttpd/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

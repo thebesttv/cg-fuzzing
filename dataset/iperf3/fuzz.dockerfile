@@ -63,6 +63,8 @@ COPY iperf3/fuzz/in /work/in
 COPY iperf3/fuzz/fuzz.sh /work/fuzz.sh
 COPY iperf3/fuzz/whatsup.sh /work/whatsup.sh
 COPY iperf3/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY iperf3/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY iperf3/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

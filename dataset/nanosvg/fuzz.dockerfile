@@ -106,6 +106,8 @@ COPY nanosvg/fuzz/in /work/in
 COPY nanosvg/fuzz/fuzz.sh /work/fuzz.sh
 COPY nanosvg/fuzz/whatsup.sh /work/whatsup.sh
 COPY nanosvg/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY nanosvg/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY nanosvg/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work

@@ -63,6 +63,8 @@ COPY socat/fuzz/in /work/in
 COPY socat/fuzz/fuzz.sh /work/fuzz.sh
 COPY socat/fuzz/whatsup.sh /work/whatsup.sh
 COPY socat/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY socat/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY socat/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

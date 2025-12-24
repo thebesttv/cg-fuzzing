@@ -86,6 +86,8 @@ COPY c-blosc/fuzz/in /work/in
 COPY c-blosc/fuzz/fuzz.sh /work/fuzz.sh
 COPY c-blosc/fuzz/whatsup.sh /work/whatsup.sh
 COPY c-blosc/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY c-blosc/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY c-blosc/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov library with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -61,6 +61,8 @@ COPY libsodium/fuzz/in /work/in
 COPY libsodium/fuzz/fuzz.sh /work/fuzz.sh
 COPY libsodium/fuzz/whatsup.sh /work/whatsup.sh
 COPY libsodium/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY libsodium/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY libsodium/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

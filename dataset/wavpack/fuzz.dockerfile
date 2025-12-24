@@ -73,6 +73,8 @@ COPY wavpack/fuzz/in /work/in
 COPY wavpack/fuzz/fuzz.sh /work/fuzz.sh
 COPY wavpack/fuzz/whatsup.sh /work/whatsup.sh
 COPY wavpack/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY wavpack/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY wavpack/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

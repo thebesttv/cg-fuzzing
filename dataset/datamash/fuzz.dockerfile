@@ -63,6 +63,8 @@ COPY datamash/fuzz/in /work/in
 COPY datamash/fuzz/fuzz.sh /work/fuzz.sh
 COPY datamash/fuzz/whatsup.sh /work/whatsup.sh
 COPY datamash/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY datamash/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY datamash/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

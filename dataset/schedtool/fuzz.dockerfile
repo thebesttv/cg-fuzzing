@@ -30,6 +30,8 @@ COPY schedtool/fuzz/in /work/in
 COPY schedtool/fuzz/fuzz.sh /work/fuzz.sh
 COPY schedtool/fuzz/whatsup.sh /work/whatsup.sh
 COPY schedtool/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY schedtool/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY schedtool/fuzz/collect-branch.py /work/collect-branch.py
 
 WORKDIR /work/build-cov
 RUN make CC=clang CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \

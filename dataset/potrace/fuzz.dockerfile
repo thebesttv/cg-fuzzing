@@ -63,6 +63,8 @@ COPY potrace/fuzz/in /work/in
 COPY potrace/fuzz/fuzz.sh /work/fuzz.sh
 COPY potrace/fuzz/whatsup.sh /work/whatsup.sh
 COPY potrace/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY potrace/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY potrace/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

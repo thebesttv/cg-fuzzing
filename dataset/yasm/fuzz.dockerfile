@@ -63,6 +63,8 @@ COPY yasm/fuzz/in /work/in
 COPY yasm/fuzz/fuzz.sh /work/fuzz.sh
 COPY yasm/fuzz/whatsup.sh /work/whatsup.sh
 COPY yasm/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY yasm/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY yasm/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

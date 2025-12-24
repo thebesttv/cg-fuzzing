@@ -71,6 +71,8 @@ COPY oniguruma/fuzz/in /work/in
 COPY oniguruma/fuzz/fuzz.sh /work/fuzz.sh
 COPY oniguruma/fuzz/whatsup.sh /work/whatsup.sh
 COPY oniguruma/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY oniguruma/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY oniguruma/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build oniguruma with llvm-cov instrumentation for cov
 WORKDIR /work/build-cov

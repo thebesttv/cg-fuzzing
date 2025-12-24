@@ -63,6 +63,8 @@ COPY bmake/fuzz/in /work/in
 COPY bmake/fuzz/fuzz.sh /work/fuzz.sh
 COPY bmake/fuzz/whatsup.sh /work/whatsup.sh
 COPY bmake/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY bmake/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY bmake/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -63,6 +63,8 @@ COPY figlet/fuzz/in /work/in
 COPY figlet/fuzz/fuzz.sh /work/fuzz.sh
 COPY figlet/fuzz/whatsup.sh /work/whatsup.sh
 COPY figlet/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY figlet/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY figlet/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

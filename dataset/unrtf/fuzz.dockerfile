@@ -63,6 +63,8 @@ COPY unrtf/fuzz/in /work/in
 COPY unrtf/fuzz/fuzz.sh /work/fuzz.sh
 COPY unrtf/fuzz/whatsup.sh /work/whatsup.sh
 COPY unrtf/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY unrtf/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY unrtf/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

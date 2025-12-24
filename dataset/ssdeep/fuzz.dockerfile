@@ -65,6 +65,8 @@ COPY ssdeep/fuzz/in /work/in
 COPY ssdeep/fuzz/fuzz.sh /work/fuzz.sh
 COPY ssdeep/fuzz/whatsup.sh /work/whatsup.sh
 COPY ssdeep/fuzz/1-run-cov.sh /work/1-run-cov.sh
+COPY ssdeep/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
+COPY ssdeep/fuzz/collect-branch.py /work/collect-branch.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
