@@ -61,6 +61,7 @@ COPY mujs/fuzz/dict /work/dict
 COPY mujs/fuzz/in /work/in
 COPY mujs/fuzz/fuzz.sh /work/fuzz.sh
 COPY mujs/fuzz/whatsup.sh /work/whatsup.sh
+COPY mujs/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

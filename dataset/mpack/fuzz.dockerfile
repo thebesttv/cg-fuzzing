@@ -61,6 +61,7 @@ COPY mpack/fuzz/dict /work/dict
 COPY mpack/fuzz/in /work/in
 COPY mpack/fuzz/fuzz.sh /work/fuzz.sh
 COPY mpack/fuzz/whatsup.sh /work/whatsup.sh
+COPY mpack/fuzz/1-run-cov.sh /work/1-run-cov.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
