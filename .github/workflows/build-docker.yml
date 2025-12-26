@@ -317,13 +317,13 @@ jobs:
           cd output
           # Create archive for proj1 if not empty
           if [ -n "${{ matrix.pair.proj1 }}" ] && [ -d "${{ matrix.pair.proj1 }}" ]; then
-            XZ_OPT="-9e -T0" tar -cJf "${{ matrix.pair.proj1 }}.tar.xz" "${{ matrix.pair.proj1 }}"
+            XZ_OPT="-6 -T0" tar -cJf "${{ matrix.pair.proj1 }}.tar.xz" "${{ matrix.pair.proj1 }}"
             ls -lh "${{ matrix.pair.proj1 }}.tar.xz"
           fi
 
           # Create archive for proj2 if not empty
           if [ -n "${{ matrix.pair.proj2 }}" ] && [ -d "${{ matrix.pair.proj2 }}" ]; then
-            XZ_OPT="-9e -T0" tar -cJf "${{ matrix.pair.proj2 }}.tar.xz" "${{ matrix.pair.proj2 }}"
+            XZ_OPT="-6 -T0" tar -cJf "${{ matrix.pair.proj2 }}.tar.xz" "${{ matrix.pair.proj2 }}"
             ls -lh "${{ matrix.pair.proj2 }}.tar.xz"
           fi
 
