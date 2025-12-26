@@ -3,12 +3,17 @@
 # ================= 配置 =================
 TARGET_BINARY="./bin-cov"
 JOBS=1  # 默认值
+NO_PARALLEL=0  # 默认并行执行；使用 --no-parallel 关闭并行
 
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do
     case $1 in
         -j*)
             JOBS="${1#-j}"
+            shift
+            ;;
+        --no-parallel)
+            NO_PARALLEL=1
             shift
             ;;
         *)
@@ -28,6 +33,7 @@ if [ -z "$FINDINGS_DIR" ] || [ -z "$OUTPUT_DIR" ]; then
     echo "  FINDINGS_DIR: Directory containing input files"
     echo "  OUTPUT_DIR: Directory for output profiles"
     echo "  -jN: Number of parallel jobs (default: 1)"
+    echo "  --no-parallel: Disable GNU parallel and run sequentially"
     exit 1
 fi
 
@@ -76,6 +82,30 @@ export -f process_one_to_one
 echo "Starting individual coverage generation..."
 echo "Output directory: $OUTPUT_DIR"
 
-# 并行执行
-find "$FINDINGS_DIR" -type f | \
-    parallel --bar -j "$JOBS" process_one_to_one {}
+if [[ "$NO_PARALLEL" -eq 0 ]]; then
+    # 使用 parallel 并行执行
+    find "$FINDINGS_DIR" -type f | \
+        parallel --bar -j "$JOBS" process_one_to_one {}
+else
+    # 使用 bash 循环顺序执行，适用于 parallel 出现问题时，如 yasm 中
+
+    # 先统计文件总数
+    total_files=$(find "$FINDINGS_DIR" -type f | wc -l)
+    echo "Total files to process: $total_files"
+
+    # 计数器初始化
+    count=0
+
+    # 使用 while read 循环处理
+    find "$FINDINGS_DIR" -type f | while read -r file_path; do
+        # 执行处理函数
+        process_one_to_one "$file_path"
+
+        # ---以此下是简单的进度显示（可选）---
+        count=$((count + 1))
+        # 每处理 100 个文件打印一次进度，避免刷屏太快影响性能
+        if (( count % 100 == 0 )); then
+            echo "Processed: $count / $total_files"
+        fi
+    done
+fi
