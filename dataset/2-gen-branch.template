@@ -53,7 +53,7 @@ process_profdata() {
     local coverage_file="$OUTPUT_DIR/${base_name}.csv"
 
     # 生成 CSV 覆盖率报告
-    llvm-cov${LLVM_SUFFIX} export -format=text "$TARGET_BINARY" -instr-profile="$profdata_file" | \
+    llvm-cov${LLVM_SUFFIX} export -format=text "$TARGET_BINARY" -instr-profile="$profdata_file" --num-threads=1 | \
         python3 collect-branch.py -o "$coverage_file"
 
     # 删除 profdata 文件

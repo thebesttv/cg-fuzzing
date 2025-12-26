@@ -70,7 +70,7 @@ process_one_to_one() {
     if [ -f "$profraw_file" ]; then
         # 4. 转换为 .profdata
         # -sparse 选项非常重要，能显著减小单个文件体积
-        llvm-profdata${LLVM_SUFFIX} merge -sparse "$profraw_file" -o "$profdata_file"
+        llvm-profdata${LLVM_SUFFIX} merge -sparse "$profraw_file" -o "$profdata_file" --threads=1
 
         rm "$profraw_file"
     fi
