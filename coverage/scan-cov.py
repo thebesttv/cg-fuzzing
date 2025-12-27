@@ -199,8 +199,8 @@ def scan_coverage(output_json_path: str, cov_dir: str, json_prefix: str):
 
     # Load output.json
     data = load_output_json(output_json_path)
-    combos = data.get('combos', {})
-    locations = data.get('locations', {}).copy()
+    combos = data.get('combos') or {}
+    locations = (data.get('locations') or {}).copy()
 
     # remove json_prefix from location filenames
     for loc_id, loc in locations.items():
