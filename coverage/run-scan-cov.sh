@@ -75,4 +75,4 @@ find "$BC_DIR" -mindepth 3 -maxdepth 3 -path "*/bc/*.json" | while read -r json_
         fi
     fi
 # 5. 执行
-done | cat # parallel -j "$JOBS" --bar
+done | parallel -j "$JOBS" --bar
