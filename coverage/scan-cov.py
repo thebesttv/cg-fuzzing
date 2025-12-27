@@ -3,6 +3,8 @@
 import json
 import sys
 import os
+import re
+import argparse
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 from collections import defaultdict
@@ -67,6 +69,36 @@ def load_output_json(json_path: str) -> dict:
     """Load the output.json file."""
     with open(json_path, 'r') as f:
         return json.load(f)
+
+
+def guess_json_prefix_from_project(project: str) -> str:
+    """Guess json_prefix by reading the last WORKDIR from the project's bc.dockerfile.
+
+    The bc.dockerfile is located at ../dataset/<project>/bc.dockerfile relative to this script.
+    The last WORKDIR path is used as the json_prefix.
+    """
+    script_dir = Path(__file__).resolve().parent
+    dockerfile_path = (script_dir / '..' / 'dataset' / project / 'bc.dockerfile').resolve()
+
+    if not dockerfile_path.exists():
+        raise FileNotFoundError(f"Dockerfile not found: {dockerfile_path}")
+
+    workdir_value = None
+    workdir_regex = re.compile(r"^\s*WORKDIR\s+(.+?)\s*$", re.IGNORECASE)
+
+    with open(dockerfile_path, 'r') as f:
+        for line in f:
+            # Ignore comment-only lines
+            if line.strip().startswith('#'):
+                continue
+            m = workdir_regex.match(line)
+            if m:
+                workdir_value = m.group(1).strip()
+
+    if not workdir_value:
+        raise ValueError(f"No WORKDIR found in {dockerfile_path}")
+
+    return workdir_value
 
 def within_range(line: int, col: int, start_line: int, start_col: int, end_line: int, end_col: int) -> bool:
     """Check if a given line and column is within the specified range."""
@@ -276,13 +308,27 @@ def scan_coverage(output_json_path: str, cov_dir: str, json_prefix: str):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 4:
-        print("Usage: scan-cov.py <output.json> <cov_dir> <json_prefix>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Scan coverage CSVs and update output.json")
+    parser.add_argument("output_json", help="Path to output.json")
+    parser.add_argument("cov_dir", help="Directory containing CSV coverage files")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--prefix", dest="json_prefix", help="Explicit json_prefix to strip from location filenames")
+    group.add_argument("--project", dest="project", help="Project name to infer json_prefix from ../dataset/<project>/bc.dockerfile")
 
-    output_json_path = sys.argv[1]
-    cov_dir = sys.argv[2]
-    json_prefix = sys.argv[3]
+    args = parser.parse_args()
+
+    output_json_path = args.output_json
+    cov_dir = args.cov_dir
+
+    if args.json_prefix:
+        json_prefix = args.json_prefix
+    else:
+        # Infer from project
+        try:
+            json_prefix = guess_json_prefix_from_project(args.project)
+        except Exception as e:
+            print(f"Error guessing json_prefix from project '{args.project}': {e}")
+            sys.exit(1)
 
     if not os.path.exists(output_json_path):
         print(f"Error: {output_json_path} does not exist")
@@ -291,5 +337,8 @@ if __name__ == '__main__':
     if not os.path.isdir(cov_dir):
         print(f"Error: {cov_dir} is not a directory")
         sys.exit(1)
+
+    if not json_prefix.endswith('/'):
+        json_prefix += '/'
 
     scan_coverage(output_json_path, cov_dir, json_prefix)
