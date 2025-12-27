@@ -341,4 +341,6 @@ if __name__ == '__main__':
     if not json_prefix.endswith('/'):
         json_prefix += '/'
 
+    print(f'json_prefix: {json_prefix}')
+
     scan_coverage(output_json_path, cov_dir, json_prefix)
