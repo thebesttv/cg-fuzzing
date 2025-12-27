@@ -20,11 +20,11 @@ if [[ "$CURRENT_HOST" == "$TARGET_HOST" ]]; then
 
     echo "----------------------------------------"
     echo "🚀 Pushing to amax..."
-    GIT_LFS_SKIP_PUSH=1 git push amax main
+    GIT_LFS_SKIP_PUSH=1 git push amax main --force
 
     echo "----------------------------------------"
     echo "🚀 Pushing to bmax..."
-    GIT_LFS_SKIP_PUSH=1 git push bmax main
+    GIT_LFS_SKIP_PUSH=1 git push bmax main --force
 
     echo "----------------------------------------"
     echo "🎉 Done."
