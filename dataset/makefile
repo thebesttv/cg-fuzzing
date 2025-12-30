@@ -6,11 +6,12 @@ PROJECTS_WITH_CMD := $(shell find . -maxdepth 3 -path "*/fuzz/cmd.template" | se
 # Generate target lists
 TARGETS_1_RUN_COV := $(addsuffix /fuzz/1-run-cov.sh,$(PROJECTS_WITH_CMD))
 TARGETS_2_GEN_BRANCH := $(addsuffix /fuzz/2-gen-branch.sh,$(PROJECTS_WITH_CMD))
+TARGETS_3_GEN_UFTRACE := $(addsuffix /fuzz/3-gen-uftrace.sh,$(PROJECTS_WITH_CMD))
 TARGETS_COLLECT_BRANCH := $(addsuffix /fuzz/collect-branch.py,$(PROJECTS_WITH_CMD))
 
 .PHONY: all clean list
 
-all: $(TARGETS_1_RUN_COV) $(TARGETS_2_GEN_BRANCH) $(TARGETS_COLLECT_BRANCH)
+all: $(TARGETS_1_RUN_COV) $(TARGETS_2_GEN_BRANCH) $(TARGETS_3_GEN_UFTRACE) $(TARGETS_COLLECT_BRANCH)
 
 # Rule to generate 1-run-cov.sh from template and cmd.template
 %/fuzz/1-run-cov.sh: 1-run-cov.template %/fuzz/cmd.template
@@ -22,6 +23,12 @@ all: $(TARGETS_1_RUN_COV) $(TARGETS_2_GEN_BRANCH) $(TARGETS_COLLECT_BRANCH)
 %/fuzz/2-gen-branch.sh: 2-gen-branch.template
 	@echo "Generating $@ from template..."
 	@cp $< $@
+	@chmod +x $@
+
+# Rule to generate 3-gen-uftrace.sh from template and cmd.template
+%/fuzz/3-gen-uftrace.sh: 3-gen-uftrace.template %/fuzz/cmd.template
+	@echo "Generating $@ from template..."
+	@perl -pe 'BEGIN{ open $$f, "<", "$(word 2,$^)"; $$c = join("", <$$f>); chomp $$c } s/CMD_REPLACE_ME/$$c/g' $< > $@
 	@chmod +x $@
 
 # Rule to copy collect-branch.py (direct copy)
@@ -44,6 +51,9 @@ clean:
 		fi; \
 		if [ -f "$$proj/fuzz/2-gen-branch.sh" ]; then \
 			rm -v "$$proj/fuzz/2-gen-branch.sh"; \
+		fi; \
+		if [ -f "$$proj/fuzz/3-gen-uftrace.sh" ]; then \
+			rm -v "$$proj/fuzz/3-gen-uftrace.sh"; \
 		fi; \
 		if [ -f "$$proj/fuzz/collect-branch.py" ]; then \
 			rm -v "$$proj/fuzz/collect-branch.py"; \

@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+# ================= 配置 =================
+TARGET_BINARY="./bin-cov"
+
+# 解析命令行参数
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <FINDINGS_DIR> <OUTPUT_DIR>"
+    echo "  FINDINGS_DIR: Directory containing input files"
+    echo "  OUTPUT_DIR: Directory for uftrace output files"
+    exit 1
+fi
+
+FINDINGS_DIR="$1"
+OUTPUT_DIR="$2"
+
+# =======================================
+
+# 检查 binary
+if [ ! -f "$TARGET_BINARY" ]; then
+    echo "Error: Binary '$TARGET_BINARY' not found!"
+    exit 1
+fi
+
+# 检查 uftrace 是否可用
+if ! command -v uftrace &> /dev/null; then
+    echo "Error: uftrace not found!"
+    exit 1
+fi
+
+mkdir -p "$OUTPUT_DIR"
+
+# 定义处理单个输入的函数
+process_one_input() {
+    local input_path="$1"
+
+    # filename without directory
+    local safe_name=$(basename "$input_path")
+
+    # 定义输出文件名
+    local uftrace_output="$OUTPUT_DIR/${safe_name}.uftrace"
+
+    # 1. 删除可能存在的旧的 uftrace.data
+    rm -rf uftrace.data
+
+    # 2. 使用 uftrace record 运行程序并收集数据
+    uftrace record CMD_REPLACE_ME >/dev/null 2>&1
+
+    # 3. 检查是否生成了 uftrace.data
+    if [ -d "uftrace.data" ]; then
+        # 4. 使用 uftrace dump 导出结果
+        uftrace dump > "$uftrace_output"
+
+        # 清理临时 uftrace.data
+        rm -rf uftrace.data
+    fi
+}
+
+echo "Starting uftrace data generation..."
+echo "Output directory: $OUTPUT_DIR"
+
+# 先统计文件总数
+total_files=$(find "$FINDINGS_DIR" -type f | wc -l)
+echo "Total files to process: $total_files"
+
+# 计数器初始化
+count=0
+
+# 使用 bash 循环顺序执行
+find "$FINDINGS_DIR" -type f | while read -r file_path; do
+    # 执行处理函数
+    process_one_input "$file_path"
+
+    # 简单的进度显示
+    count=$((count + 1))
+    # 每处理 100 个文件打印一次进度
+    if (( count % 100 == 0 )); then
+        echo "Processed: $count / $total_files"
+    fi
+done
+
+echo "Completed processing $total_files files"
