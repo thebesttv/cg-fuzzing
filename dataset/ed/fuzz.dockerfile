@@ -60,6 +60,7 @@ COPY ed/fuzz/whatsup.sh /work/whatsup.sh
 COPY ed/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY ed/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY ed/fuzz/collect-branch.py /work/collect-branch.py
+COPY ed/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

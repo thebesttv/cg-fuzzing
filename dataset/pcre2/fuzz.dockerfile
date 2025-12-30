@@ -63,6 +63,7 @@ COPY pcre2/fuzz/whatsup.sh /work/whatsup.sh
 COPY pcre2/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY pcre2/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY pcre2/fuzz/collect-branch.py /work/collect-branch.py
+COPY pcre2/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

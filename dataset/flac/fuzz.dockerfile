@@ -74,6 +74,7 @@ COPY flac/fuzz/whatsup.sh /work/whatsup.sh
 COPY flac/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY flac/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY flac/fuzz/collect-branch.py /work/collect-branch.py
+COPY flac/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build cov binary with llvm-cov instrumentation
 RUN clang -c /tmp/alloc_check.c -o /tmp/alloc_check_cov.o

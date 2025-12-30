@@ -62,6 +62,7 @@ COPY pngcrush/fuzz/whatsup.sh /work/whatsup.sh
 COPY pngcrush/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY pngcrush/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY pngcrush/fuzz/collect-branch.py /work/collect-branch.py
+COPY pngcrush/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

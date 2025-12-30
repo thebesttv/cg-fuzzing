@@ -56,6 +56,7 @@ COPY mpc/fuzz/whatsup.sh /work/whatsup.sh
 COPY mpc/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY mpc/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY mpc/fuzz/collect-branch.py /work/collect-branch.py
+COPY mpc/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

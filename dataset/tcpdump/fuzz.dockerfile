@@ -93,6 +93,7 @@ COPY tcpdump/fuzz/whatsup.sh /work/whatsup.sh
 COPY tcpdump/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY tcpdump/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY tcpdump/fuzz/collect-branch.py /work/collect-branch.py
+COPY tcpdump/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build libpcap for cov
 WORKDIR /work/libpcap-cov

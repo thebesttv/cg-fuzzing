@@ -67,6 +67,7 @@ COPY hunspell/fuzz/whatsup.sh /work/whatsup.sh
 COPY hunspell/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY hunspell/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY hunspell/fuzz/collect-branch.py /work/collect-branch.py
+COPY hunspell/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

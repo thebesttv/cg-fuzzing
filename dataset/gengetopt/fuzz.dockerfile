@@ -65,6 +65,7 @@ COPY gengetopt/fuzz/whatsup.sh /work/whatsup.sh
 COPY gengetopt/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY gengetopt/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY gengetopt/fuzz/collect-branch.py /work/collect-branch.py
+COPY gengetopt/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

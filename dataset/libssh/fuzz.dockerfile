@@ -94,6 +94,7 @@ COPY libssh/fuzz/whatsup.sh /work/whatsup.sh
 COPY libssh/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY libssh/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY libssh/fuzz/collect-branch.py /work/collect-branch.py
+COPY libssh/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

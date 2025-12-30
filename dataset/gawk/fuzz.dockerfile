@@ -67,6 +67,7 @@ COPY gawk/fuzz/whatsup.sh /work/whatsup.sh
 COPY gawk/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY gawk/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY gawk/fuzz/collect-branch.py /work/collect-branch.py
+COPY gawk/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
