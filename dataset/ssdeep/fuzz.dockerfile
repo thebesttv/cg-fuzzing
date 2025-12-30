@@ -68,6 +68,7 @@ COPY ssdeep/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY ssdeep/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY ssdeep/fuzz/collect-branch.py /work/collect-branch.py
 COPY ssdeep/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY ssdeep/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

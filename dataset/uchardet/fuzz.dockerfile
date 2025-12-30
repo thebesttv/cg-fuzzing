@@ -71,6 +71,7 @@ COPY uchardet/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY uchardet/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY uchardet/fuzz/collect-branch.py /work/collect-branch.py
 COPY uchardet/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY uchardet/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

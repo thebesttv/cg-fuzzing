@@ -66,6 +66,7 @@ COPY screen/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY screen/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY screen/fuzz/collect-branch.py /work/collect-branch.py
 COPY screen/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY screen/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 # Build screen with llvm-cov instrumentation for cov
 WORKDIR /work/build-cov

@@ -65,6 +65,7 @@ COPY mjs/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY mjs/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY mjs/fuzz/collect-branch.py /work/collect-branch.py
 COPY mjs/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY mjs/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

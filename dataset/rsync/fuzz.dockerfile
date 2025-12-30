@@ -68,6 +68,7 @@ COPY rsync/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY rsync/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY rsync/fuzz/collect-branch.py /work/collect-branch.py
 COPY rsync/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY rsync/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -93,6 +93,7 @@ COPY lzop/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY lzop/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY lzop/fuzz/collect-branch.py /work/collect-branch.py
 COPY lzop/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY lzop/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 # Build cov: lzo library first
 WORKDIR /work/lzo-build-cov

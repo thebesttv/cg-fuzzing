@@ -64,6 +64,7 @@ COPY dosfstools/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY dosfstools/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY dosfstools/fuzz/collect-branch.py /work/collect-branch.py
 COPY dosfstools/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY dosfstools/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
