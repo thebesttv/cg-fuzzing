@@ -67,6 +67,7 @@ COPY 0-re2c/fuzz/whatsup.sh /work/whatsup.sh
 COPY 0-re2c/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY 0-re2c/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY 0-re2c/fuzz/collect-branch.py /work/collect-branch.py
+COPY 0-re2c/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

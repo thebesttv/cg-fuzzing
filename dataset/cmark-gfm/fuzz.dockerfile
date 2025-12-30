@@ -73,6 +73,7 @@ COPY cmark-gfm/fuzz/whatsup.sh /work/whatsup.sh
 COPY cmark-gfm/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY cmark-gfm/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY cmark-gfm/fuzz/collect-branch.py /work/collect-branch.py
+COPY cmark-gfm/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build cmark-gfm with llvm-cov instrumentation for cov
 WORKDIR /work/build-cov

@@ -75,6 +75,7 @@ COPY iniparser/fuzz/whatsup.sh /work/whatsup.sh
 COPY iniparser/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY iniparser/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY iniparser/fuzz/collect-branch.py /work/collect-branch.py
+COPY iniparser/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -64,6 +64,7 @@ COPY mongoose/fuzz/whatsup.sh /work/whatsup.sh
 COPY mongoose/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY mongoose/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY mongoose/fuzz/collect-branch.py /work/collect-branch.py
+COPY mongoose/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

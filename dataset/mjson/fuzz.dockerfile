@@ -64,6 +64,7 @@ COPY mjson/fuzz/whatsup.sh /work/whatsup.sh
 COPY mjson/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY mjson/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY mjson/fuzz/collect-branch.py /work/collect-branch.py
+COPY mjson/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

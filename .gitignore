@@ -4,4 +4,5 @@ config.log
 # Generated coverage scripts
 dataset/*/fuzz/1-run-cov.sh
 dataset/*/fuzz/2-gen-branch.sh
+dataset/*/fuzz/3-gen-uftrace.sh
 dataset/*/fuzz/collect-branch.py

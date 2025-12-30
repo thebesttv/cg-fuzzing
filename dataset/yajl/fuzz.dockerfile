@@ -71,6 +71,7 @@ COPY yajl/fuzz/whatsup.sh /work/whatsup.sh
 COPY yajl/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY yajl/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY yajl/fuzz/collect-branch.py /work/collect-branch.py
+COPY yajl/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

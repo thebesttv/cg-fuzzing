@@ -66,6 +66,7 @@ COPY quickjs/fuzz/whatsup.sh /work/whatsup.sh
 COPY quickjs/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY quickjs/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY quickjs/fuzz/collect-branch.py /work/collect-branch.py
+COPY quickjs/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
 
 # Build quickjs with llvm-cov instrumentation for cov
 WORKDIR /work/build-cov
