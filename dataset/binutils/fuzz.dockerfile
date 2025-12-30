@@ -82,6 +82,7 @@ COPY binutils/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY binutils/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY binutils/fuzz/collect-branch.py /work/collect-branch.py
 COPY binutils/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY binutils/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

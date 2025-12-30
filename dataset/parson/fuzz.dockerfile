@@ -60,6 +60,7 @@ COPY parson/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY parson/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY parson/fuzz/collect-branch.py /work/collect-branch.py
 COPY parson/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY parson/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

@@ -101,6 +101,7 @@ COPY libexif/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY libexif/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY libexif/fuzz/collect-branch.py /work/collect-branch.py
 COPY libexif/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY libexif/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 # Build cov: libexif + exif CLI with llvm-cov instrumentation
 WORKDIR /work/build-libexif-cov

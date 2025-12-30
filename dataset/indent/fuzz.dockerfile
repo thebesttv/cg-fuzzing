@@ -66,6 +66,7 @@ COPY indent/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY indent/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY indent/fuzz/collect-branch.py /work/collect-branch.py
 COPY indent/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY indent/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

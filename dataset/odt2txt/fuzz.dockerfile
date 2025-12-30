@@ -62,6 +62,7 @@ COPY odt2txt/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY odt2txt/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY odt2txt/fuzz/collect-branch.py /work/collect-branch.py
 COPY odt2txt/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY odt2txt/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

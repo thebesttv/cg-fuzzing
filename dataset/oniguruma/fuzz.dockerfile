@@ -74,6 +74,7 @@ COPY oniguruma/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY oniguruma/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY oniguruma/fuzz/collect-branch.py /work/collect-branch.py
 COPY oniguruma/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY oniguruma/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 # Build oniguruma with llvm-cov instrumentation for cov
 WORKDIR /work/build-cov

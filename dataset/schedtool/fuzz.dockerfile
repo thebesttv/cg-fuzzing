@@ -33,6 +33,7 @@ COPY schedtool/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY schedtool/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY schedtool/fuzz/collect-branch.py /work/collect-branch.py
 COPY schedtool/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY schedtool/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 WORKDIR /work/build-cov
 RUN make CC=clang CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \

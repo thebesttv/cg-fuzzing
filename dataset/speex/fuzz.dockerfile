@@ -80,6 +80,7 @@ COPY speex/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY speex/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY speex/fuzz/collect-branch.py /work/collect-branch.py
 COPY speex/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY speex/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov

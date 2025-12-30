@@ -66,6 +66,7 @@ COPY unrtf/fuzz/1-run-cov.sh /work/1-run-cov.sh
 COPY unrtf/fuzz/2-gen-branch.sh /work/2-gen-branch.sh
 COPY unrtf/fuzz/collect-branch.py /work/collect-branch.py
 COPY unrtf/fuzz/3-gen-uftrace.sh /work/3-gen-uftrace.sh
+COPY unrtf/fuzz/uftrace-callgraph.py /work/uftrace-callgraph.py
 
 # Build cov binary with llvm-cov instrumentation
 WORKDIR /work/build-cov
