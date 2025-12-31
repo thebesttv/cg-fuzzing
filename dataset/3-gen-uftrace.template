@@ -54,6 +54,9 @@ process_one_input() {
         # 清理临时 uftrace.data
         rm -rf uftrace.data
     fi
+
+    # 清理 /dev/shm 下的残留文件
+    rm -rf /dev/shm/uftrace-*
 }
 
 echo "Starting uftrace data generation..."
