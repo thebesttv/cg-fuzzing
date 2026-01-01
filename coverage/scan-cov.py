@@ -194,6 +194,164 @@ def check_json_csv_filename_match(locations: dict, csv_coverage_map: dict):
     matching_filenames = json_filenames.intersection(csv_filenames)
     print(f"Matching filenames: {len(matching_filenames)}")
 
+
+def load_uftrace_files(uftrace_dir: str) -> Dict[str, Set[str]]:
+    """Load all uftrace files from directory and return merged callgraph.
+
+    Args:
+        uftrace_dir: Directory containing .uftrace JSON files
+
+    Returns:
+        Dict mapping function name to set of callee names
+    """
+    merged_callgraph = defaultdict(set)
+    uftrace_files = list(Path(uftrace_dir).glob('*.uftrace'))
+
+    if not uftrace_files:
+        print(f"Warning: No .uftrace files found in {uftrace_dir}")
+        return merged_callgraph
+
+    print(f"Found {len(uftrace_files)} uftrace files in {uftrace_dir}")
+
+    uftrace_iter = tqdm(uftrace_files, desc="Loading uftrace files", unit="file") if HAS_TQDM else uftrace_files
+    for uftrace_file in uftrace_iter:
+        try:
+            with open(uftrace_file, 'r') as f:
+                callgraph = json.load(f)
+            # Merge into the combined callgraph
+            for func, callees in callgraph.items():
+                if isinstance(callees, list):
+                    merged_callgraph[func].update(callees)
+        except (json.JSONDecodeError, IOError) as e:
+            print(f"Warning: Failed to load {uftrace_file}: {e}")
+
+    return dict(merged_callgraph)
+
+
+def build_static_callgraph(callsites: dict) -> Dict[str, Set[str]]:
+    """Build static call graph from callSites data.
+
+    Args:
+        callsites: Dict with structure func_name -> {ICFGNode_xxx: node_info, ...}
+
+    Returns:
+        Dict mapping function name to set of target function names
+    """
+    static_callgraph = defaultdict(set)
+
+    for func_name, nodes in callsites.items():
+        for node_id, node_info in nodes.items():
+            if not node_id.startswith('ICFGNode'):
+                continue
+
+            # For direct calls, there's exactly one target
+            # For indirect calls, there may be multiple targets
+            targets = node_info.get('targets', [])
+            if isinstance(targets, list):
+                static_callgraph[func_name].update(targets)
+            elif isinstance(targets, str):
+                static_callgraph[func_name].add(targets)
+
+    return dict(static_callgraph)
+
+
+def optimize_callgraph_for_functions(static_callgraph: Dict[str, Set[str]],
+                                      dynamic_callgraph: Dict[str, Set[str]],
+                                      functions_to_optimize: List[str]) -> Dict[str, Set[str]]:
+    """Optimize call graph for selected functions using dynamic information.
+
+    For each function to optimize:
+    - Keep direct call targets from static analysis
+    - Replace indirect calls with results from dynamic call graph
+
+    Args:
+        static_callgraph: Original static call graph (func -> set of callees)
+        dynamic_callgraph: Merged dynamic call graph from uftrace (func -> set of callees)
+        functions_to_optimize: List of function names to optimize
+
+    Returns:
+        Optimized call graph with dynamic info merged for selected functions
+    """
+    optimized_callgraph = {}
+
+    for func_name, callees in static_callgraph.items():
+        if func_name in functions_to_optimize:
+            # Use dynamic callgraph for optimized functions
+            optimized_callgraph[func_name] = set(dynamic_callgraph.get(func_name, set()))
+        else:
+            # Keep original for non-optimized functions
+            optimized_callgraph[func_name] = set(callees)
+
+    return optimized_callgraph
+
+
+def count_callgraph_edges(callgraph: Dict[str, Set[str]]) -> int:
+    """Count total number of edges in call graph.
+
+    Args:
+        callgraph: Call graph (func -> set of callees)
+
+    Returns:
+        Total number of edges
+    """
+    total_edges = 0
+    for callees in callgraph.values():
+        total_edges += len(callees)
+    return total_edges
+
+
+def update_callgraph(data: dict, uftrace_dir: str, functions_to_optimize: List[str]) -> dict:
+    """Update call graph based on coverage results and uftrace data.
+
+    Args:
+        data: Original input.json data (contains callSites)
+        uftrace_dir: Directory containing uftrace files
+        functions_to_optimize: List of functions that can be optimized
+
+    Returns:
+        Dict containing optimization statistics to add to output
+    """
+    callsites = data.get('callSites', {}) or {}
+
+    # Build static call graph from static analysis
+    static_callgraph = build_static_callgraph(callsites)
+    static_edge_count = count_callgraph_edges(static_callgraph)
+
+    print(f"\nStatic call graph edges: {static_edge_count}")
+
+    # Load and merge dynamic call graphs from uftrace
+    dynamic_callgraph = load_uftrace_files(uftrace_dir)
+    dynamic_edge_count = count_callgraph_edges(dynamic_callgraph)
+
+    print(f"Dynamic call graph edges: {dynamic_edge_count}")
+    print(f"Functions with dynamic info: {len(dynamic_callgraph)}")
+
+    # Optimize call graph for selected functions
+    optimized_callgraph = optimize_callgraph_for_functions(
+        static_callgraph,
+        dynamic_callgraph,
+        functions_to_optimize
+    )
+    optimized_edge_count = count_callgraph_edges(optimized_callgraph)
+
+    print(f"Optimized call graph edges: {optimized_edge_count}")
+
+    # Calculate statistics
+    edges_removed = static_edge_count - optimized_edge_count
+    reduction_percentage = (edges_removed / static_edge_count * 100) if static_edge_count > 0 else 0
+
+    stats = {
+        'Static call graph edges': static_edge_count,
+        'Dynamic call graph edges': dynamic_edge_count,
+        'Optimized call graph edges': optimized_edge_count,
+        'Edges removed': edges_removed,
+        'Edge reduction percentage': f"{reduction_percentage:.2f}%"
+    }
+
+    return stats
+
+
+
 def scan_coverage(input_json_path: str, cov_dir: str, json_prefix: str) -> dict:
     """Main function to scan coverage and return output data.
 
@@ -348,13 +506,6 @@ def scan_coverage(input_json_path: str, cov_dir: str, json_prefix: str) -> dict:
         'statistics': statistics
     }
 
-    # Print statistics to stdout (summary only)
-    print("\n" + "="*80)
-    print("SUMMARY")
-    print("="*80)
-    for k, v in statistics.items():
-        print(f"{k}: {v}")
-
     return output_data
 
 
@@ -363,6 +514,7 @@ if __name__ == '__main__':
     parser.add_argument("input_json", help="Path to input.json (contains locations and combos)")
     parser.add_argument("cov_dir", help="Directory containing CSV coverage files")
     parser.add_argument("-o", "--output", dest="output_json", help="Path to output.json (optional)")
+    parser.add_argument("-u", "--uftrace-dir", dest="uftrace_dir", help="Directory containing uftrace files for call graph optimization (optional)")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--prefix", dest="json_prefix", help="Explicit json_prefix to strip from location filenames")
     group.add_argument("--project", dest="project", help="Project name to infer json_prefix from ../dataset/<project>/bc.dockerfile")
@@ -393,6 +545,30 @@ if __name__ == '__main__':
     print(f'json_prefix: {json_prefix}')
 
     output_data = scan_coverage(args.input_json, args.cov_dir, json_prefix)
+
+    # Optionally optimize call graph if uftrace_dir is provided
+    if args.uftrace_dir:
+        if not os.path.isdir(args.uftrace_dir):
+            print(f"Error: {args.uftrace_dir} is not a directory")
+            sys.exit(1)
+
+        # Load input data to get callSites
+        data = load_output_json(args.input_json)
+
+        # Get functions to optimize from coverage results
+        functions_to_optimize = output_data.get('functions-cg', [])
+
+        # Update call graph and get optimization statistics
+        callgraph_stats = update_callgraph(data, args.uftrace_dir, functions_to_optimize)
+
+        # Add call graph optimization statistics to output
+        output_data['statistics'].update(callgraph_stats)
+
+    print("\n" + "="*80)
+    print("SUMMARY")
+    print("="*80)
+    for k, v in output_data['statistics'].items():
+        print(f"{k}: {v}")
 
     # Optionally write output.json if provided
     if args.output_json:
