@@ -306,6 +306,67 @@ def scan_coverage(output_json_path: str, cov_dir: str, json_prefix: str):
     print(f"  Partially covered: {len(partially_covered_nodes)}")
     print(f"  Uncovered: {len(combos) - len(fully_covered_with_paths) - len(fully_covered_no_paths) - len(partially_covered_nodes)}")
 
+    # === Functions to optimize ===
+    # A function is a candidate if:
+    # - it contains NO indirect-IR ICFGNodes
+    # - it contains at least one indirect-nonIR ICFGNode
+    # - for all its indirect-nonIR ICFGNodes, their branch paths (if any) are all covered
+    functions_to_optimize = []
+    callsites = data.get('callSites', {}) or {}
+
+    for func_name, nodes in callsites.items():
+        # collect ICFGNode keys
+        icfg_nodes = [nid for nid in nodes.keys() if nid.startswith('ICFGNode')]
+        if not icfg_nodes:
+            continue
+
+        has_indirect_ir = False
+        indirect_nonir_nodes = []
+
+        for nid in icfg_nodes:
+            node_info = nodes.get(nid, {})
+            t = node_info.get('type')
+            if t == 'indirect-IR':
+                has_indirect_ir = True
+                break
+            if t == 'indirect-nonIR':
+                indirect_nonir_nodes.append(nid)
+
+        if has_indirect_ir:
+            continue
+        if not indirect_nonir_nodes:
+            continue
+
+        all_nonir_nodes_covered = True
+        # For each indirect-nonIR node, check if its branchCombos (if any) are all covered
+        for nid in indirect_nonir_nodes:
+            combo_node = combos.get(nid)
+            if not combo_node:
+                # No combos entry -> no paths to cover, treat as covered
+                continue
+
+            branch_combos = combo_node.get('branchCombos', []) or []
+            # if branch_combos is empty, treat as covered
+            for path in branch_combos:
+                if not path.get('coveredBy'):
+                    all_nonir_nodes_covered = False
+                    break
+            if not all_nonir_nodes_covered:
+                break
+
+        if all_nonir_nodes_covered:
+            functions_to_optimize.append({
+                'function': func_name,
+                'indirect_nonIR_nodes': len(indirect_nonir_nodes)
+            })
+
+    print("\n" + "="*80)
+    print("FUNCTIONS TO OPTIMIZE")
+    print("="*80)
+    print(f"Total candidate functions: {len(functions_to_optimize)}")
+    for info in functions_to_optimize:
+        print(f"  • {info['function']} (indirect-nonIR nodes: {info['indirect_nonIR_nodes']})")
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Scan coverage CSVs and update output.json")
