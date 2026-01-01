@@ -300,16 +300,19 @@ def count_callgraph_edges(callgraph: Dict[str, Set[str]]) -> int:
     return total_edges
 
 
-def update_callgraph(data: dict, uftrace_dir: str, functions_to_optimize: List[str]) -> dict:
+def update_callgraph(output_data: dict, data: dict, uftrace_dir: str, functions_to_optimize: List[str]) -> None:
     """Update call graph based on coverage results and uftrace data.
 
+    Directly modifies output_data by adding:
+    - 'static-cg': static call graph from static analysis
+    - 'dynamic-cg': merged dynamic call graph from uftrace
+    - statistics about edges removed and reduction
+
     Args:
+        output_data: Output data dict to be modified (will add 'static-cg', 'dynamic-cg', and stats)
         data: Original input.json data (contains callSites)
         uftrace_dir: Directory containing uftrace files
         functions_to_optimize: List of functions that can be optimized
-
-    Returns:
-        Dict containing optimization statistics to add to output
     """
     callsites = data.get('callSites', {}) or {}
 
@@ -340,6 +343,15 @@ def update_callgraph(data: dict, uftrace_dir: str, functions_to_optimize: List[s
     edges_removed = static_edge_count - optimized_edge_count
     reduction_percentage = (edges_removed / static_edge_count * 100) if static_edge_count > 0 else 0
 
+    # Convert sets to lists for JSON serialization
+    static_cg_json = {func: sorted(list(callees)) for func, callees in static_callgraph.items()}
+    dynamic_cg_json = {func: sorted(list(callees)) for func, callees in dynamic_callgraph.items()}
+
+    # Add call graphs to output
+    output_data['static-cg'] = static_cg_json
+    output_data['dynamic-cg'] = dynamic_cg_json
+
+    # Add statistics to output
     stats = {
         'Static call graph edges': static_edge_count,
         'Dynamic call graph edges': dynamic_edge_count,
@@ -347,8 +359,7 @@ def update_callgraph(data: dict, uftrace_dir: str, functions_to_optimize: List[s
         'Edges removed': edges_removed,
         'Edge reduction percentage': f"{reduction_percentage:.2f}%"
     }
-
-    return stats
+    output_data['statistics'].update(stats)
 
 
 
@@ -558,11 +569,8 @@ if __name__ == '__main__':
         # Get functions to optimize from coverage results
         functions_to_optimize = output_data.get('functions-cg', [])
 
-        # Update call graph and get optimization statistics
-        callgraph_stats = update_callgraph(data, args.uftrace_dir, functions_to_optimize)
-
-        # Add call graph optimization statistics to output
-        output_data['statistics'].update(callgraph_stats)
+        # Update call graph and output data (modifies output_data in place)
+        update_callgraph(output_data, data, args.uftrace_dir, functions_to_optimize)
 
     print("\n" + "="*80)
     print("SUMMARY")
