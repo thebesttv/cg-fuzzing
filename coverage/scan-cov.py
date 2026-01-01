@@ -194,13 +194,17 @@ def check_json_csv_filename_match(locations: dict, csv_coverage_map: dict):
     matching_filenames = json_filenames.intersection(csv_filenames)
     print(f"Matching filenames: {len(matching_filenames)}")
 
-def scan_coverage(output_json_path: str, cov_dir: str, json_prefix: str):
-    """Main function to scan coverage and update output.json."""
+def scan_coverage(input_json_path: str, cov_dir: str, json_prefix: str) -> dict:
+    """Main function to scan coverage and return output data.
 
-    # Load output.json
-    data = load_output_json(output_json_path)
+    Returns:
+        Dict containing 'coverage', 'functions-cg', and 'statistics' keys.
+    """
+
+    # Load input.json
+    data = load_output_json(input_json_path)
     combos = data.get('combos') or {}
-    locations = (data.get('locations') or {}).copy()
+    locations = data.get('locations') or {}
 
     # remove json_prefix from location filenames
     for loc_id, loc in locations.items():
@@ -220,27 +224,24 @@ def scan_coverage(output_json_path: str, cov_dir: str, json_prefix: str):
     for csv_file in csv_iter:
         csv_path = str(csv_file.absolute())
         csv_coverage_map[csv_path] = parse_csv_file(csv_path)
-        # if not HAS_TQDM:
-        #     print(f"Parsed {csv_file.name}: {len(csv_coverage_map[csv_path])} coverage entries")
 
     check_json_csv_filename_match(locations, csv_coverage_map)
 
-    # Track statistics
-    fully_covered_with_paths = []
-    fully_covered_no_paths = []
-    partially_covered_nodes = []
+    # Coverage output structure: node_name -> {totalPaths, coveredPaths, coveredBy}
+    coverage_output = {}
 
     # Process each node in combos
     combos_iter = tqdm(combos.items(), desc="Checking coverage", unit="node") if HAS_TQDM else combos.items()
     for node_name, node_data in combos_iter:
         branch_combos = node_data.get('branchCombos', [])
 
-        # If no paths to cover, node is fully covered (no paths)
+        # If no paths to cover, node is considered covered (no paths)
         if not branch_combos:
-            fully_covered_no_paths.append({
-                'node': node_name,
-                'total_paths': 0
-            })
+            coverage_output[node_name] = {
+                'totalPaths': 0,
+                'coveredPaths': 0,
+                'covered': True
+            }
             continue
 
         total_paths = len(branch_combos)
@@ -248,69 +249,23 @@ def scan_coverage(output_json_path: str, cov_dir: str, json_prefix: str):
 
         # Check each path against all CSV files
         for path_idx, path in enumerate(branch_combos):
-            path_covered = False
-
             for csv_path, csv_coverage in csv_coverage_map.items():
                 if check_path_coverage(path, csv_coverage, locations):
-                    # Mark this path as covered by this CSV
-                    path['coveredBy'] = csv_path
-                    path_covered = True
+                    # Mark this path as covered (boolean)
+                    path['covered'] = True
                     covered_paths += 1
                     break
 
-        # Determine if node is fully or partially covered
-        if covered_paths == total_paths:
-            fully_covered_with_paths.append({
-                'node': node_name,
-                'total_paths': total_paths
-            })
-        elif covered_paths > 0:
-            partially_covered_nodes.append({
-                'node': node_name,
-                'total_paths': total_paths,
-                'covered_paths': covered_paths
-            })
+        # Store coverage data; a node is considered 'covered' when all its paths are covered
+        coverage_output[node_name] = {
+            'totalPaths': total_paths,
+            'coveredPaths': covered_paths,
+            'covered': (covered_paths == total_paths)
+        }
 
-    # Write updated output.json
-    with open(output_json_path, 'w') as f:
-        json.dump(data, f, indent=4)
-
-    # Print statistics
-    print("\n" + "="*80)
-    print("COVERAGE STATISTICS")
-    print("="*80)
-
-    print(f"\nFully covered nodes with paths ({len(fully_covered_with_paths)}):")
-    for node_info in fully_covered_with_paths:
-        node = node_info['node']
-        total = node_info['total_paths']
-        print(f"  ✓ {node} ({total} paths)")
-
-    print(f"\nFully covered nodes with no paths ({len(fully_covered_no_paths)}):")
-    for node_info in fully_covered_no_paths:
-        node = node_info['node']
-        print(f"  ✓ {node} (no paths to cover)")
-
-    print(f"\nPartially covered nodes ({len(partially_covered_nodes)}):")
-    for node_info in partially_covered_nodes:
-        node = node_info['node']
-        total = node_info['total_paths']
-        covered = node_info['covered_paths']
-        percentage = (covered / total * 100) if total > 0 else 0
-        print(f"  ✗ {node}: {covered}/{total} paths covered ({percentage:.1f}%)")
-
-    print(f"\nSummary:")
-    print(f"  Total nodes: {len(combos)}")
-    print(f"  Fully covered (with paths): {len(fully_covered_with_paths)}")
-    print(f"  Fully covered (no paths): {len(fully_covered_no_paths)}")
-    print(f"  Partially covered: {len(partially_covered_nodes)}")
-    print(f"  Uncovered: {len(combos) - len(fully_covered_with_paths) - len(fully_covered_no_paths) - len(partially_covered_nodes)}")
+        # no per-node stat arrays maintained; summary will be computed later
 
     # === Functions to optimize ===
-    # A function is a candidate if:
-    # - it contains NO indirect-IR ICFGNodes
-    # - it contains at least one indirect-nonIR ICFGNode
-    # - for all its indirect-nonIR ICFGNodes, their branch paths (if any) are all covered
     functions_to_optimize = []
     callsites = data.get('callSites', {}) or {}
 
@@ -340,46 +295,79 @@ def scan_coverage(output_json_path: str, cov_dir: str, json_prefix: str):
         all_nonir_nodes_covered = True
         # For each indirect-nonIR node, check if its branchCombos (if any) are all covered
         for nid in indirect_nonir_nodes:
-            combo_node = combos.get(nid)
-            if not combo_node:
-                # No combos entry -> no paths to cover, treat as covered
+            # Use previously computed node-level coverage (coverage_output)
+            node_cov = coverage_output.get(nid)
+            if not node_cov:
+                # No coverage info -> treat as covered
                 continue
-
-            branch_combos = combo_node.get('branchCombos', []) or []
-            # if branch_combos is empty, treat as covered
-            for path in branch_combos:
-                if not path.get('coveredBy'):
-                    all_nonir_nodes_covered = False
-                    break
-            if not all_nonir_nodes_covered:
+            if not node_cov.get('covered'):
+                all_nonir_nodes_covered = False
                 break
 
         if all_nonir_nodes_covered:
-            functions_to_optimize.append({
-                'function': func_name,
-                'indirect_nonIR_nodes': len(indirect_nonir_nodes)
-            })
+            functions_to_optimize.append(func_name)
 
+    def compute_summary(coverage_map: dict, functions_list: list) -> dict:
+        """Compute summary statistics from coverage_output."""
+        total_nodes = len(coverage_map)
+        fully_with_paths = 0
+        fully_no_paths = 0
+        partially = 0
+        uncovered = 0
+
+        for node, info in coverage_map.items():
+            tp = info.get('totalPaths', 0)
+            cp = info.get('coveredPaths', 0)
+            covered_flag = info.get('covered', False)
+
+            if tp == 0:
+                fully_no_paths += 1
+            else:
+                if cp == tp:
+                    fully_with_paths += 1
+                elif cp == 0:
+                    uncovered += 1
+                else:
+                    partially += 1
+
+        return {
+            'Total nodes': total_nodes,
+            'Fully covered (with paths)': fully_with_paths,
+            'Fully covered (no paths)': fully_no_paths,
+            'Partially covered': partially,
+            'Uncovered': uncovered,
+            'Functions to optimize': len(functions_list)
+        }
+
+    statistics = compute_summary(coverage_output, functions_to_optimize)
+
+    # Build output JSON structure
+    output_data = {
+        'coverage': coverage_output,
+        'functions-cg': functions_to_optimize,
+        'statistics': statistics
+    }
+
+    # Print statistics to stdout (summary only)
     print("\n" + "="*80)
-    print("FUNCTIONS TO OPTIMIZE")
+    print("SUMMARY")
     print("="*80)
-    print(f"Total candidate functions: {len(functions_to_optimize)}")
-    for info in functions_to_optimize:
-        print(f"  • {info['function']} (indirect-nonIR nodes: {info['indirect_nonIR_nodes']})")
+    for k, v in statistics.items():
+        print(f"{k}: {v}")
+
+    return output_data
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Scan coverage CSVs and update output.json")
-    parser.add_argument("output_json", help="Path to output.json")
+    parser = argparse.ArgumentParser(description="Scan coverage CSVs and optionally write output.json")
+    parser.add_argument("input_json", help="Path to input.json (contains locations and combos)")
     parser.add_argument("cov_dir", help="Directory containing CSV coverage files")
+    parser.add_argument("-o", "--output", dest="output_json", help="Path to output.json (optional)")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--prefix", dest="json_prefix", help="Explicit json_prefix to strip from location filenames")
     group.add_argument("--project", dest="project", help="Project name to infer json_prefix from ../dataset/<project>/bc.dockerfile")
 
     args = parser.parse_args()
-
-    output_json_path = args.output_json
-    cov_dir = args.cov_dir
 
     if args.json_prefix:
         json_prefix = args.json_prefix
@@ -391,12 +379,12 @@ if __name__ == '__main__':
             print(f"Error guessing json_prefix from project '{args.project}': {e}")
             sys.exit(1)
 
-    if not os.path.exists(output_json_path):
-        print(f"Error: {output_json_path} does not exist")
+    if not os.path.exists(args.input_json):
+        print(f"Error: {args.input_json} does not exist")
         sys.exit(1)
 
-    if not os.path.isdir(cov_dir):
-        print(f"Error: {cov_dir} is not a directory")
+    if not os.path.isdir(args.cov_dir):
+        print(f"Error: {args.cov_dir} is not a directory")
         sys.exit(1)
 
     if not json_prefix.endswith('/'):
@@ -404,4 +392,9 @@ if __name__ == '__main__':
 
     print(f'json_prefix: {json_prefix}')
 
-    scan_coverage(output_json_path, cov_dir, json_prefix)
+    output_data = scan_coverage(args.input_json, args.cov_dir, json_prefix)
+
+    # Optionally write output.json if provided
+    if args.output_json:
+        with open(args.output_json, 'w') as f:
+            json.dump(output_data, f, indent=4)
