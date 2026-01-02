@@ -244,13 +244,14 @@ def build_static_callgraph(callsites: dict) -> Dict[str, Set[str]]:
             if not node_id.startswith('ICFGNode'):
                 continue
 
-            # For direct calls, there's exactly one target
-            # For indirect calls, there may be multiple targets
-            targets = node_info.get('targets', [])
-            if isinstance(targets, list):
-                static_callgraph[func_name].update(targets)
-            elif isinstance(targets, str):
-                static_callgraph[func_name].add(targets)
+            if node_info['type'] == 'direct':
+                target = node_info.get('target')
+                if target:
+                    static_callgraph[func_name].add(target)
+            else:
+                targets = node_info.get('targets', [])
+                if isinstance(targets, list):
+                    static_callgraph[func_name].update(targets)
 
     return dict(static_callgraph)
 
