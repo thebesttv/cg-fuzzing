@@ -226,6 +226,18 @@ jobs:
             echo "Error: fuzz artifacts directory is empty!"
             exit 1
           fi
+          # Verify required fuzz binaries are present
+          required_bins=(bin-cmplog bin-cov bin-fuzz bin-uftrace)
+          missing=()
+          for b in "${required_bins[@]}"; do
+            if [ ! -f "output/${{ matrix.pair.proj1 }}/fuzz/$b" ]; then
+              missing+=("$b")
+            fi
+          done
+          if [ ${#missing[@]} -ne 0 ]; then
+            echo "Error: missing required fuzz binaries in output/${{ matrix.pair.proj1 }}/fuzz/: ${missing[*]}"
+            exit 1
+          fi
 
       # Build proj2 - bc
       - name: Build bc.dockerfile for ${{ matrix.pair.proj2 }}
@@ -292,6 +304,18 @@ jobs:
           # Verify directory is non-empty
           if [ -z "$(ls -A "output/${{ matrix.pair.proj2 }}/fuzz/" 2>/dev/null)" ]; then
             echo "Error: fuzz artifacts directory is empty!"
+            exit 1
+          fi
+          # Verify required fuzz binaries are present
+          required_bins=(bin-cmplog bin-cov bin-fuzz bin-uftrace)
+          missing=()
+          for b in "${required_bins[@]}"; do
+            if [ ! -f "output/${{ matrix.pair.proj2 }}/fuzz/$b" ]; then
+              missing+=("$b")
+            fi
+          done
+          if [ ${#missing[@]} -ne 0 ]; then
+            echo "Error: missing required fuzz binaries in output/${{ matrix.pair.proj2 }}/fuzz/: ${missing[*]}"
             exit 1
           fi
 
