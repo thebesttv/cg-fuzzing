@@ -66,11 +66,12 @@ find "$BC_DIR" -mindepth 3 -maxdepth 3 -path "*/bc/*.json" | while read -r json_
 
     covout_file="${bc_subdir}/${bin_name}.covout"
     target_prof_dir="${PROFILES_DIR}/${proj_name}/profiles"
+    uftrace_dir="${PROFILES_DIR}/${proj_name}/uftrace"
 
     # 检查前提条件：目录存在 且 包含 .csv 文件
     if [ -d "$target_prof_dir" ]; then
         if find "$target_prof_dir" -maxdepth 1 -name "*.csv" -print -quit | grep -q .; then
-            cmd="${SCAN_SCRIPT} \"${json_file}\" \"${target_prof_dir}/\" --project \"${proj_name}\" | tee \"${covout_file}\""
+            cmd="${SCAN_SCRIPT} \"${json_file}\" \"${target_prof_dir}/\" -u \"${uftrace_dir}/\" --project \"${proj_name}\" -o \"${covout_file}\""
             echo "$cmd"
         fi
     fi
