@@ -238,6 +238,8 @@ def build_static_callgraph(callsites: dict) -> Dict[str, Set[str]]:
         Dict mapping function name to set of target function names
     """
     static_callgraph = defaultdict(set)
+    static_direct_callgraph = defaultdict(set)
+    static_indirect_callgraph = defaultdict(set)
 
     for func_name, nodes in callsites.items():
         for node_id, node_info in nodes.items():
@@ -248,15 +250,18 @@ def build_static_callgraph(callsites: dict) -> Dict[str, Set[str]]:
                 target = node_info.get('target')
                 if target:
                     static_callgraph[func_name].add(target)
+                    static_direct_callgraph[func_name].add(target)
             else:
                 targets = node_info.get('targets', [])
                 if isinstance(targets, list):
                     static_callgraph[func_name].update(targets)
+                    static_indirect_callgraph[func_name].update(targets)
 
-    return dict(static_callgraph)
+    return dict(static_callgraph), dict(static_direct_callgraph), dict(static_indirect_callgraph)
 
 
 def optimize_callgraph_for_functions(static_callgraph: Dict[str, Set[str]],
+                                     static_direct_callgraph: Dict[str, Set[str]],
                                       dynamic_callgraph: Dict[str, Set[str]],
                                       functions_to_optimize: List[str]) -> Dict[str, Set[str]]:
     """Optimize call graph for selected functions using dynamic information.
@@ -278,7 +283,7 @@ def optimize_callgraph_for_functions(static_callgraph: Dict[str, Set[str]],
     for func_name, callees in static_callgraph.items():
         if func_name in functions_to_optimize:
             # Use dynamic callgraph for optimized functions
-            optimized_callgraph[func_name] = set(dynamic_callgraph.get(func_name, set()))
+            optimized_callgraph[func_name] = static_direct_callgraph.get(func_name, set()) | dynamic_callgraph.get(func_name, set())
         else:
             # Keep original for non-optimized functions
             optimized_callgraph[func_name] = set(callees)
@@ -318,7 +323,7 @@ def update_callgraph(output_data: dict, data: dict, uftrace_dir: str, functions_
     callsites = data.get('callSites', {}) or {}
 
     # Build static call graph from static analysis
-    static_callgraph = build_static_callgraph(callsites)
+    static_callgraph, static_direct_callgraph, static_indirect_callgraph = build_static_callgraph(callsites)
     static_edge_count = count_callgraph_edges(static_callgraph)
 
     print(f"\nStatic call graph edges: {static_edge_count}")
@@ -333,16 +338,19 @@ def update_callgraph(output_data: dict, data: dict, uftrace_dir: str, functions_
     # Optimize call graph for selected functions
     optimized_callgraph = optimize_callgraph_for_functions(
         static_callgraph,
+        static_direct_callgraph,
         dynamic_callgraph,
         functions_to_optimize
     )
     optimized_edge_count = count_callgraph_edges(optimized_callgraph)
 
-    print(f"Optimized call graph edges: {optimized_edge_count}")
+    reduced_indirect_edge_count = 0
+    for caller, callees in optimized_callgraph.items():
+        static_indirect_callees = static_indirect_callgraph.get(caller, set())
+        reduced_indirect_edge_count += len(static_indirect_callees) - len(callees.intersection(static_indirect_callees))
 
     # Calculate statistics
-    edges_removed = static_edge_count - optimized_edge_count
-    reduction_percentage = (edges_removed / static_edge_count * 100) if static_edge_count > 0 else 0
+    reduction_percentage = (reduced_indirect_edge_count / static_edge_count * 100) if static_edge_count > 0 else 0
 
     # Convert sets to lists for JSON serialization
     static_cg_json = {func: sorted(list(callees)) for func, callees in static_callgraph.items()}
@@ -357,7 +365,7 @@ def update_callgraph(output_data: dict, data: dict, uftrace_dir: str, functions_
         'Static call graph edges': static_edge_count,
         'Dynamic call graph edges': dynamic_edge_count,
         'Optimized call graph edges': optimized_edge_count,
-        'Edges removed': edges_removed,
+        'Reduced indirect call graph edges': reduced_indirect_edge_count,
         'Edge reduction percentage': f"{reduction_percentage:.2f}%"
     }
     output_data['statistics'].update(stats)
