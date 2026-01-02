@@ -33,7 +33,7 @@ RUN CC=wllvm \
 
 # Create bc directory and extract bitcode files
 RUN mkdir -p ~/bc && \
-    for bin in sponge chronic ts pee ifne; do \
+    for bin in sponge chronic ts pee; do \
         if [ -f "$bin" ]; then \
             extract-bc "$bin" && \
             mv "${bin}.bc" ~/bc/ 2>/dev/null || true; \

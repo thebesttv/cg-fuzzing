@@ -30,16 +30,15 @@ RUN tar -xzf moreutils-0.69.tar.gz && \
     cp -a moreutils-0.69 build-uftrace && \
     rm -rf moreutils-0.69
 
-# Build fuzz binary with afl-clang-lto (focus on pee and ifne)
+# Build fuzz binary with afl-clang-lto (focus on pee)
 WORKDIR /work/build-fuzz
 RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
-    make pee ifne -j$(nproc) || true
+    make pee -j$(nproc) || true
 
 WORKDIR /work
 RUN ln -s build-fuzz/pee bin-fuzz-pee && \
-    ln -s build-fuzz/ifne bin-fuzz-ifne && \
     test -x /work/bin-fuzz-pee && echo "bin-fuzz-pee created successfully"
 
 # Build cmplog binary with afl-clang-lto + CMPLOG
@@ -48,11 +47,10 @@ RUN CC=afl-clang-lto \
     CFLAGS="-O2" \
     LDFLAGS="-static -Wl,--allow-multiple-definition" \
     AFL_LLVM_CMPLOG=1 \
-    make pee ifne -j$(nproc) || true
+    make pee -j$(nproc) || true
 
 WORKDIR /work
 RUN ln -s build-cmplog/pee bin-cmplog-pee && \
-    ln -s build-cmplog/ifne bin-cmplog-ifne && \
     test -x /work/bin-cmplog-pee && echo "bin-cmplog-pee created successfully"
 
 # Copy fuzzing resources
@@ -71,11 +69,10 @@ WORKDIR /work/build-cov
 RUN CC=clang \
     CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
     LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
-    make pee ifne -j$(nproc) || true
+    make pee -j$(nproc) || true
 
 WORKDIR /work
 RUN ln -s build-cov/pee bin-cov-pee && \
-    ln -s build-cov/ifne bin-cov-ifne && \
     test -x /work/bin-cov-pee && echo "bin-cov-pee created successfully" && \
     rm -f *.profraw
 
@@ -84,11 +81,10 @@ WORKDIR /work/build-uftrace
 RUN CC=clang \
     CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
     LDFLAGS="-pg -Wl,--allow-multiple-definition" \
-    make pee ifne -j$(nproc) || true
+    make pee -j$(nproc) || true
 
 WORKDIR /work
 RUN ln -s build-uftrace/pee bin-uftrace-pee && \
-    ln -s build-uftrace/ifne bin-uftrace-ifne && \
     test -x /work/bin-uftrace-pee && echo "bin-uftrace-pee created successfully" && \
     rm -f gmon.out
 
