@@ -221,10 +221,6 @@ def main():
     for i, block in enumerate(blocks):
         print(f"    Block {i}: files [{block['start']}, {block['end']}) - {block['count']} files")
 
-    # Ensure output directory exists
-    os.makedirs(output_dir, exist_ok=True)
-    print(f"\n[*] Output directory created/verified: {output_dir}")
-
     # Run blocks in parallel
     success = run_blocks_with_parallel(
         image_name, findings_dir, output_dir, args.jobs, blocks
