@@ -1,0 +1,242 @@
+#!/usr/bin/env python3
+"""
+Docker step 3 single project runner.
+
+Usage:
+    docker-step-3-single <image_name> <findings_dir> <output_dir> [-jN] [-b block_size]
+
+Options:
+    -jN: Number of parallel jobs (default: 128)
+    -b block_size: Block size for splitting findings (default: 100)
+
+Description:
+    Splits the findings directory into blocks and runs docker containers
+    in parallel, with each container processing one block using 3-gen-uftrace.sh.
+
+Example:
+    ./docker-step-3-single thebesttv/curl-fuzz:latest /path/to/findings /path/to/output -j8 -b100
+"""
+
+import os
+import sys
+import argparse
+import subprocess
+from pathlib import Path
+import tempfile
+import shutil
+
+
+def parse_args():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Run Docker containers in parallel for uftrace generation"
+    )
+
+    # Positional arguments
+    parser.add_argument("image_name", help="Docker image name (e.g., thebesttv/curl-fuzz:latest)")
+    parser.add_argument("findings_dir", help="Directory containing input findings")
+    parser.add_argument("output_dir", help="Output directory for uftrace results")
+
+    # Optional arguments
+    parser.add_argument(
+        "-j",
+        type=int,
+        default=128,
+        dest="jobs",
+        help="Number of parallel jobs (default: 128)"
+    )
+    parser.add_argument(
+        "-b",
+        type=int,
+        default=100,
+        dest="block_size",
+        help="Block size for splitting findings (default: 100)"
+    )
+
+    args = parser.parse_args()
+    return args
+
+
+def get_findings_files(findings_dir):
+    """Get sorted list of all files in findings directory."""
+    findings_path = Path(findings_dir)
+
+    if not findings_path.exists():
+        raise FileNotFoundError(f"Findings directory not found: {findings_dir}")
+
+    # Recursively find all files and sort them
+    files = sorted([
+        str(f) for f in findings_path.rglob("*") if f.is_file()
+    ])
+
+    return files
+
+
+def create_blocks(files, block_size):
+    """Split files into blocks."""
+    blocks = []
+    for i in range(0, len(files), block_size):
+        block_files = files[i:i + block_size]
+        blocks.append({
+            "start": i,
+            "end": min(i + block_size, len(files)),
+            "count": len(block_files),
+            "files": block_files
+        })
+    return blocks
+
+
+def get_proj_name(image_name):
+    """Extract project name from image name."""
+    # Format: thebesttv/projectname-fuzz:latest
+    parts = image_name.split("/")
+    if len(parts) > 1:
+        proj = parts[-1].replace("-fuzz:latest", "").replace("-fuzz", "")
+        return proj
+    return "unknown"
+
+
+def create_parallel_command(image_name, findings_dir, output_dir, jobs, blocks):
+    """Create a bash command to run blocks in parallel."""
+    proj_name = get_proj_name(image_name)
+
+    # Create a temporary script that will be piped to parallel
+    script_lines = []
+
+    for block_num, block in enumerate(blocks):
+        start_idx = block["start"]
+        end_idx = block["end"]
+        script_lines.append(f"{block_num},{start_idx},{end_idx}")
+
+    # Return the script content
+    return "\n".join(script_lines)
+
+
+def run_blocks_with_parallel(image_name, findings_dir, output_dir, jobs, blocks):
+    """Run blocks in parallel using GNU parallel."""
+
+    proj_name = get_proj_name(image_name)
+
+    print(f"[*] Setting up parallel execution for {len(blocks)} blocks")
+    print(f"    Image: {image_name}")
+    print(f"    Project: {proj_name}")
+    print(f"    Parallel jobs: {jobs}")
+
+    # Create a helper function definition for the docker execution
+    helper_script = f"""
+do_run() {{
+    local block_info="$1"
+    local image_name="$2"
+    local findings_dir="$3"
+    local output_dir="$4"
+    local job_id="$5"
+
+    # Parse block info: block_num,start_idx,end_idx
+    local block_num=$(echo "$block_info" | cut -d',' -f1)
+    local start_idx=$(echo "$block_info" | cut -d',' -f2)
+    local end_idx=$(echo "$block_info" | cut -d',' -f3)
+
+    local proj=$(basename "$image_name" | sed 's/-fuzz.*//')
+
+    echo "[*] Block $block_num: files [$start_idx, $end_idx) -> Job: $job_id"
+
+    docker run -t --rm \\
+        --name "tjt_single_${{proj}}_block${{block_num}}_${{job_id}}" \\
+        --shm-size=1g \\
+        -v "$findings_dir":/work/findings:ro \\
+        -v "$output_dir":/work/uftrace \\
+        "$image_name" \\
+        bash -c "./3-gen-uftrace.sh ./findings/default/queue ./uftrace --start $start_idx --end $end_idx"
+}}
+export -f do_run
+"""
+
+    # Create block info strings
+    block_infos = [
+        f"{block['start']},{block['start']},{block['end']}"
+        for block in blocks
+    ]
+
+    # Build the parallel command
+    parallel_cmd = f"""
+{helper_script}
+
+cat << 'BLOCKS_EOF' | parallel -j{jobs} --tag --line-buffer do_run {{}} "{image_name}" "{findings_dir}" "{output_dir}" "{{#}}"
+{chr(10).join(block_infos)}
+BLOCKS_EOF
+"""
+
+    print(f"\n[*] Executing parallel command...")
+    print(f"    Block count: {len(block_infos)}")
+    print(f"    Jobs: {jobs}\n")
+
+    # Execute the parallel command
+    try:
+        result = subprocess.run(
+            ["bash", "-c", parallel_cmd],
+            check=False
+        )
+        return result.returncode == 0
+    except Exception as e:
+        print(f"[!] Error executing parallel command: {e}")
+        return False
+
+
+def main():
+    """Main entry point."""
+    args = parse_args()
+
+    # Get absolute paths
+    findings_dir = os.path.realpath(args.findings_dir)
+    output_dir = os.path.realpath(args.output_dir)
+    image_name = args.image_name
+
+    print(f"[*] Docker Step 3 Single Project Runner")
+    print(f"[*] Configuration:")
+    print(f"    Image: {image_name}")
+    print(f"    Findings directory: {findings_dir}")
+    print(f"    Output directory: {output_dir}")
+    print(f"    Parallel jobs: {args.jobs}")
+    print(f"    Block size: {args.block_size}\n")
+
+    # Get and validate findings files
+    try:
+        files = get_findings_files(findings_dir)
+    except FileNotFoundError as e:
+        print(f"[!] Error: {e}")
+        sys.exit(1)
+
+    if not files:
+        print("[!] No files found in findings directory!")
+        sys.exit(1)
+
+    print(f"[*] Found {len(files)} files")
+
+    # Create blocks
+    blocks = create_blocks(files, args.block_size)
+    print(f"[*] Created {len(blocks)} blocks\n")
+
+    # Show block breakdown
+    print(f"[*] Block breakdown:")
+    for i, block in enumerate(blocks):
+        print(f"    Block {i}: files [{block['start']}, {block['end']}) - {block['count']} files")
+
+    # Ensure output directory exists
+    os.makedirs(output_dir, exist_ok=True)
+    print(f"\n[*] Output directory created/verified: {output_dir}")
+
+    # Run blocks in parallel
+    success = run_blocks_with_parallel(
+        image_name, findings_dir, output_dir, args.jobs, blocks
+    )
+
+    if success:
+        print(f"\n[*] Parallel execution completed successfully")
+        sys.exit(0)
+    else:
+        print(f"\n[!] Parallel execution encountered errors")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

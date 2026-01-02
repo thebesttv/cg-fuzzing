@@ -4,15 +4,35 @@
 TARGET_BINARY="./bin-uftrace"
 
 # 解析命令行参数
-if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <FINDINGS_DIR> <OUTPUT_DIR>"
+if [ "$#" -lt 2 ]; then
+    echo "Usage: $0 <FINDINGS_DIR> <OUTPUT_DIR> [--start START_INDEX] [--end END_INDEX]"
     echo "  FINDINGS_DIR: Directory containing input files"
     echo "  OUTPUT_DIR: Directory for uftrace output files"
+    echo "  --start START_INDEX: Start index (inclusive, 0-based, default: 0)"
+    echo "  --end END_INDEX: End index (exclusive, 0-based, default: all files)"
     exit 1
 fi
 
 FINDINGS_DIR="$1"
 OUTPUT_DIR="$2"
+START_INDEX=0
+END_INDEX=-1  # -1 means all files
+
+# Parse optional arguments
+i=3
+while [ $i -le $# ]; do
+    case "${!i}" in
+        --start)
+            i=$((i + 1))
+            START_INDEX="${!i}"
+            ;;
+        --end)
+            i=$((i + 1))
+            END_INDEX="${!i}"
+            ;;
+    esac
+    i=$((i + 1))
+done
 
 # =======================================
 
@@ -61,16 +81,42 @@ process_one_input() {
 
 echo "Starting uftrace data generation..."
 echo "Output directory: $OUTPUT_DIR"
+if [ $START_INDEX -gt 0 ]; then
+    echo "Start index: $START_INDEX"
+fi
+if [ $END_INDEX -ge 0 ]; then
+    echo "End index: $END_INDEX"
+fi
 
 # 先统计文件总数
 total_files=$(find "$FINDINGS_DIR" -type f | wc -l)
 echo "Total files to process: $total_files"
+
+# 计算实际处理的范围
+if [ $END_INDEX -lt 0 ]; then
+    END_INDEX=$total_files
+fi
+
+if [ $START_INDEX -ge $total_files ] || [ $START_INDEX -ge $END_INDEX ]; then
+    echo "Error: Invalid index range [${START_INDEX}, ${END_INDEX})"
+    exit 1
+fi
 
 # 计数器初始化
 count=0
 
 # 使用 bash 循环顺序执行
 find "$FINDINGS_DIR" -type f | while read -r file_path; do
+    # 检查是否在指定范围内
+    if [ $count -lt $START_INDEX ]; then
+        count=$((count + 1))
+        continue
+    fi
+
+    if [ $count -ge $END_INDEX ]; then
+        break
+    fi
+
     # 执行处理函数
     process_one_input "$file_path"
 
@@ -78,7 +124,7 @@ find "$FINDINGS_DIR" -type f | while read -r file_path; do
     count=$((count + 1))
     # 每处理 100 个文件打印一次进度
     if (( count % 100 == 0 )); then
-        echo "Processed: $count / $total_files"
+        echo "Processed: $count / $END_INDEX"
     fi
 done
 
