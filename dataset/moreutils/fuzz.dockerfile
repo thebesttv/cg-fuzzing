@@ -38,8 +38,8 @@ RUN CC=afl-clang-lto \
     make pee -j$(nproc) || true
 
 WORKDIR /work
-RUN ln -s build-fuzz/pee bin-fuzz-pee && \
-    test -x /work/bin-fuzz-pee && echo "bin-fuzz-pee created successfully"
+RUN ln -s build-fuzz/pee bin-fuzz && \
+    test -x /work/bin-fuzz && echo "bin-fuzz created successfully"
 
 # Build cmplog binary with afl-clang-lto + CMPLOG
 WORKDIR /work/build-cmplog
@@ -50,8 +50,8 @@ RUN CC=afl-clang-lto \
     make pee -j$(nproc) || true
 
 WORKDIR /work
-RUN ln -s build-cmplog/pee bin-cmplog-pee && \
-    test -x /work/bin-cmplog-pee && echo "bin-cmplog-pee created successfully"
+RUN ln -s build-cmplog/pee bin-cmplog && \
+    test -x /work/bin-cmplog && echo "bin-cmplog created successfully"
 
 # Copy fuzzing resources
 COPY moreutils/fuzz/dict /work/dict
@@ -72,8 +72,8 @@ RUN CC=clang \
     make pee -j$(nproc) || true
 
 WORKDIR /work
-RUN ln -s build-cov/pee bin-cov-pee && \
-    test -x /work/bin-cov-pee && echo "bin-cov-pee created successfully" && \
+RUN ln -s build-cov/pee bin-cov && \
+    test -x /work/bin-cov && echo "bin-cov created successfully" && \
     rm -f *.profraw
 
 # Build uftrace binary with profiling instrumentation
@@ -84,8 +84,8 @@ RUN CC=clang \
     make pee -j$(nproc) || true
 
 WORKDIR /work
-RUN ln -s build-uftrace/pee bin-uftrace-pee && \
-    test -x /work/bin-uftrace-pee && echo "bin-uftrace-pee created successfully" && \
+RUN ln -s build-uftrace/pee bin-uftrace && \
+    test -x /work/bin-uftrace && echo "bin-uftrace created successfully" && \
     rm -f gmon.out
 
 # Default to bash in /work
