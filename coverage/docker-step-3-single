@@ -141,7 +141,7 @@ do_run() {{
     echo "[*] Block $block_num: files [$start_idx, $end_idx) -> Job: $job_id"
 
     docker run -t --rm \\
-        --name "tjt_single_${{proj}}_block${{block_num}}_${{job_id}}" \\
+        --name "tjt_fuzz_${{proj}}_block${{block_num}}_${{job_id}}" \\
         --shm-size=1g \\
         -v "$findings_dir":/work/findings:ro \\
         -v "$output_dir":/work/uftrace \\
