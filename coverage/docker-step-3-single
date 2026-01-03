@@ -146,7 +146,7 @@ do_run() {{
         -v "$findings_dir":/work/findings:ro \\
         -v "$output_dir":/work/uftrace \\
         "$image_name" \\
-        bash -c "./3-gen-uftrace.sh ./findings/default/queue ./uftrace --start $start_idx --end $end_idx"
+        bash -c "./3-gen-uftrace.sh ./findings ./uftrace --start $start_idx --end $end_idx"
 }}
 export -f do_run
 """
