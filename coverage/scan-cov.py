@@ -316,9 +316,9 @@ def update_callgraph(output_data: dict, data: dict, uftrace_dir: str, functions_
             static_indirect_callees = static_indirect_callgraph.get(func_name, set())
             reduced_indirect_edge_count += len(static_indirect_callees - dynamic_callees)
             increased_indirect_edge_count += len(dynamic_callees - static_indirect_callees)
-        else:
-            # Keep original for non-optimized functions
-            optimized_callgraph[func_name] = set(callees)
+        # else:
+        #     # Keep original for non-optimized functions
+        #     optimized_callgraph[func_name] = set(callees)
 
     optimized_edge_count = count_callgraph_edges(optimized_callgraph)
 
@@ -328,10 +328,12 @@ def update_callgraph(output_data: dict, data: dict, uftrace_dir: str, functions_
     # Convert sets to lists for JSON serialization
     static_cg_json = {func: sorted(list(callees)) for func, callees in static_callgraph.items()}
     dynamic_cg_json = {func: sorted(list(callees)) for func, callees in dynamic_callgraph.items()}
+    optimized_cg_json = {func: sorted(list(callees)) for func, callees in optimized_callgraph.items()}
 
     # Add call graphs to output
     output_data['static-cg'] = static_cg_json
     output_data['dynamic-cg'] = dynamic_cg_json
+    output_data['optimized-cg'] = optimized_cg_json
 
     # Add statistics to output
     stats = {
