@@ -309,7 +309,7 @@ def update_callgraph(output_data: dict, data: dict, uftrace_dir: str, functions_
     reduced_indirect_edge_count = 0
     increased_indirect_edge_count = 0
     for func_name, callees in static_callgraph.items():
-        if func_name in functions_to_optimize:
+        if func_name in functions_to_optimize and func_name in dynamic_callgraph:
             dynamic_callees = dynamic_callgraph.get(func_name, set())
             optimized_callgraph[func_name] = static_direct_callgraph.get(func_name, set()) | dynamic_callees
 
