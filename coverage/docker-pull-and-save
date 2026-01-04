@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+	cat <<EOF
+Usage: $0 <tar_path>
+
+Reads Docker image names from stdin (one per line), repeatedly tries to pull them
+by calling the local "docker-pull" helper until it succeeds, then saves the
+images to <tar_path> by calling the local "docker-save" helper.
+
+Arguments:
+	tar_path  - Path to the output tar file for docker images
+
+Example:
+	echo "thebesttv/cflow-bc:latest" | $0 /tmp/images.tar
+	cat images.txt | $0 /tmp/images.tar
+EOF
+}
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+	usage
+	exit 0
+fi
+
+if [[ $# -ne 1 ]]; then
+	echo "Error: exactly one argument required (tar path)" >&2
+	usage
+	exit 1
+fi
+
+TAR_PATH="$1"
+
+# Directory of this script, so we call the helpers located next to it
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Read all image names from stdin into an array
+images=()
+while IFS= read -r image; do
+	# Skip empty lines
+	if [[ -n "$image" ]]; then
+		images+=("$image")
+	fi
+done
+
+if [[ ${#images[@]} -eq 0 ]]; then
+	echo "Error: no images provided on stdin" >&2
+	exit 1
+fi
+
+attempt=1
+while true; do
+	echo "Attempting to pull images (attempt $attempt)..." >&2
+
+	# Feed the image list into docker-pull. If it succeeds, break out of the loop.
+	if printf '%s\n' "${images[@]}" | "$DIR/docker-pull"; then
+		echo "All images pulled successfully." >&2
+		break
+	else
+		echo "Pull attempt $attempt failed. Retrying..." >&2
+		attempt=$((attempt + 1))
+		sleep 1
+	fi
+done
+
+# Save the images to the requested tar path using docker-save
+printf '%s\n' "${images[@]}" | "$DIR/docker-save" "$TAR_PATH"
+
+exit 0

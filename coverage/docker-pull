@@ -5,9 +5,9 @@ usage() {
   cat <<EOF
 Usage: $0
 
-Pulls Docker images from stdin (one per line).
-Outputs successfully pulled images to stdout.
-Outputs failed pulls to stderr in format: "Failed to pull: IMAGE_NAME"
+  Pulls Docker images from stdin (one per line).
+  Outputs successfully pulled images to stdout with format: "[x/y] ✅ IMAGE_NAME".
+  Outputs failed pulls to stderr with format: "[x/y] ❌ IMAGE_NAME".
 
 Example:
   echo "thebesttv/cflow-bc:latest" | $0
@@ -20,19 +20,39 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
   exit 0
 fi
 
-# Read image names from stdin
-while IFS= read -r image; do
+# Read all image names from stdin into an array so we can show progress
+mapfile -t raw_images < /dev/stdin
+images=()
+for img in "${raw_images[@]:-}"; do
+  # Trim leading/trailing whitespace
+  img="$(printf '%s' "$img" )"
   # Skip empty lines
-  if [[ -z "$image" ]]; then
+  if [[ -z "$img" ]]; then
     continue
   fi
-  
-  # Try to pull the image
-  if docker pull "$image" >/dev/null 2>&1; then
-    # Output successful pulls to stdout
-    echo "$image"
+  images+=("$img")
+done
+
+total=${#images[@]}
+if [[ "$total" -eq 0 ]]; then
+  # Nothing to do
+  exit 0
+fi
+
+for i in "${!images[@]}"; do
+  image=${images[$i]}
+  count=$((i + 1))
+
+  # Try to pull the image. Continue on failure but record it.
+  if docker pull "$image"; then
+    echo "[${count}/${total}] ✅ $image"
   else
-    # Output failed pulls to stderr
-    echo "Failed to pull: $image" >&2
+    echo "[${count}/${total}] ❌ $image" >&2
+    any_failed=1
   fi
 done
+
+# If any pull failed, return non-zero. Otherwise return zero.
+if [[ "${any_failed:-0}" -ne 0 ]]; then
+  exit 1
+fi
