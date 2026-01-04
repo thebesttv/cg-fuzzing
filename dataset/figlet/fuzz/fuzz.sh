@@ -70,7 +70,13 @@ fi
 
 # Base AFL arguments
 # -m none: No memory limit
-AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none"
+# Enable autoresume to allow resuming fuzzing sessions
+export AFL_AUTORESUME=1
+
+# Enable autoresume to allow resuming fuzzing sessions
+export AFL_AUTORESUME=1
+
+AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none -V 172800"
 
 # --- Fuzzing Logic ---
 

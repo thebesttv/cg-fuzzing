@@ -67,7 +67,10 @@ fi
 # -m none: No memory limit
 # Note: xdelta3 decode takes: xdelta3 -d -s source_file input_file output_file
 # We fuzz the delta file (input_file) with a dummy source
-AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none"
+# Enable autoresume to allow resuming fuzzing sessions
+export AFL_AUTORESUME=1
+
+AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none -V 172800"
 
 # --- Fuzzing Logic ---
 

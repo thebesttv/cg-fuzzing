@@ -66,7 +66,10 @@ fi
 
 # Base AFL arguments
 # -m none: No memory limit
-AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none"
+# Enable autoresume to allow resuming fuzzing sessions
+export AFL_AUTORESUME=1
+
+AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none -V 172800"
 
 # json_verify only reads from stdin, so we need to use shell wrapper
 # This requires AFL_SKIP_BIN_CHECK since AFL can't detect instrumentation through the shell

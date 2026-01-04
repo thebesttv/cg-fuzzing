@@ -8,7 +8,10 @@ CMPLOG_BIN="${SCRIPT_DIR}/bin-cmplog"
 TARGET_BIN="${SCRIPT_DIR}/bin-fuzz"
 mkdir -p "${OUT_DIR}"
 echo "=== schedtool AFL++ Fuzzing ==="
-AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none"
+# Enable autoresume to allow resuming fuzzing sessions
+export AFL_AUTORESUME=1
+
+AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none -V 172800"
 if [ -x "${CMPLOG_BIN}" ]; then
     CMPLOG_ARGS="-c ${CMPLOG_BIN}"
 fi

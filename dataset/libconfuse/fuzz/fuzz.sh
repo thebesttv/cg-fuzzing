@@ -45,7 +45,10 @@ if [ ! -x "$TARGET_BIN" ]; then
     exit 1
 fi
 
-AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none"
+# Enable autoresume to allow resuming fuzzing sessions
+export AFL_AUTORESUME=1
+
+AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none -V 172800"
 
 if [ "${PARALLEL}" -eq 1 ]; then
     echo "Starting single fuzzer (Interactive Mode)..."

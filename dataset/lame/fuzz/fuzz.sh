@@ -15,7 +15,10 @@ while getopts ":j:" opt; do
 done
 
 mkdir -p "${OUT_DIR}"
-AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none"
+# Enable autoresume to allow resuming fuzzing sessions
+export AFL_AUTORESUME=1
+
+AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none -V 172800"
 
 if [ "${PARALLEL}" -eq 1 ]; then
     CMPLOG_ARGS=""

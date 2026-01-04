@@ -67,7 +67,10 @@ if [ ! -x "$TARGET_BIN" ]; then
 fi
 
 # Base AFL arguments
-AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none"
+# Enable autoresume to allow resuming fuzzing sessions
+export AFL_AUTORESUME=1
+
+AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none -V 172800"
 
 # --- Fuzzing Logic ---
 if [ "${PARALLEL}" -eq 1 ]; then
