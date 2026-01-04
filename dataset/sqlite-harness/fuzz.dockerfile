@@ -79,13 +79,16 @@ WORKDIR /work/build-cov
 RUN CC=clang \
     CXX=clang++ \
     CFLAGS="-g -O0 -fprofile-instr-generate -fcoverage-mapping" \
-    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition" \
+    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping" \
     ./configure --disable-tcl --disable-shared --enable-static && \
     make sqlite3.c sqlite3.h -j$(nproc) && \
     clang -g -O0 -fprofile-instr-generate -fcoverage-mapping -c sqlite3.c -o sqlite3.o -DSQLITE_OMIT_LOAD_EXTENSION && \
     clang -g -O0 -fprofile-instr-generate -fcoverage-mapping -c test/ossfuzz.c -o ossfuzz.o -I. && \
-    clang -g -O0 -fsanitize=fuzzer -fprofile-instr-generate -fcoverage-mapping -static -Wl,--allow-multiple-definition \
-        ossfuzz.o sqlite3.o -lpthread -lm -ldl -o sqlite_ossfuzz
+    # === 修改点 ===
+    # 1. 使用 clang++ 进行链接
+    # 2. 移除了 -static (建议)，如果必须保留 -static，请确保使用 clang++
+    clang++ -g -O0 -fsanitize=fuzzer -fprofile-instr-generate -fcoverage-mapping \
+    ossfuzz.o sqlite3.o -lpthread -lm -ldl -o sqlite_ossfuzz
 
 WORKDIR /work
 RUN ln -s build-cov/sqlite_ossfuzz bin-cov && \
@@ -96,13 +99,15 @@ WORKDIR /work/build-uftrace
 RUN CC=clang \
     CXX=clang++ \
     CFLAGS="-g -O0 -pg -fno-omit-frame-pointer" \
-    LDFLAGS="-pg -static -Wl,--allow-multiple-definition" \
+    LDFLAGS="-pg" \
     ./configure --disable-tcl --disable-shared --enable-static && \
     make sqlite3.c sqlite3.h -j$(nproc) && \
     clang -g -O0 -pg -fno-omit-frame-pointer -c sqlite3.c -o sqlite3.o -DSQLITE_OMIT_LOAD_EXTENSION && \
     clang -g -O0 -pg -fno-omit-frame-pointer -c test/ossfuzz.c -o ossfuzz.o -I. && \
-    clang -g -O0 -fsanitize=fuzzer -pg -static -Wl,--allow-multiple-definition \
-        ossfuzz.o sqlite3.o -lpthread -lm -ldl -o sqlite_ossfuzz
+    # === 修改点 ===
+    # 使用 clang++ 链接，以支持 -fsanitize=fuzzer 的 C++ 运行时
+    clang++ -g -O0 -fsanitize=fuzzer -pg \
+    ossfuzz.o sqlite3.o -lpthread -lm -ldl -o sqlite_ossfuzz
 
 WORKDIR /work
 RUN ln -s build-uftrace/sqlite_ossfuzz bin-uftrace && \
