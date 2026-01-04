@@ -430,6 +430,7 @@ def scan_coverage(input_json_path: str, cov_dir: str, json_prefix: str) -> dict:
         has_indirect_ir = False
         indirect_nonir_nodes = []
         affected_by_loop = False
+        too_many_branches = False
 
         for nid in icfg_nodes:
             node_info = nodes.get(nid, {})
@@ -442,12 +443,17 @@ def scan_coverage(input_json_path: str, cov_dir: str, json_prefix: str) -> dict:
                 if combos.get(nid, {}).get('affectedByLoop', False):
                     affected_by_loop = True
                     break
+                if combos.get(nid, {}).get('tooManyBranches', False):
+                    too_many_branches = True
+                    break
 
         if has_indirect_ir:
             continue
         if not indirect_nonir_nodes:
             continue
         if affected_by_loop:
+            continue
+        if too_many_branches:
             continue
 
         all_nonir_nodes_covered = True
