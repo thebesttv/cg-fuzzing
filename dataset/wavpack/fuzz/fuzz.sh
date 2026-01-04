@@ -67,7 +67,13 @@ fi
 # -m none: No memory limit
 # Note: wvunpack takes arguments: oldfile newfile patchfile
 # We'll create a dummy oldfile and fuzz the patchfile input
-AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none"
+# Enable autoresume to allow resuming fuzzing sessions
+export AFL_AUTORESUME=1
+
+# Enable autoresume to allow resuming fuzzing sessions
+export AFL_AUTORESUME=1
+
+AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none -V 172800"
 
 # --- Fuzzing Logic ---
 

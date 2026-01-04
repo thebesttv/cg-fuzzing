@@ -66,7 +66,10 @@ fi
 # Base AFL arguments
 # -m none: No memory limit
 # -d: Quick & dirty mode (optional, good for parsing fuzzing, remove if not needed)
-AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none"
+# Enable autoresume to allow resuming fuzzing sessions
+export AFL_AUTORESUME=1
+
+AFL_ARGS="-i ${IN_DIR} -o ${OUT_DIR} -x ${DICT} -m none -V 172800"
 
 # --- Fuzzing Logic ---
 
