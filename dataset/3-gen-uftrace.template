@@ -69,7 +69,7 @@ process_one_input() {
     # 3. 检查是否生成了 uftrace.data
     if [ -d "uftrace.data" ]; then
         # 4. 使用 uftrace dump 导出结果
-        uftrace dump | python3 uftrace-callgraph.py >"$uftrace_output"
+        uftrace dump --demangle=no | python3 uftrace-callgraph.py >"$uftrace_output"
 
         # 清理临时 uftrace.data
         rm -rf uftrace.data
