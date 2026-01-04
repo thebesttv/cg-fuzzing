@@ -50,14 +50,14 @@ process_profdata() {
 
     # 提取基础名称（不含扩展名）
     local base_name=$(basename "$profdata_file" .profdata)
-    local coverage_file="$OUTPUT_DIR/${base_name}.csv"
+    local branch_coverage_file="$OUTPUT_DIR/${base_name}.csv.branch"
+    local segment_coverage_file="$OUTPUT_DIR/${base_name}.csv.segment"
 
     # 生成 CSV 覆盖率报告
     llvm-cov${LLVM_SUFFIX} export -format=text "$TARGET_BINARY" -instr-profile="$profdata_file" --num-threads=1 | \
-        python3 collect-branch.py -o "$coverage_file"
-
+        python3 collect-branch.py --branch "$branch_coverage_file" --segment "$segment_coverage_file"
     # 删除 profdata 文件
-    if [ -f "$coverage_file" ]; then
+    if [ -f "$branch_coverage_file" ]; then
         rm "$profdata_file"
     fi
 }

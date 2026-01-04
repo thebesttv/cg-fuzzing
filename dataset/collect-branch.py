@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Collect branch coverage information from LLVM coverage JSON export.
+Collect branch and segment coverage information from LLVM coverage JSON export.
 
 llvm-cov JSON 格式参考：
 https://stackoverflow.com/a/56792192
@@ -11,21 +11,15 @@ import json
 import csv
 import argparse
 import sys
+from typing import List, Dict, Any
 
 
-def collect_branches(coverage_json_path=None, keep_inactive=False):
+def collect_branches(coverage_data, keep_inactive=False):
     """
-    Parse the coverage JSON file and extract branch information.
+    Extract branch information from coverage data dict.
 
-    If coverage_json_path is None, reads from stdin.
     Returns a list of dictionaries with branch coverage data.
     """
-    if coverage_json_path is None:
-        coverage_data = json.load(sys.stdin)
-    else:
-        with open(coverage_json_path, 'r') as f:
-            coverage_data = json.load(f)
-
     branches = []
 
     # Navigate through the JSON structure
@@ -60,6 +54,66 @@ def collect_branches(coverage_json_path=None, keep_inactive=False):
     return branches
 
 
+def collect_segments(coverage_data) -> List[Dict[str, Any]]:
+    """
+    Extract segment information from coverage data dict.
+
+    Segment format: [Line, Col, Count, HasCount, IsRegionEntry, IsGapRegion]
+    Only processes segments where HasCount is true.
+    Uses a dict to deduplicate: (filename, line, col) -> executed
+    If any count is non-zero, mark as executed.
+    Returns a sorted list of dictionaries with filename, line, col, executed.
+    """
+    # Use dict to deduplicate segments by (filename, line, col)
+    segment_dict = {}
+
+    # Navigate through the JSON structure
+    for data_entry in coverage_data.get('data', []):
+        for file_entry in data_entry.get('files', []):
+            filename = file_entry.get('filename', 'unknown')
+
+            # Process each segment
+            for segment in file_entry.get('segments', []):
+                if len(segment) >= 6:
+                    # Segment format: [Line, Col, Count, HasCount, IsRegionEntry, IsGapRegion]
+                    has_count = segment[3]
+
+                    # Only process segments where has_count is true
+                    if not has_count:
+                        continue
+
+                    line = segment[0]
+                    col = segment[1]
+                    count = segment[2]
+
+                    key = (filename, line, col)
+
+                    # If already exists, update executed if count is non-zero
+                    if key in segment_dict:
+                        if count != 0:
+                            segment_dict[key] = True
+                    else:
+                        # New entry: executed if count is non-zero
+                        segment_dict[key] = (count != 0)
+
+    # Convert dict to list of dictionaries
+    segments = []
+    for (filename, line, col), executed in segment_dict.items():
+        segments.append({
+            'filename': filename,
+            'line': line,
+            'col': col,
+            'executed': executed
+        })
+
+    # Sort by filename, then by line, then by column
+    segments.sort(key=lambda x: (x['filename'], x['line'], x['col']))
+
+    return segments
+
+
+
+
 def write_csv(branches, output_path=None):
     """
     Write branch coverage data to a CSV file or stdout.
@@ -89,22 +143,57 @@ def write_csv(branches, output_path=None):
         print(f"Wrote {len(branches)} branches to {output_path}", file=sys.stderr)
 
 
+def write_segments_csv(segments, output_path):
+    """
+    Write segment coverage data to a CSV file.
+
+    output_path is required (cannot be None).
+    Columns: filename, line, col, executed
+    """
+    if not segments:
+        print("Warning: No segment data found", file=sys.stderr)
+        return
+
+    fieldnames = ['filename', 'line', 'col', 'executed']
+
+    with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for segment in segments:
+            writer.writerow(segment)
+
+    print(f"Wrote {len(segments)} segments to {output_path}", file=sys.stderr)
+
+
+
 def main():
     parser = argparse.ArgumentParser(
-        description='Collect branch coverage information from LLVM coverage JSON export'
+        description='Collect branch and segment coverage information from LLVM coverage JSON export'
     )
     parser.add_argument('coverage_json', nargs='?', default=None,
                         help='Path to the coverage JSON file (if not provided, reads from stdin)')
-    parser.add_argument('-o', '--output', default=None,
-                        help='Output CSV file path (if not provided, writes to stdout)')
+    parser.add_argument('--branch', required=True,
+                        help='Output CSV file path for branch coverage data (required)')
+    parser.add_argument('--segment', required=True,
+                        help='Output CSV file path for segment coverage data (required)')
     parser.add_argument('--keep-inactive', action='store_true', default=False,
                         help='Include branches that have zero executions for both true and false')
 
     args = parser.parse_args()
 
     try:
-        branches = collect_branches(args.coverage_json, keep_inactive=args.keep_inactive)
-        write_csv(branches, args.output)
+        # Read JSON once
+        if args.coverage_json is None:
+            coverage_data = json.load(sys.stdin)
+        else:
+            with open(args.coverage_json, 'r') as f:
+                coverage_data = json.load(f)
+
+        branches = collect_branches(coverage_data, keep_inactive=args.keep_inactive)
+        segments = collect_segments(coverage_data)
+
+        write_csv(branches, args.branch)
+        write_segments_csv(segments, args.segment)
     except FileNotFoundError:
         print(f"Error: File '{args.coverage_json}' not found", file=sys.stderr)
         sys.exit(1)
@@ -118,3 +207,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

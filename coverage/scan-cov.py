@@ -370,7 +370,7 @@ def scan_coverage(input_json_path: str, cov_dir: str, json_prefix: str) -> dict:
         locations[loc_id] = loc
 
     # Parse all CSV files in cov_dir
-    csv_files = list(Path(cov_dir).glob('*.csv'))
+    csv_files = list(Path(cov_dir).glob('*.csv.branch'))
     print(f"Found {len(csv_files)} CSV files in {cov_dir}")
 
     csv_coverage_map = {}

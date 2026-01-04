@@ -70,7 +70,7 @@ find "$BC_DIR" -mindepth 3 -maxdepth 3 -path "*/bc/*.json" | while read -r json_
 
     # 检查前提条件：目录存在 且 包含 .csv 文件
     if [ -d "$target_prof_dir" ]; then
-        if find "$target_prof_dir" -maxdepth 1 -name "*.csv" -print -quit | grep -q .; then
+        if find "$target_prof_dir" -maxdepth 1 -name "*.csv.branch" -print -quit | grep -q .; then
             cmd="${SCAN_SCRIPT} \"${json_file}\" \"${target_prof_dir}/\" -u \"${uftrace_dir}/\" --project \"${proj_name}\" -o \"${covout_file}\""
             echo "$cmd"
         fi
