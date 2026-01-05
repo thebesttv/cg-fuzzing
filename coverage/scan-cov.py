@@ -173,7 +173,7 @@ def check_path_coverage(path: dict, csv_coverage: Dict, locations: dict) -> bool
     return True
 
 
-def check_json_csv_filename_match(locations: dict, csv_coverage_map: dict):
+def check_json_csv_filename_match(locations: dict, branch_coverage_map: dict):
     """Check if any location filenames match between JSON and CSV coverage data."""
     json_filenames = set()
     for loc in locations.values():
@@ -181,7 +181,7 @@ def check_json_csv_filename_match(locations: dict, csv_coverage_map: dict):
         json_filenames.add(filename)
 
     csv_filenames = set()
-    csv_iter = tqdm(csv_coverage_map.values(), desc="Processing CSV coverage", unit="file") if HAS_TQDM else csv_coverage_map.values()
+    csv_iter = tqdm(branch_coverage_map.values(), desc="Processing CSV coverage", unit="file") if HAS_TQDM else branch_coverage_map.values()
     for csv_coverage in csv_iter:
         for filename in csv_coverage.keys():
             csv_filenames.add(filename)
@@ -193,6 +193,28 @@ def check_json_csv_filename_match(locations: dict, csv_coverage_map: dict):
     print(f"CSV filenames: {len(csv_filenames)}")
     matching_filenames = json_filenames.intersection(csv_filenames)
     print(f"Matching filenames: {len(matching_filenames)}")
+
+
+def parse_branch_coverage_csv(cov_dir: str) -> Dict[str, dict]:
+    """Parse all '*.csv.branch' files in a directory and return a map from
+    absolute csv path -> parsed coverage dict (as returned by parse_csv_file).
+
+    Args:
+        cov_dir: Directory containing CSV branch files
+
+    Returns:
+        Dict mapping csv absolute path -> parsed coverage dict
+    """
+    csv_files = list(Path(cov_dir).glob('*.csv.branch'))
+    print(f"Found {len(csv_files)} CSV files in {cov_dir}")
+
+    branch_coverage_map = {}
+    csv_iter = tqdm(csv_files, desc="Parsing CSV files", unit="file") if HAS_TQDM else csv_files
+    for csv_file in csv_iter:
+        csv_path = str(csv_file.absolute())
+        branch_coverage_map[csv_path] = parse_csv_file(csv_path)
+
+    return branch_coverage_map
 
 
 def load_uftrace_files(uftrace_dir: str) -> Dict[str, Set[str]]:
@@ -369,17 +391,11 @@ def scan_coverage(input_json_path: str, cov_dir: str, json_prefix: str) -> dict:
         loc = (loc[0], int(loc[1]), int(loc[2]))
         locations[loc_id] = loc
 
-    # Parse all CSV files in cov_dir
-    csv_files = list(Path(cov_dir).glob('*.csv.branch'))
-    print(f"Found {len(csv_files)} CSV files in {cov_dir}")
+    # Parse all CSV branch files in cov_dir
+    branch_coverage_map = parse_branch_coverage_csv(cov_dir)
 
-    csv_coverage_map = {}
-    csv_iter = tqdm(csv_files, desc="Parsing CSV files", unit="file") if HAS_TQDM else csv_files
-    for csv_file in csv_iter:
-        csv_path = str(csv_file.absolute())
-        csv_coverage_map[csv_path] = parse_csv_file(csv_path)
-
-    check_json_csv_filename_match(locations, csv_coverage_map)
+    # Check filenames between JSON locations and parsed branch CSV coverage
+    check_json_csv_filename_match(locations, branch_coverage_map)
 
     # Coverage output structure: node_name -> {totalPaths, coveredPaths, coveredBy}
     coverage_output = {}
@@ -403,7 +419,7 @@ def scan_coverage(input_json_path: str, cov_dir: str, json_prefix: str) -> dict:
 
         # Check each path against all CSV files
         for path_idx, path in enumerate(branch_combos):
-            for csv_path, csv_coverage in csv_coverage_map.items():
+            for csv_path, csv_coverage in branch_coverage_map.items():
                 if check_path_coverage(path, csv_coverage, locations):
                     # Mark this path as covered (boolean)
                     path['covered'] = True
