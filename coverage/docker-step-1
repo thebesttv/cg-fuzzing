@@ -43,7 +43,7 @@ do_run() {
         -v "$findings_dir":/work/findings:ro \
         -v "$profiles_dir":/work/profiles \
         "$image" \
-        ./1-run-cov.sh ./findings/default/queue ./profiles --no-parallel
+        ./1-run-cov.sh ./findings/default/queue ./profiles
 }
 
 # 导出函数，使其在 parallel 的子 shell 中可见
