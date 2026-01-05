@@ -11,7 +11,7 @@ ROOT_DIR=$(realpath "$1")
 
 # 定义并发任务数（同时也作为 CPU 取模的基数）
 # JOBS=$(nproc)
-JOBS=128
+JOBS=64
 
 # 定义处理单个 image 的函数
 do_run() {
