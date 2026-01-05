@@ -5,7 +5,7 @@ usage() {
   cat <<EOF
 Usage: $0
 
-  Pulls Docker images from stdin (one per line).
+  Pulls Docker images from stdin (one per line) in PARALLEL.
   Outputs successfully pulled images to stdout with format: "[x/y] ✅ IMAGE_NAME".
   Outputs failed pulls to stderr with format: "[x/y] ❌ IMAGE_NAME".
 
@@ -20,12 +20,18 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
   exit 0
 fi
 
-# Read all image names from stdin into an array so we can show progress
+# check for parallel dependency
+if ! command -v parallel &> /dev/null; then
+    echo "Error: GNU parallel is not installed. Please install it first." >&2
+    exit 1
+fi
+
+# Read all image names from stdin into an array
 mapfile -t raw_images < /dev/stdin
 images=()
 for img in "${raw_images[@]:-}"; do
   # Trim leading/trailing whitespace
-  img="$(printf '%s' "$img" )"
+  img="$(printf '%s' "$img" | xargs)"
   # Skip empty lines
   if [[ -z "$img" ]]; then
     continue
@@ -35,24 +41,42 @@ done
 
 total=${#images[@]}
 if [[ "$total" -eq 0 ]]; then
-  # Nothing to do
   exit 0
 fi
 
-for i in "${!images[@]}"; do
-  image=${images[$i]}
-  count=$((i + 1))
+# Define the worker function to run in parallel
+pull_worker() {
+  local image="$1"
+  local seq="$2"
+  local tot="$3"
 
-  # Try to pull the image. Continue on failure but record it.
-  if docker pull "$image"; then
-    echo "[${count}/${total}] ✅ $image"
+  # Silence stdout to prevent interleaved progress bars in parallel mode.
+  # Capture stderr to show only if it fails.
+  if output=$(docker pull "$image" > /dev/null 2>&1); then
+    echo "[${seq}/${tot}] ✅ $image"
   else
-    echo "[${count}/${total}] ❌ $image" >&2
-    any_failed=1
+    echo "[${seq}/${tot}] ❌ $image" >&2
+    # Optionally uncomment the next line to see specific docker error messages:
+    # echo "$output" >&2
+    return 1
   fi
-done
+}
 
-# If any pull failed, return non-zero. Otherwise return zero.
-if [[ "${any_failed:-0}" -ne 0 ]]; then
-  exit 1
-fi
+# Export function so parallel can see it
+export -f pull_worker
+
+# Run parallel
+# --jobs 0     : Use as many jobs as CPU cores (default). Can use explicit number e.g., --jobs 5
+# --no-notice  : Suppress parallel citation text
+# --halt never : Don't stop on first failure (process all images)
+# {}           : The image name
+# {#}          : The job sequence number
+# $total       : The total count constant
+parallel --jobs 8 --no-notice --halt never \
+    pull_worker {} {#} "$total" \
+    ::: "${images[@]}"
+
+# Parallel returns the number of failed jobs as exit code (up to 255).
+# If exit code is 0, success. If > 0, failure.
+# This matches the original script's logic.
+exit $?
