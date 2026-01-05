@@ -11,7 +11,7 @@ ROOT_DIR=$(realpath "$1")
 
 # 定义并发任务数（同时也作为 CPU 取模的基数）
 # JOBS=$(nproc)
-JOBS=64
+JOBS=128
 
 # 定义处理单个 image 的函数
 do_run() {
@@ -38,10 +38,11 @@ do_run() {
     # --cpuset-cpus 指定该容器只能使用特定的 CPU 核心
     docker run -t --rm \
         --name "tjt_fuzz_${proj}_${cpu_id}" \
-        --cpuset-cpus="$cpu_id" \
         -v "$profiles_dir":/work/profiles \
         "$image" \
         ./2-gen-branch.sh ./profiles
+
+        # --cpuset-cpus="$cpu_id" \
 }
 
 # 导出函数，使其在 parallel 的子 shell 中可见
