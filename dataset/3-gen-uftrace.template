@@ -68,7 +68,9 @@ process_one_input() {
     rm -rf uftrace.data
 
     # 2. 使用 uftrace record 运行程序并收集数据
-    uftrace record CMD_REPLACE_ME >/dev/null 2>&1
+    timeout -k 60s 65s \
+        uftrace record \
+            CMD_REPLACE_ME >/dev/null 2>&1
 
     # 3. 检查是否生成了 uftrace.data
     if [ -d "uftrace.data" ]; then
