@@ -60,6 +60,10 @@ process_one_input() {
     # 定义输出文件名
     local uftrace_output="$OUTPUT_DIR/${safe_name}.uftrace"
 
+    if [ -f "$uftrace_output" ]; then
+        return
+    fi
+
     # 1. 删除可能存在的旧的 uftrace.data
     rm -rf uftrace.data
 
