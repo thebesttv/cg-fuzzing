@@ -7,6 +7,7 @@ import re
 import argparse
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
+import bisect
 from collections import defaultdict
 
 # Try to import tqdm, use fallback if not available
@@ -110,7 +111,7 @@ def within_range(line: int, col: int, start_line: int, start_col: int, end_line:
         return False
     return True
 
-def check_path_coverage(path: dict, csv_coverage: Dict, locations: dict) -> bool:
+def check_path_coverage(path: dict, branch_coverage: Dict, locations: dict) -> bool:
     """
     Check if a single path is covered by the CSV coverage data.
 
@@ -129,10 +130,10 @@ def check_path_coverage(path: dict, csv_coverage: Dict, locations: dict) -> bool
                 return False
             filename, line, col = loc
 
-            if csv_coverage.get(filename) is None:
+            if branch_coverage.get(filename) is None:
                 return False
 
-            for (start_line, start_col, end_line, end_col), (true_count, false_count) in csv_coverage[filename].items():
+            for (start_line, start_col, end_line, end_col), (true_count, false_count) in branch_coverage[filename].items():
                 if within_range(line, col, start_line, start_col, end_line, end_col):
                     if index == 0:  # True branch
                         if true_count == 0:
@@ -155,10 +156,10 @@ def check_path_coverage(path: dict, csv_coverage: Dict, locations: dict) -> bool
                 continue  # If location not found, okay to assume not covered
             filename, line, col = loc
 
-            if csv_coverage.get(filename) is None:
+            if branch_coverage.get(filename) is None:
                 continue  # If location not in CSV, okay to assume not covered
 
-            for (start_line, start_col, end_line, end_col), (true_count, false_count) in csv_coverage[filename].items():
+            for (start_line, start_col, end_line, end_col), (true_count, false_count) in branch_coverage[filename].items():
                 if within_range(line, col, start_line, start_col, end_line, end_col):
                     if index == 0:  # True branch
                         if true_count > 0:
@@ -173,7 +174,7 @@ def check_path_coverage(path: dict, csv_coverage: Dict, locations: dict) -> bool
     return True
 
 
-def check_json_csv_filename_match(locations: dict, branch_coverage_map: dict):
+def check_json_csv_filename_match(locations: dict, branch_coverage_map: dict, segment_coverage_map: dict = None):
     """Check if any location filenames match between JSON and CSV coverage data."""
     json_filenames = set()
     for loc in locations.values():
@@ -186,6 +187,11 @@ def check_json_csv_filename_match(locations: dict, branch_coverage_map: dict):
         for filename in csv_coverage.keys():
             csv_filenames.add(filename)
 
+    # include segment coverage filenames if provided
+    if segment_coverage_map:
+        for filename in segment_coverage_map.keys():
+            csv_filenames.add(filename)
+
     print("\n" + "="*80)
     print("FILENAME MATCH CHECK")
     print("="*80)
@@ -193,6 +199,88 @@ def check_json_csv_filename_match(locations: dict, branch_coverage_map: dict):
     print(f"CSV filenames: {len(csv_filenames)}")
     matching_filenames = json_filenames.intersection(csv_filenames)
     print(f"Matching filenames: {len(matching_filenames)}")
+
+
+def parse_segment_coverage_csv(cov_dir: str) -> Dict[str, Dict[Tuple[int, int], bool]]:
+    """Parse all '*.csv.segment' files in a directory and return an aggregated map:
+    filename -> (line, col) -> executed (True if any file reports executed)
+
+    Example CSV format (header): filename,line,col,executed
+    """
+    seg_files = list(Path(cov_dir).glob('*.csv.segment'))
+    print(f"Found {len(seg_files)} segment CSV files in {cov_dir}")
+
+    segment_coverage_map: Dict[str, Dict[Tuple[int, int], bool]] = {}
+    seg_iter = tqdm(seg_files, desc="Parsing segment CSV files", unit="file") if HAS_TQDM else seg_files
+    for seg_file in seg_iter:
+        try:
+            with open(seg_file, 'r') as f:
+                lines = f.readlines()
+        except IOError as e:
+            print(f"Warning: Failed to read {seg_file}: {e}")
+            continue
+
+        # Skip header
+        for line in lines[1:]:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split(',')
+            if len(parts) < 4:
+                continue
+
+            filename = parts[0]
+            # Normalize as done in parse_csv_file
+            if filename.startswith('/work/build-cov/'):
+                filename = filename[len('/work/build-cov/'):]
+
+            try:
+                ln = int(parts[1])
+                col = int(parts[2])
+            except ValueError:
+                continue
+
+            executed_raw = parts[3].strip().lower()
+            executed = executed_raw in ('1', 'true', 't', 'yes')
+
+            if filename not in segment_coverage_map:
+                segment_coverage_map[filename] = {}
+
+            key = (ln, col)
+            # once True, keep True (aggregate across files)
+            segment_coverage_map[filename][key] = segment_coverage_map[filename].get(key, False) or executed
+
+    return segment_coverage_map
+
+
+def check_segment_coverage(target_location: Tuple[str, int, int], segment_coverage_map: Dict[str, Dict[Tuple[int, int], bool]]) -> bool:
+    """Check whether a target location (filename, line, col) is covered according to segment_coverage_map.
+
+    Uses binary search on the sorted (line,col) keys for the filename. The last key <= target (lexicographic)
+    determines the coverage value returned. If there is no earlier key, returns False.
+    """
+    if not target_location:
+        return True  # treat missing location as covered
+    filename, line, col = target_location
+
+    file_map = segment_coverage_map.get(filename)
+    if not file_map:
+        return False
+
+    # cache sorted keys per filename to avoid repeated sorts
+    if not hasattr(check_segment_coverage, "_sorted_cache"):
+        check_segment_coverage._sorted_cache = {}
+
+    sorted_cache = check_segment_coverage._sorted_cache
+    if filename not in sorted_cache:
+        sorted_cache[filename] = sorted(file_map.keys())
+
+    keys = sorted_cache[filename]
+    idx = bisect.bisect_right(keys, (line, col)) - 1
+    if idx >= 0:
+        key = keys[idx]
+        return bool(file_map.get(key, False))
+    return False
 
 
 def parse_branch_coverage_csv(cov_dir: str) -> Dict[str, dict]:
@@ -336,8 +424,17 @@ def update_callgraph(output_data: dict, data: dict, uftrace_dir: str, functions_
             optimized_callgraph[func_name] = static_direct_callgraph.get(func_name, set()) | dynamic_callees
 
             static_indirect_callees = static_indirect_callgraph.get(func_name, set())
-            reduced_indirect_edge_count += len(static_indirect_callees - dynamic_callees)
-            increased_indirect_edge_count += len(dynamic_callees - static_indirect_callees)
+            reduced_indirect_edge = static_indirect_callees - dynamic_callees
+            increased_indirect_edge = dynamic_callees - static_indirect_callees
+
+            if reduced_indirect_edge:
+                print(f"Function '{func_name}': Reduced indirect edges: {len(reduced_indirect_edge)}")
+            if increased_indirect_edge:
+                print(f"Function '{func_name}': Increased indirect edges: {len(increased_indirect_edge)}")
+
+            reduced_indirect_edge_count += len(reduced_indirect_edge)
+            increased_indirect_edge_count += len(increased_indirect_edge)
+
         # else:
         #     # Keep original for non-optimized functions
         #     optimized_callgraph[func_name] = set(callees)
@@ -391,11 +488,12 @@ def scan_coverage(input_json_path: str, cov_dir: str, json_prefix: str) -> dict:
         loc = (loc[0], int(loc[1]), int(loc[2]))
         locations[loc_id] = loc
 
-    # Parse all CSV branch files in cov_dir
+    # Parse all CSV branch files and segment files in cov_dir
     branch_coverage_map = parse_branch_coverage_csv(cov_dir)
+    segment_coverage_map = parse_segment_coverage_csv(cov_dir)
 
-    # Check filenames between JSON locations and parsed branch CSV coverage
-    check_json_csv_filename_match(locations, branch_coverage_map)
+    # Check filenames between JSON locations and parsed coverage files
+    check_json_csv_filename_match(locations, branch_coverage_map, segment_coverage_map)
 
     # Coverage output structure: node_name -> {totalPaths, coveredPaths, coveredBy}
     coverage_output = {}
@@ -404,6 +502,17 @@ def scan_coverage(input_json_path: str, cov_dir: str, json_prefix: str) -> dict:
     combos_iter = tqdm(combos.items(), desc="Checking coverage", unit="node") if HAS_TQDM else combos.items()
     for node_name, node_data in combos_iter:
         branch_combos = node_data.get('branchCombos', [])
+
+        node_loc_covered = check_segment_coverage(locations.get(node_name), segment_coverage_map)
+        if not node_loc_covered:
+            # If node location itself is not covered, mark all paths as uncovered
+            coverage_output[node_name] = {
+                'totalPaths': len(branch_combos),
+                'coveredPaths': 0,
+                'covered': False,
+                'nodeItselfNotCovered': True
+            }
+            continue
 
         # If no paths to cover, node is considered covered (no paths)
         if not branch_combos:
