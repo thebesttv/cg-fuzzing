@@ -416,6 +416,7 @@ def update_callgraph(output_data: dict, data: dict, uftrace_dir: str, functions_
 
     # Optimize call graph for selected functions
     optimized_callgraph = {}
+    potentially_reduced_indirect_edge_count = 0
     reduced_indirect_edge_count = 0
     increased_indirect_edge_count = 0
     for func_name, callees in static_callgraph.items():
@@ -424,6 +425,8 @@ def update_callgraph(output_data: dict, data: dict, uftrace_dir: str, functions_
             optimized_callgraph[func_name] = static_direct_callgraph.get(func_name, set()) | dynamic_callees
 
             static_indirect_callees = static_indirect_callgraph.get(func_name, set())
+            potentially_reduced_indirect_edge_count += len(static_indirect_callees)
+
             reduced_indirect_edge = static_indirect_callees - dynamic_callees
             increased_indirect_edge = dynamic_callees - static_indirect_callees
 
@@ -438,8 +441,6 @@ def update_callgraph(output_data: dict, data: dict, uftrace_dir: str, functions_
         # else:
         #     # Keep original for non-optimized functions
         #     optimized_callgraph[func_name] = set(callees)
-
-    optimized_edge_count = count_callgraph_edges(optimized_callgraph)
 
     # Calculate statistics
     reduction_percentage = (reduced_indirect_edge_count / static_edge_count * 100) if static_edge_count > 0 else 0
@@ -458,7 +459,7 @@ def update_callgraph(output_data: dict, data: dict, uftrace_dir: str, functions_
     stats = {
         'Static call graph edges': static_edge_count,
         'Dynamic call graph edges': dynamic_edge_count,
-        'Optimized call graph edges': optimized_edge_count,
+        'All static indirect calls in functions-cg': potentially_reduced_indirect_edge_count,
         'Reduced indirect call graph edges': reduced_indirect_edge_count,
         'Increased indirect call graph edges': increased_indirect_edge_count,
         'Edge reduction percentage': f"{reduction_percentage:.2f}%"
