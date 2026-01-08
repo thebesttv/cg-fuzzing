@@ -6,7 +6,7 @@ import os
 import re
 import argparse
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set, Tuple, Optional
 import bisect
 from collections import defaultdict
 
@@ -655,6 +655,39 @@ def scan_coverage_cg(callsites: dict, combos: dict, locations: dict,
     return output_data
 
 
+def process_cg(input_data: dict, locations: dict, branch_coverage_map: dict,
+               segment_coverage_map: dict, uftrace_dir: Optional[str] = None) -> dict:
+    """Process callsite coverage and optionally optimize call graph.
+
+    Args:
+        input_data: Full input data dict (as returned by load_and_process_input)
+        locations: Processed locations map
+        branch_coverage_map: Parsed branch coverage map
+        segment_coverage_map: Parsed segment coverage map
+        uftrace_dir: Optional uftrace directory for callgraph optimization
+
+    Returns:
+        output_data dict produced by scan_coverage_cg (and possibly updated by update_callgraph)
+    """
+    callsites = input_data.get('callSites', {}) or {}
+    combos = input_data.get('callSites-combos') or {}
+
+    output_data = scan_coverage_cg(callsites, combos, locations, branch_coverage_map, segment_coverage_map)
+
+    if uftrace_dir:
+        if not os.path.isdir(uftrace_dir):
+            print(f"Error: {uftrace_dir} is not a directory")
+            sys.exit(1)
+
+        # Get functions to optimize from coverage results
+        functions_to_optimize = output_data.get('functions-cg', [])
+
+        # Update call graph and output data (modifies output_data in place)
+        update_callgraph(output_data, callsites, uftrace_dir, functions_to_optimize)
+
+    return output_data
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Scan coverage CSVs and optionally write output.json")
     parser.add_argument("input_json", help="Path to input.json (contains locations and combos)")
@@ -692,10 +725,6 @@ if __name__ == '__main__':
 
     # Load and process input JSON
     input_data = load_and_process_input(args.input_json, json_prefix)
-
-    # Extract elements for scan_coverage_cg
-    callsites = input_data.get('callSites', {}) or {}
-    combos = input_data.get('combos') or {}
     locations = input_data.get('locations') or {}
 
     # Parse coverage CSV files (branch and segment) and check filename matches
@@ -704,19 +733,7 @@ if __name__ == '__main__':
     check_json_csv_filename_match(locations, branch_coverage_map, segment_coverage_map)
 
     # Scan coverage
-    output_data = scan_coverage_cg(callsites, combos, locations, branch_coverage_map, segment_coverage_map)
-
-    # Optionally optimize call graph if uftrace_dir is provided
-    if args.uftrace_dir:
-        if not os.path.isdir(args.uftrace_dir):
-            print(f"Error: {args.uftrace_dir} is not a directory")
-            sys.exit(1)
-
-        # Get functions to optimize from coverage results
-        functions_to_optimize = output_data.get('functions-cg', [])
-
-        # Update call graph and output data (modifies output_data in place)
-        update_callgraph(output_data, callsites, args.uftrace_dir, functions_to_optimize)
+    output_data = process_cg(input_data, locations, branch_coverage_map, segment_coverage_map, args.uftrace_dir)
 
     print("\n" + "="*80)
     print("SUMMARY")
