@@ -544,8 +544,6 @@ def scan_coverage_cg(callsites: dict, combos: dict, locations: dict,
         for path_idx, path in enumerate(branch_combos):
             for csv_path, csv_coverage in branch_coverage_map.items():
                 if check_path_coverage(path, csv_coverage, locations):
-                    # Mark this path as covered (boolean)
-                    path['covered'] = True
                     covered_paths += 1
                     break
 
