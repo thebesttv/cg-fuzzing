@@ -494,25 +494,20 @@ def load_and_process_input(input_json_path: str, json_prefix: str) -> dict:
     return data
 
 
-def scan_coverage_cg(callsites: dict, combos: dict, locations: dict, cov_dir: str) -> dict:
+def scan_coverage_cg(callsites: dict, combos: dict, locations: dict,
+                     branch_coverage_map: dict, segment_coverage_map: dict) -> dict:
     """Main function to scan coverage and return output data.
 
     Args:
         callsites: Call sites data from input JSON
         combos: Branch combinations data from input JSON
         locations: Processed locations data
-        cov_dir: Directory containing CSV coverage files
+        branch_coverage_map: Parsed CSV branch coverage map (from parse_branch_coverage_csv)
+        segment_coverage_map: Parsed segment coverage map (from parse_segment_coverage_csv)
 
     Returns:
         Dict containing 'coverage', 'functions-cg', and 'statistics' keys.
     """
-
-    # Parse all CSV branch files and segment files in cov_dir
-    branch_coverage_map = parse_branch_coverage_csv(cov_dir)
-    segment_coverage_map = parse_segment_coverage_csv(cov_dir)
-
-    # Check filenames between JSON locations and parsed coverage files
-    check_json_csv_filename_match(locations, branch_coverage_map, segment_coverage_map)
 
     # Coverage output structure: node_name -> {totalPaths, coveredPaths, coveredBy}
     coverage_output = {}
@@ -703,8 +698,13 @@ if __name__ == '__main__':
     combos = input_data.get('combos') or {}
     locations = input_data.get('locations') or {}
 
+    # Parse coverage CSV files (branch and segment) and check filename matches
+    branch_coverage_map = parse_branch_coverage_csv(args.cov_dir)
+    segment_coverage_map = parse_segment_coverage_csv(args.cov_dir)
+    check_json_csv_filename_match(locations, branch_coverage_map, segment_coverage_map)
+
     # Scan coverage
-    output_data = scan_coverage_cg(callsites, combos, locations, args.cov_dir)
+    output_data = scan_coverage_cg(callsites, combos, locations, branch_coverage_map, segment_coverage_map)
 
     # Optionally optimize call graph if uftrace_dir is provided
     if args.uftrace_dir:
