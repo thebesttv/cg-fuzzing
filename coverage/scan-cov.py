@@ -685,6 +685,144 @@ def scan_coverage_cg(callsites: dict, combos: dict, locations: dict,
     return output_data
 
 
+def scan_coverage_mr(modref: dict, modref_combos: dict, locations: dict,
+                     branch_coverage_map: dict, segment_coverage_map: dict) -> Tuple[dict, Set[str]]:
+    """Scan modRef coverage and identify functions with uncovered loads/stores.
+
+    Args:
+        modref: ModRef data from input JSON (funName -> {loads, stores, ...})
+        modref_combos: ModRef-combos data from input JSON
+        locations: Processed locations map
+        branch_coverage_map: Parsed branch coverage map
+        segment_coverage_map: Parsed segment coverage map
+
+    Returns:
+        Tuple of:
+        - coverage_output: Dict mapping funName -> nodeId -> CoverageNode
+        - functions_missed: Set of function names with at least one uncovered load/store
+    """
+    # First compute coverage for all nodes in modRef-combos (reuse compute_node_coverage)
+    node_coverage = compute_node_coverage(modref_combos, locations, branch_coverage_map, segment_coverage_map)
+
+    coverage_output = {}
+    functions_missed = set()
+
+    for func_name, func_data in modref.items():
+        func_coverage = {}
+        func_has_uncovered = False
+
+        # Check loads
+        loads = func_data.get('loads', {})
+        for node_id in loads.keys():
+            node_cov = node_coverage.get(node_id)
+            if not node_cov:
+                # If node not in combos, treat as covered (no constraints)
+                node_cov = CoverageNode(totalPaths=0, coveredPaths=0, covered=True, nodeItselfNotCovered=False)
+            func_coverage[node_id] = node_cov
+            if not node_cov.covered:
+                func_has_uncovered = True
+
+        # Check stores
+        stores = func_data.get('stores', {})
+        for node_id in stores.keys():
+            node_cov = node_coverage.get(node_id)
+            if not node_cov:
+                # If node not in combos, treat as covered (no constraints)
+                node_cov = CoverageNode(totalPaths=0, coveredPaths=0, covered=True, nodeItselfNotCovered=False)
+            func_coverage[node_id] = node_cov
+            if not node_cov.covered:
+                func_has_uncovered = True
+
+        # Store function-level coverage
+        coverage_output[func_name] = func_coverage
+
+        # If any node is uncovered, add to functions_missed
+        if func_has_uncovered:
+            functions_missed.add(func_name)
+
+    return coverage_output, functions_missed
+
+
+def process_mr(input_data: dict, locations: dict, branch_coverage_map: dict,
+               segment_coverage_map: dict) -> dict:
+    """Process modRef coverage and compute functions that are truly covered.
+
+    A function is truly covered (added to functions-mr) if:
+    1. All its loads and stores are covered (both segment and branch coverage)
+    2. All functions in its 'functionsMustCover' list are also truly covered
+
+    Args:
+        input_data: Full input data dict
+        locations: Processed locations map
+        branch_coverage_map: Parsed branch coverage map
+        segment_coverage_map: Parsed segment coverage map
+
+    Returns:
+        Dict containing:
+        - coverage: funName -> nodeId -> CoverageNode (as dict)
+        - functions-mr: List of functions that are truly covered
+        - statistics: Summary statistics
+    """
+    modref = input_data.get('modRef', {}) or {}
+    modref_combos = input_data.get('modRef-combos', {}) or {}
+
+    if not modref:
+        # If no modRef data, return empty result
+        return {
+            'coverage': {},
+            'functions-mr': [],
+            'statistics': {
+                'Total functions': 0,
+                'Functions with all loads/stores covered': 0,
+                'Truly covered functions': 0
+            }
+        }
+
+    # Scan coverage and get initially uncovered functions
+    coverage_output, functions_missed = scan_coverage_mr(modref, modref_combos, locations,
+                                                          branch_coverage_map, segment_coverage_map)
+
+    # Determine truly covered functions in a single pass.
+    # A function is truly covered if:
+    #  - it is not in functions_missed, and
+    #  - none of its functionsMustCover are in functions_missed.
+    functions_truly_covered = []
+    for func_name, func_data in modref.items():
+        if func_name in functions_missed:
+            continue
+        must_cover_funcs = func_data.get('functionsMustCover', [])
+        # If any required function is missed, this function cannot be truly covered
+        if any(dep in functions_missed for dep in must_cover_funcs):
+            continue
+        # Single-pass: do not require dependencies to be "truly covered" themselves
+        functions_truly_covered.append(func_name)
+
+    # Compute statistics
+    total_functions = len(modref)
+    fully_covered_all_mr = len(modref) - len(functions_missed)
+
+    statistics = {
+        'Total functions': total_functions,
+        'Functions with all loads/stores covered': fully_covered_all_mr,
+        'Truly covered functions': len(functions_truly_covered)
+    }
+
+    # Convert CoverageNode objects to dicts for JSON serializability
+    serializable_coverage = {}
+    for func_name, func_nodes in coverage_output.items():
+        serializable_coverage[func_name] = {
+            node_id: node_info.to_dict() for node_id, node_info in func_nodes.items()
+        }
+
+    output_data = {
+        'coverage': serializable_coverage,
+        'functions-mr': functions_truly_covered,
+        'statistics': statistics
+    }
+
+    return output_data
+
+
 def process_cg(input_data: dict, locations: dict, branch_coverage_map: dict,
                segment_coverage_map: dict, uftrace_dir: Optional[str] = None) -> dict:
     """Process callsite coverage and optionally optimize call graph.
@@ -762,13 +900,23 @@ if __name__ == '__main__':
     segment_coverage_map = parse_segment_coverage_csv(args.cov_dir)
     check_json_csv_filename_match(locations, branch_coverage_map, segment_coverage_map)
 
-    # Scan coverage
-    output_data = process_cg(input_data, locations, branch_coverage_map, segment_coverage_map, args.uftrace_dir)
+    # Scan coverage for callSites
+    output_data = {}
+    output_data['callSites'] = process_cg(input_data, locations, branch_coverage_map, segment_coverage_map, args.uftrace_dir)
+
+    # Scan coverage for modRef
+    output_data['modRef'] = process_mr(input_data, locations, branch_coverage_map, segment_coverage_map)
 
     print("\n" + "="*80)
-    print("SUMMARY")
+    print("SUMMARY - CallSites")
     print("="*80)
-    for k, v in output_data['statistics'].items():
+    for k, v in output_data['callSites']['statistics'].items():
+        print(f"{k}: {v}")
+
+    print("\n" + "="*80)
+    print("SUMMARY - ModRef")
+    print("="*80)
+    for k, v in output_data['modRef']['statistics'].items():
         print(f"{k}: {v}")
 
     # Optionally write output.json if provided
