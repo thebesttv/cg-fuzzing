@@ -7,8 +7,20 @@ import re
 import argparse
 from pathlib import Path
 from typing import Dict, List, Set, Tuple, Optional
+from dataclasses import dataclass, asdict
 import bisect
 from collections import defaultdict
+
+
+@dataclass
+class CoverageNode:
+    totalPaths: int
+    coveredPaths: int
+    covered: bool
+    nodeItselfNotCovered: bool = False
+
+    def to_dict(self) -> dict:
+        return asdict(self)
 
 # Try to import tqdm, use fallback if not available
 try:
@@ -494,6 +506,62 @@ def load_and_process_input(input_json_path: str, json_prefix: str) -> dict:
     return data
 
 
+def compute_node_coverage(combos: dict, locations: dict,
+                          branch_coverage_map: dict, segment_coverage_map: dict) -> dict:
+    """Compute coverage_output for all nodes.
+
+    Returns mapping node_name -> { totalPaths, coveredPaths, covered, [nodeItselfNotCovered] }
+    """
+    coverage_output = {}
+
+    combos_iter = tqdm(combos.items(), desc="Checking coverage", unit="node") if HAS_TQDM else combos.items()
+    for node_name, node_data in combos_iter:
+        branch_combos = node_data.get('branchCombos', [])
+
+        node_loc_covered = check_segment_coverage(locations.get(node_name), segment_coverage_map)
+        if not node_loc_covered:
+            # If node location itself is not covered, mark all paths as uncovered
+            coverage_output[node_name] = CoverageNode(
+                totalPaths=len(branch_combos),
+                coveredPaths=0,
+                covered=False,
+                nodeItselfNotCovered=True
+            )
+            continue
+
+        # If no paths to cover, node is considered covered (no paths)
+        if not branch_combos:
+            coverage_output[node_name] = CoverageNode(
+                totalPaths=0,
+                coveredPaths=0,
+                covered=True,
+                nodeItselfNotCovered=False
+            )
+            continue
+
+        covered_paths = 0
+
+        # Check each path against all CSV files
+        for path_idx, path in enumerate(branch_combos):
+            path_covered = False
+            for csv_path, csv_coverage in branch_coverage_map.items():
+                if check_path_coverage(path, csv_coverage, locations):
+                    path_covered = True
+                    covered_paths += 1
+                    break
+            pass
+
+        total_paths = len(branch_combos)
+        coverage_output[node_name] = CoverageNode(
+            totalPaths=total_paths,
+            coveredPaths=covered_paths,
+            covered=(covered_paths == total_paths),
+            nodeItselfNotCovered=False
+        )
+
+    return coverage_output
+
+
 def scan_coverage_cg(callsites: dict, combos: dict, locations: dict,
                      branch_coverage_map: dict, segment_coverage_map: dict) -> dict:
     """Main function to scan coverage and return output data.
@@ -509,52 +577,8 @@ def scan_coverage_cg(callsites: dict, combos: dict, locations: dict,
         Dict containing 'coverage', 'functions-cg', and 'statistics' keys.
     """
 
-    # Coverage output structure: node_name -> {totalPaths, coveredPaths, coveredBy}
-    coverage_output = {}
-
-    # Process each node in combos
-    combos_iter = tqdm(combos.items(), desc="Checking coverage", unit="node") if HAS_TQDM else combos.items()
-    for node_name, node_data in combos_iter:
-        branch_combos = node_data.get('branchCombos', [])
-
-        node_loc_covered = check_segment_coverage(locations.get(node_name), segment_coverage_map)
-        if not node_loc_covered:
-            # If node location itself is not covered, mark all paths as uncovered
-            coverage_output[node_name] = {
-                'totalPaths': len(branch_combos),
-                'coveredPaths': 0,
-                'covered': False,
-                'nodeItselfNotCovered': True
-            }
-            continue
-
-        # If no paths to cover, node is considered covered (no paths)
-        if not branch_combos:
-            coverage_output[node_name] = {
-                'totalPaths': 0,
-                'coveredPaths': 0,
-                'covered': True
-            }
-            continue
-
-        total_paths = len(branch_combos)
-        covered_paths = 0
-
-        # Check each path against all CSV files
-        for path_idx, path in enumerate(branch_combos):
-            for csv_path, csv_coverage in branch_coverage_map.items():
-                if check_path_coverage(path, csv_coverage, locations):
-                    covered_paths += 1
-                    break
-
-        # Store coverage data; a node is considered 'covered' when all its paths are covered
-        coverage_output[node_name] = {
-            'totalPaths': total_paths,
-            'coveredPaths': covered_paths,
-            'covered': (covered_paths == total_paths)
-        }
-
-        # no per-node stat arrays maintained; summary will be computed later
+    # Compute per-node coverage output
+    coverage_output = compute_node_coverage(combos, locations, branch_coverage_map, segment_coverage_map)
 
     # === Functions to optimize ===
     functions_to_optimize = []
@@ -598,11 +622,11 @@ def scan_coverage_cg(callsites: dict, combos: dict, locations: dict,
         # For each indirect-nonIR node, check if its branchCombos (if any) are all covered
         for nid in indirect_nonir_nodes:
             # Use previously computed node-level coverage (coverage_output)
-            node_cov = coverage_output.get(nid)
+            node_cov: CoverageNode = coverage_output.get(nid)
             if not node_cov:
                 # No coverage info -> treat as covered
                 continue
-            if not node_cov.get('covered'):
+            if not node_cov.covered:
                 all_nonir_nodes_covered = False
                 break
 
@@ -610,7 +634,10 @@ def scan_coverage_cg(callsites: dict, combos: dict, locations: dict,
             functions_to_optimize.append(func_name)
 
     def compute_summary(coverage_map: dict, functions_list: list) -> dict:
-        """Compute summary statistics from coverage_output."""
+        """Compute summary statistics from coverage_output.
+
+        Expects every value in coverage_map to be a CoverageNode; raises TypeError otherwise.
+        """
         total_nodes = len(coverage_map)
         fully_with_paths = 0
         fully_no_paths = 0
@@ -618,9 +645,9 @@ def scan_coverage_cg(callsites: dict, combos: dict, locations: dict,
         uncovered = 0
 
         for node, info in coverage_map.items():
-            tp = info.get('totalPaths', 0)
-            cp = info.get('coveredPaths', 0)
-            covered_flag = info.get('covered', False)
+            tp = info.totalPaths
+            cp = info.coveredPaths
+            covered_flag = info.covered
 
             if tp == 0:
                 fully_no_paths += 1
@@ -643,9 +670,14 @@ def scan_coverage_cg(callsites: dict, combos: dict, locations: dict,
 
     statistics = compute_summary(coverage_output, functions_to_optimize)
 
+    # Convert CoverageNode objects to dicts for JSON serializability (enforce type)
+    serializable_coverage = {}
+    for node, info in coverage_output.items():
+        serializable_coverage[node] = info.to_dict()
+
     # Build output JSON structure
     output_data = {
-        'coverage': coverage_output,
+        'coverage': serializable_coverage,
         'functions-cg': functions_to_optimize,
         'statistics': statistics
     }
