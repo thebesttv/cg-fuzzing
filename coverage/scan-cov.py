@@ -385,7 +385,7 @@ def count_callgraph_edges(callgraph: Dict[str, Set[str]]) -> int:
     return total_edges
 
 
-def update_callgraph(output_data: dict, data: dict, uftrace_dir: str, functions_to_optimize: List[str]) -> None:
+def update_callgraph(output_data: dict, callsites: dict, uftrace_dir: str, functions_to_optimize: List[str]) -> None:
     """Update call graph based on coverage results and uftrace data.
 
     Directly modifies output_data by adding:
@@ -395,11 +395,10 @@ def update_callgraph(output_data: dict, data: dict, uftrace_dir: str, functions_
 
     Args:
         output_data: Output data dict to be modified (will add 'static-cg', 'dynamic-cg', and stats)
-        data: Original input.json data (contains callSites)
+        callsites: Call sites mapping (from input.json 'callSites')
         uftrace_dir: Directory containing uftrace files
         functions_to_optimize: List of functions that can be optimized
     """
-    callsites = data.get('callSites', {}) or {}
 
     # Build static call graph from static analysis
     static_callgraph, static_direct_callgraph, static_indirect_callgraph = build_static_callgraph(callsites)
@@ -468,16 +467,18 @@ def update_callgraph(output_data: dict, data: dict, uftrace_dir: str, functions_
 
 
 
-def scan_coverage(input_json_path: str, cov_dir: str, json_prefix: str) -> dict:
-    """Main function to scan coverage and return output data.
+def load_and_process_input(input_json_path: str, json_prefix: str) -> dict:
+    """Load input JSON and process locations.
+
+    Args:
+        input_json_path: Path to input.json file
+        json_prefix: Prefix to strip from location filenames
 
     Returns:
-        Dict containing 'coverage', 'functions-cg', and 'statistics' keys.
+        Complete input data dict with processed locations
     """
-
     # Load input.json
     data = load_output_json(input_json_path)
-    combos = data.get('combos') or {}
     locations = data.get('locations') or {}
 
     # remove json_prefix from location filenames
@@ -488,6 +489,23 @@ def scan_coverage(input_json_path: str, cov_dir: str, json_prefix: str) -> dict:
         assert len(loc) == 3, f"Invalid location format: {locations[loc_id]}"
         loc = (loc[0], int(loc[1]), int(loc[2]))
         locations[loc_id] = loc
+
+    data['locations'] = locations
+    return data
+
+
+def scan_coverage_cg(callsites: dict, combos: dict, locations: dict, cov_dir: str) -> dict:
+    """Main function to scan coverage and return output data.
+
+    Args:
+        callsites: Call sites data from input JSON
+        combos: Branch combinations data from input JSON
+        locations: Processed locations data
+        cov_dir: Directory containing CSV coverage files
+
+    Returns:
+        Dict containing 'coverage', 'functions-cg', and 'statistics' keys.
+    """
 
     # Parse all CSV branch files and segment files in cov_dir
     branch_coverage_map = parse_branch_coverage_csv(cov_dir)
@@ -547,7 +565,6 @@ def scan_coverage(input_json_path: str, cov_dir: str, json_prefix: str) -> dict:
 
     # === Functions to optimize ===
     functions_to_optimize = []
-    callsites = data.get('callSites', {}) or {}
 
     for func_name, nodes in callsites.items():
         # collect ICFGNode keys
@@ -678,7 +695,16 @@ if __name__ == '__main__':
 
     print(f'json_prefix: {json_prefix}')
 
-    output_data = scan_coverage(args.input_json, args.cov_dir, json_prefix)
+    # Load and process input JSON
+    input_data = load_and_process_input(args.input_json, json_prefix)
+
+    # Extract elements for scan_coverage_cg
+    callsites = input_data.get('callSites', {}) or {}
+    combos = input_data.get('combos') or {}
+    locations = input_data.get('locations') or {}
+
+    # Scan coverage
+    output_data = scan_coverage_cg(callsites, combos, locations, args.cov_dir)
 
     # Optionally optimize call graph if uftrace_dir is provided
     if args.uftrace_dir:
@@ -686,14 +712,11 @@ if __name__ == '__main__':
             print(f"Error: {args.uftrace_dir} is not a directory")
             sys.exit(1)
 
-        # Load input data to get callSites
-        data = load_output_json(args.input_json)
-
         # Get functions to optimize from coverage results
         functions_to_optimize = output_data.get('functions-cg', [])
 
         # Update call graph and output data (modifies output_data in place)
-        update_callgraph(output_data, data, args.uftrace_dir, functions_to_optimize)
+        update_callgraph(output_data, callsites, args.uftrace_dir, functions_to_optimize)
 
     print("\n" + "="*80)
     print("SUMMARY")
