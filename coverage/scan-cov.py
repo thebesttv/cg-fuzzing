@@ -439,7 +439,7 @@ def update_callgraph(output_data: dict, callsites: dict, uftrace_dir: str, funct
             potentially_reduced_indirect_edge_count += len(static_indirect_callees)
 
             reduced_indirect_edge = static_indirect_callees - dynamic_callees
-            increased_indirect_edge = dynamic_callees - static_indirect_callees
+            increased_indirect_edge = dynamic_callees - static_callgraph.get(func_name, set())
 
             if reduced_indirect_edge:
                 print(f"Function '{func_name}': Reduced indirect edges: {len(reduced_indirect_edge)}")
